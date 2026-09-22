@@ -1,0 +1,80 @@
+{
+  "schema_version": 1,
+  "scope": "Offensive and defensive mission feasibility; no battle outcome reporting",
+  "seed": 7,
+  "dt_s": 0.25,
+  "cases": [
+    {
+      "key": "ATTACK",
+      "name_ko": "공격",
+      "capability": "가능",
+      "duration_s": 900,
+      "scenario": "ATTACK/ATTACK_SCENARIO.json",
+      "blue_bml": "ATTACK/ATTACK_BLUE_BML.json",
+      "red_bml": "ATTACK/ATTACK_RED_BML.json"
+    },
+    {
+      "key": "MOVEMENT_TO_CONTACT",
+      "name_ko": "이동간 접적",
+      "capability": "가능",
+      "duration_s": 1600,
+      "scenario": "MOVEMENT_TO_CONTACT/MOVEMENT_TO_CONTACT_SCENARIO.json",
+      "blue_bml": "MOVEMENT_TO_CONTACT/MOVEMENT_TO_CONTACT_BLUE_BML.json",
+      "red_bml": "MOVEMENT_TO_CONTACT/MOVEMENT_TO_CONTACT_RED_BML.json"
+    },
+    {
+      "key": "AMBUSH",
+      "name_ko": "매복",
+      "capability": "부분 가능",
+      "duration_s": 500,
+      "scenario": "AMBUSH/AMBUSH_SCENARIO.json",
+      "blue_bml": "AMBUSH/AMBUSH_BLUE_BML.json",
+      "red_bml": "AMBUSH/AMBUSH_RED_BML.json"
+    },
+    {
+      "key": "RECONNAISSANCE",
+      "name_ko": "정찰",
+      "capability": "부분 가능",
+      "duration_s": 1500,
+      "scenario": "RECONNAISSANCE/RECONNAISSANCE_SCENARIO.json",
+      "blue_bml": "RECONNAISSANCE/RECONNAISSANCE_BLUE_BML.json",
+      "red_bml": "RECONNAISSANCE/RECONNAISSANCE_RED_BML.json"
+    },
+    {
+      "key": "AREA_DEFENSE",
+      "name_ko": "지역 방어",
+      "capability": "가능",
+      "duration_s": 400,
+      "scenario": "AREA_DEFENSE/AREA_DEFENSE_SCENARIO.json",
+      "blue_bml": "AREA_DEFENSE/AREA_DEFENSE_BLUE_BML.json",
+      "red_bml": "AREA_DEFENSE/AREA_DEFENSE_RED_BML.json"
+    },
+    {
+      "key": "MOBILE_DEFENSE",
+      "name_ko": "기동 방어",
+      "capability": "부분 가능",
+      "duration_s": 600,
+      "scenario": "MOBILE_DEFENSE/MOBILE_DEFENSE_SCENARIO.json",
+      "blue_bml": "MOBILE_DEFENSE/MOBILE_DEFENSE_BLUE_BML.json",
+      "red_bml": "MOBILE_DEFENSE/MOBILE_DEFENSE_RED_BML.json"
+    },
+    {
+      "key": "DELAYING_OPERATION",
+      "name_ko": "지연 작전",
+      "capability": "조건부 가능 (명시적 단계 계획)",
+      "duration_s": 650,
+      "scenario": "DELAYING_OPERATION/DELAYING_OPERATION_SCENARIO.json",
+      "blue_bml": "DELAYING_OPERATION/DELAYING_OPERATION_BLUE_BML.json",
+      "red_bml": "DELAYING_OPERATION/DELAYING_OPERATION_RED_BML.json"
+    },
+    {
+      "key": "WITHDRAWAL",
+      "name_ko": "후퇴 / 철수",
+      "capability": "부분 가능 (철수 이동 가능, 접적 단절 판정 미지원)",
+      "duration_s": 750,
+      "scenario": "WITHDRAWAL/WITHDRAWAL_SCENARIO.json",
+      "blue_bml": "WITHDRAWAL/WITHDRAWAL_BLUE_BML.json",
+      "red_bml": "WITHDRAWAL/WITHDRAWAL_RED_BML.json"
+    }
+  ]
+}

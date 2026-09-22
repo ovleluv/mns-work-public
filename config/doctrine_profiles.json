@@ -1,0 +1,32 @@
+{
+  "profiles": {
+    "GENERIC_DEFAULT": {
+      "engagement_range_policy": "STANDOFF",
+      "engagement_range_fraction": 1.0
+    },
+    "STAND_FAST": {
+      "infantry_break_contact_if_no_at": false,
+      "artillery_displace_on_close_contact": false,
+      "allow_autonomous_withdrawal": false,
+      "engagement_range_policy": "STANDOFF",
+      "engagement_range_fraction": 1.0
+    },
+    "CAUTIOUS": {
+      "infantry_break_contact_if_no_at": true,
+      "artillery_displace_on_close_contact": true,
+      "artillery_displace_contact_m": 450.0,
+      "engagement_range_policy": "STANDOFF",
+      "engagement_range_fraction": 1.0
+    },
+    "AGGRESSIVE_COMBINED_ARMS": {
+      "engagement_range_policy": "COMBINED_ARMS",
+      "engagement_range_fraction": 0.9,
+      "infantry_break_contact_if_no_at": true,
+      "artillery_displace_on_close_contact": true
+    },
+    "BALANCED_ENGAGEMENT": {
+      "engagement_range_policy": "BALANCED",
+      "engagement_range_fraction": 0.9
+    }
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "seed": 7,
+  "world": {
+    "width_m": 1600,
+    "height_m": 1200
+  },
+  "objectives": {
+    "DEFENDED_AREA": [
+      650,
+      600
+    ]
+  },
+  "units": [
+    {
+      "id": "B-DEFENDER",
+      "name": "B-DEFENDER",
+      "side": "BLUE",
+      "type": "RIFLE_SQD",
+      "echelon": "SQD",
+      "pos": [
+        650,
+        600
+      ],
+      "heading_deg": 0,
+      "watch_heading_deg": 0
+    },
+    {
+      "id": "R-ATTACKER",
+      "name": "R-ATTACKER",
+      "side": "RED",
+      "type": "RIFLE_SQD",
+      "echelon": "SQD",
+      "pos": [
+        1000,
+        600
+      ],
+      "heading_deg": 180,
+      "watch_heading_deg": 180
+    }
+  ],
+  "config_file": "../../config/defaults.json",
+  "unit_types_file": "../../config/toe_templates.json",
+  "terrain_file": "AREA_DEFENSE_TERRAIN.json",
+  "bml_files": {
+    "BLUE": "AREA_DEFENSE_BLUE_BML.json",
+    "RED": "AREA_DEFENSE_RED_BML.json"
+  }
+}

@@ -1,0 +1,95 @@
+{
+  "side": "BLUE",
+  "replace_existing_orders": true,
+  "missions": [
+    {
+      "id": "BLUE-BN-FIX-NARROW-PASS",
+      "unit": "B-INF_BN-1",
+      "task": "ATTACK_POSITION",
+      "destination": [
+        2400.0,
+        2000.0
+      ],
+      "persistent": true
+    },
+
+    {
+      "id": "BLUE-PLT1-ESTABLISH-FLANK-BLOCK",
+      "unit": "B-INF_PLT-1",
+      "task": "SECURE_AREA",
+      "center": [
+        1450.0,
+        2300.0
+      ],
+      "radius_m": 220,
+      "engagement_radius_m": 350,
+      "pursuit_radius_m": 220,
+      "return_to_center": true
+    },
+
+    {
+      "id": "BLUE-PLT2-RECON-WESTERN-APPROACH",
+      "unit": "B-INF_PLT-2",
+      "task": "ATTACK_POSITION",
+      "destination": [
+        1050.0,
+        2600.0
+      ],
+      "persistent": false
+    },
+
+    {
+      "id": "BLUE-PLT2-RECON-WESTERN-NARROW-PASS",
+      "unit": "B-INF_PLT-2",
+      "task": "ATTACK_POSITION",
+      "destination": [
+        500.0,
+        3050.0
+      ],
+      "persistent": false
+    },
+
+    {
+      "id": "BLUE-PLT2-RECON-SANCTUARY-RIDGE-CREST",
+      "unit": "B-INF_PLT-2",
+      "task": "ATTACK_POSITION",
+      "destination": [
+        1250.0,
+        3050.0
+      ],
+      "persistent": false
+    },
+
+    {
+      "id": "BLUE-PLT2-RETURN-FROM-RECON",
+      "unit": "B-INF_PLT-2",
+      "task": "MOVE_TO",
+      "destination": [
+        1550.0,
+        2250.0
+      ]
+    },
+
+    {
+      "id": "BLUE-PLT2-REINFORCE-FLANK-GUARD",
+      "unit": "B-INF_PLT-2",
+      "task": "SECURE_AREA",
+      "center": [
+        1550.0,
+        2250.0
+      ],
+      "radius_m": 200,
+      "engagement_radius_m": 320,
+      "pursuit_radius_m": 200,
+      "return_to_center": true
+    }
+  ],
+
+  "notes": [
+    "B-INF_BN-1 maintains pressure against the enemy defensive position near Narrow Pass while the flank-guard force develops another option.",
+    "B-INF_PLT-1 establishes a hasty blocking position protecting the battalion's western flank against a possible enemy armoured counterattack.",
+    "B-INF_PLT-2 represents the reconnaissance patrol described in the TDG solution and searches the Western Narrow Pass and nearby Sanctuary Ridge crest.",
+    "Reconnaissance uses coordinate-based ATTACK_POSITION because enemy identity and exact Ground Truth locations are not assumed known.",
+    "After reconnaissance, B-INF_PLT-2 returns toward the flank-guard position and reinforces the blocking force."
+  ]
+}

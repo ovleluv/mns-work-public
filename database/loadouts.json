@@ -1,0 +1,27 @@
+{
+  "loadouts": {
+    "GENERIC_INFANTRY": {
+      "slots": {
+        "PRIMARY_RIFLE": "SMALL_ARMS_GENERIC",
+        "COMMAND_RIFLE": "SMALL_ARMS_COMMAND_GENERIC",
+        "AT_TEAM_RIFLE": "AT_TEAM_RIFLE_GENERIC",
+        "AT_WEAPON": "ATGM_GENERIC",
+        "MARKSMAN_RIFLE": "DMR_GENERIC",
+        "MACHINE_GUN": "GPMG_SECTION_GENERIC",
+        "LIGHT_AT_WEAPON": "AT4_MULTIROLE_GENERIC"
+      }
+    },
+    "GENERIC_TANK": {
+      "slots": {
+        "MAIN_GUN_AP": "TANK_GUN_AP_GENERIC",
+        "MAIN_GUN_HE": "TANK_GUN_HE_GENERIC",
+        "COAX_MG": "COAX_MG_GENERIC"
+      }
+    },
+    "GENERIC_ARTILLERY": {
+      "slots": {
+        "INDIRECT_PRIMARY": "TOWED_ARTY_GENERIC"
+      }
+    }
+  }
+}

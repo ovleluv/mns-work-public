@@ -1,0 +1,23 @@
+{
+  "side": "RED",
+  "replace_existing_orders": true,
+  "missions": [
+    {
+      "id": "RECON-RED-HOLD",
+      "unit": "R-OBSERVED",
+      "task": "DEFEND_AREA",
+      "center": [
+        950,
+        500
+      ],
+      "radius_m": 100,
+      "pursue_within_area": false,
+      "return_to_center": true,
+      "directives": {
+        "hold_at_all_costs": true,
+        "allow_withdrawal": false,
+        "allow_break_contact": false
+      }
+    }
+  ]
+}

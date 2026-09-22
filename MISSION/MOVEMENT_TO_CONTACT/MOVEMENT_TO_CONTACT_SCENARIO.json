@@ -1,0 +1,48 @@
+{
+  "seed": 7,
+  "world": {
+    "width_m": 1600,
+    "height_m": 1200
+  },
+  "objectives": {
+    "SEARCH_LIMIT": [
+      1300,
+      600
+    ]
+  },
+  "units": [
+    {
+      "id": "B-SEARCH",
+      "name": "B-SEARCH",
+      "side": "BLUE",
+      "type": "RIFLE_SQD",
+      "echelon": "SQD",
+      "pos": [
+        150,
+        600
+      ],
+      "heading_deg": 0,
+      "watch_heading_deg": 0
+    },
+    {
+      "id": "R-UNKNOWN",
+      "name": "R-UNKNOWN",
+      "side": "RED",
+      "type": "RIFLE_SQD",
+      "echelon": "SQD",
+      "pos": [
+        1050,
+        600
+      ],
+      "heading_deg": 180,
+      "watch_heading_deg": 180
+    }
+  ],
+  "config_file": "../../config/defaults.json",
+  "unit_types_file": "../../config/toe_templates.json",
+  "terrain_file": "MOVEMENT_TO_CONTACT_TERRAIN.json",
+  "bml_files": {
+    "BLUE": "MOVEMENT_TO_CONTACT_BLUE_BML.json",
+    "RED": "MOVEMENT_TO_CONTACT_RED_BML.json"
+  }
+}

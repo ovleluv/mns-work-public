@@ -1,0 +1,5306 @@
+{
+  "doctrine_profiles_file": "doctrine_profiles.json",
+  "unit_types": {
+    "INF_PLT": {
+      "branch": "INFANTRY",
+      "max_speed_mps": 1.11,
+      "detection_range_m": 750,
+      "elements": [
+        {
+          "id": "rifle_1",
+          "name": "1st rifle squad",
+          "category": "PERSONNEL",
+          "role": "RIFLE",
+          "count": 8,
+          "combat_value": 1.0,
+          "weapons": [
+            {
+              "slot": "PRIMARY_RIFLE",
+              "weapon_id": "SMALL_ARMS_GENERIC"
+            },
+            {
+              "slot": "LIGHT_AT_WEAPON",
+              "weapon_id": "AT4_MULTIROLE_GENERIC",
+              "metadata": {
+                "inventory_model": "DISPOSABLE_ROUNDS"
+              },
+              "ammo": 0
+            }
+          ],
+          "initial_count": 8
+        },
+        {
+          "id": "rifle_2",
+          "name": "2nd rifle squad",
+          "category": "PERSONNEL",
+          "role": "RIFLE",
+          "count": 8,
+          "combat_value": 1.0,
+          "weapons": [
+            {
+              "slot": "PRIMARY_RIFLE",
+              "weapon_id": "SMALL_ARMS_GENERIC"
+            },
+            {
+              "slot": "LIGHT_AT_WEAPON",
+              "weapon_id": "AT4_MULTIROLE_GENERIC",
+              "metadata": {
+                "inventory_model": "DISPOSABLE_ROUNDS"
+              },
+              "ammo": 0
+            }
+          ],
+          "initial_count": 8
+        },
+        {
+          "id": "rifle_3",
+          "name": "3rd rifle squad",
+          "category": "PERSONNEL",
+          "role": "RIFLE",
+          "count": 8,
+          "combat_value": 1.0,
+          "weapons": [
+            {
+              "slot": "PRIMARY_RIFLE",
+              "weapon_id": "SMALL_ARMS_GENERIC"
+            },
+            {
+              "slot": "LIGHT_AT_WEAPON",
+              "weapon_id": "AT4_MULTIROLE_GENERIC",
+              "metadata": {
+                "inventory_model": "DISPOSABLE_ROUNDS"
+              },
+              "ammo": 0
+            }
+          ],
+          "initial_count": 8
+        },
+        {
+          "id": "plt_hq",
+          "name": "platoon HQ",
+          "category": "PERSONNEL",
+          "role": "COMMAND",
+          "count": 3,
+          "combat_value": 1.2,
+          "weapons": [
+            {
+              "slot": "COMMAND_RIFLE",
+              "weapon_id": "SMALL_ARMS_COMMAND_GENERIC"
+            }
+          ]
+        },
+        {
+          "id": "at_specialist",
+          "name": "anti-armor team",
+          "category": "PERSONNEL",
+          "role": "ANTI_ARMOR",
+          "count": 2,
+          "combat_value": 2.5,
+          "weapons": [
+            {
+              "slot": "AT_TEAM_RIFLE",
+              "weapon_id": "AT_TEAM_RIFLE_GENERIC"
+            },
+            {
+              "slot": "AT_WEAPON",
+              "weapon_id": "ATGM_GENERIC"
+            }
+          ]
+        },
+        {
+          "id": "designated_marksmen",
+          "name": "designated marksmen",
+          "category": "PERSONNEL",
+          "role": "DESIGNATED_MARKSMAN",
+          "count": 3,
+          "initial_count": 3,
+          "combat_value": 1.25,
+          "weapons": [
+            {
+              "slot": "MARKSMAN_RIFLE",
+              "weapon_id": "DMR_GENERIC"
+            }
+          ]
+        },
+        {
+          "id": "machine_gun_section",
+          "name": "machine-gun section",
+          "category": "PERSONNEL",
+          "role": "MACHINE_GUN",
+          "count": 0,
+          "initial_count": 0,
+          "combat_value": 1.45,
+          "min_operators": 2,
+          "metadata": {
+            "optional_attachment": {
+              "label": "Machine-gun section",
+              "present_count": 4,
+              "description": "Two-gun general-purpose machine-gun section represented as one aggregate fire element."
+            },
+            "tags": [
+              "MACHINE_GUN",
+              "SUPPORT_WEAPON"
+            ]
+          },
+          "weapons": [
+            {
+              "slot": "MACHINE_GUN",
+              "weapon_id": "GPMG_SECTION_GENERIC",
+              "metadata": {
+                "system_count": 2,
+                "operators_per_system": 2
+              }
+            }
+          ]
+        }
+      ],
+      "metadata": {
+        "mobility_class": "FOOT",
+        "mobility_capabilities": [],
+        "terrain_speed_factors": {
+          "OPEN": 0.6,
+          "ROAD": 1.0,
+          "BRIDGE": 0.95
+        },
+        "state_speed_factors": {
+          "MOVING": 1.0,
+          "ATTACKING": 0.75,
+          "SEARCHING": 0.6,
+          "ENGAGING": 0.0,
+          "RETREATING": 0.85,
+          "DEFENDING": 0.0,
+          "IDLE": 0.0
+        },
+        "visual_sensor": {
+          "forward_range_m": 750,
+          "watch_slew_deg_per_s": 75
+        },
+        "echelon": "PLT",
+        "formation_family": "INF"
+      }
+    },
+    "TANK_PLT": {
+      "branch": "ARMOR",
+      "max_speed_mps": 10.0,
+      "detection_range_m": 1300,
+      "elements": [
+        {
+          "id": "tanks",
+          "name": "main battle tanks",
+          "category": "EQUIPMENT",
+          "role": "ARMOR",
+          "count": 4,
+          "combat_value": 12.0,
+          "metadata": {
+            "tags": [
+              "ARMOR"
+            ],
+            "protection_class": "HEAVY_ARMOR",
+            "auto_split_on_mobility_kill": true,
+            "crew_per_weapon": 4,
+            "crew_elements": [
+              "tanks_crew"
+            ]
+          },
+          "weapons": [
+            {
+              "slot": "MAIN_GUN_AP",
+              "weapon_id": "TANK_GUN_AP_GENERIC"
+            },
+            {
+              "slot": "MAIN_GUN_HE",
+              "weapon_id": "TANK_GUN_HE_GENERIC"
+            },
+            {
+              "slot": "COAX_MG",
+              "weapon_id": "COAX_MG_GENERIC"
+            }
+          ]
+        },
+        {
+          "id": "tanks_crew",
+          "name": "main battle tanks crews",
+          "category": "PERSONNEL",
+          "role": "CREW",
+          "count": 16,
+          "initial_count": 16,
+          "combat_value": 0.8,
+          "min_operators": 1,
+          "weapons": [],
+          "metadata": {
+            "protected_by": "tanks"
+          }
+        }
+      ],
+      "metadata": {
+        "mobility_class": "TRACKED",
+        "mobility_capabilities": [],
+        "terrain_speed_factors": {
+          "OPEN": 0.85,
+          "ROAD": 1.2,
+          "BRIDGE": 0.8
+        },
+        "state_speed_factors": {
+          "MOVING": 1.0,
+          "ATTACKING": 0.75,
+          "SEARCHING": 0.55,
+          "ENGAGING": 0.0,
+          "RETREATING": 0.8,
+          "DEFENDING": 0.0,
+          "IDLE": 0.0
+        },
+        "visual_sensor": {
+          "forward_range_m": 1300,
+          "watch_slew_deg_per_s": 55
+        },
+        "echelon": "PLT",
+        "formation_family": "TANK"
+      }
+    },
+    "ARTY_PLT": {
+      "branch": "ARTILLERY",
+      "max_speed_mps": 8.0,
+      "detection_range_m": 700,
+      "elements": [
+        {
+          "id": "towed_guns",
+          "name": "towed artillery pieces",
+          "category": "EQUIPMENT",
+          "role": "ARTILLERY",
+          "count": 5,
+          "combat_value": 7.0,
+          "metadata": {
+            "tags": [
+              "ARTILLERY",
+              "TOWED_GUN"
+            ],
+            "protection_class": "UNARMORED_GUN",
+            "auto_split_on_mobility_kill": false
+          },
+          "weapons": [
+            {
+              "slot": "INDIRECT_PRIMARY",
+              "weapon_id": "TOWED_ARTY_GENERIC"
+            }
+          ],
+          "initial_count": 5
+        },
+        {
+          "id": "gun_crew",
+          "name": "towed-gun crews",
+          "category": "PERSONNEL",
+          "role": "ARTILLERY_CREW",
+          "count": 25,
+          "combat_value": 0.8,
+          "initial_count": 25,
+          "weapons": []
+        },
+        {
+          "id": "cb_radar",
+          "name": "counter-battery radar",
+          "category": "EQUIPMENT",
+          "role": "COUNTER_BATTERY_RADAR",
+          "count": 1,
+          "combat_value": 6.0,
+          "metadata": {
+            "tags": [
+              "RADAR",
+              "SENSOR"
+            ],
+            "radar_range_m": 3200,
+            "detect_p_near": 0.82,
+            "detect_p_edge": 0.28,
+            "max_salvo_detection_opportunities": 3,
+            "salvo_solution_gain_exponent": 0.2,
+            "position_error_min_m": 35,
+            "position_error_max_m": 180,
+            "operator_role": "RADAR_CREW",
+            "min_crew": 2,
+            "processing_delay_min_s": 2.0,
+            "processing_delay_max_s": 6.0,
+            "protection_class": "RADAR_SENSOR"
+          },
+          "weapons": []
+        },
+        {
+          "id": "radar_crew",
+          "name": "counter-battery radar crew",
+          "category": "PERSONNEL",
+          "role": "RADAR_CREW",
+          "count": 4,
+          "combat_value": 0.9,
+          "weapons": []
+        }
+      ],
+      "metadata": {
+        "mobility_class": "WHEELED_TOWED",
+        "mobility_capabilities": [],
+        "terrain_speed_factors": {
+          "OPEN": 0.55,
+          "ROAD": 1.2,
+          "BRIDGE": 0.75
+        },
+        "state_speed_factors": {
+          "MOVING": 1.0,
+          "ATTACKING": 0.85,
+          "SEARCHING": 0.6,
+          "ENGAGING": 0.0,
+          "RETREATING": 0.9,
+          "DEFENDING": 0.0,
+          "IDLE": 0.0
+        },
+        "visual_sensor": {
+          "forward_range_m": 700,
+          "watch_slew_deg_per_s": 60
+        },
+        "echelon": "PLT",
+        "formation_family": "ARTY"
+      }
+    },
+    "INF_COY": {
+      "branch": "INFANTRY",
+      "max_speed_mps": 1.11,
+      "detection_range_m": 900,
+      "elements": [
+        {
+          "id": "sub1_rifle_1",
+          "name": "Subformation 1 / 1st rifle squad",
+          "category": "PERSONNEL",
+          "role": "RIFLE",
+          "count": 8,
+          "combat_value": 1.0,
+          "weapons": [
+            {
+              "slot": "PRIMARY_RIFLE",
+              "weapon_id": "SMALL_ARMS_GENERIC"
+            },
+            {
+              "slot": "LIGHT_AT_WEAPON",
+              "weapon_id": "AT4_MULTIROLE_GENERIC",
+              "metadata": {
+                "inventory_model": "DISPOSABLE_ROUNDS"
+              },
+              "ammo": 0
+            }
+          ],
+          "initial_count": 8
+        },
+        {
+          "id": "sub1_rifle_2",
+          "name": "Subformation 1 / 2nd rifle squad",
+          "category": "PERSONNEL",
+          "role": "RIFLE",
+          "count": 8,
+          "combat_value": 1.0,
+          "weapons": [
+            {
+              "slot": "PRIMARY_RIFLE",
+              "weapon_id": "SMALL_ARMS_GENERIC"
+            },
+            {
+              "slot": "LIGHT_AT_WEAPON",
+              "weapon_id": "AT4_MULTIROLE_GENERIC",
+              "metadata": {
+                "inventory_model": "DISPOSABLE_ROUNDS"
+              },
+              "ammo": 0
+            }
+          ],
+          "initial_count": 8
+        },
+        {
+          "id": "sub1_rifle_3",
+          "name": "Subformation 1 / 3rd rifle squad",
+          "category": "PERSONNEL",
+          "role": "RIFLE",
+          "count": 8,
+          "combat_value": 1.0,
+          "weapons": [
+            {
+              "slot": "PRIMARY_RIFLE",
+              "weapon_id": "SMALL_ARMS_GENERIC"
+            },
+            {
+              "slot": "LIGHT_AT_WEAPON",
+              "weapon_id": "AT4_MULTIROLE_GENERIC",
+              "metadata": {
+                "inventory_model": "DISPOSABLE_ROUNDS"
+              },
+              "ammo": 0
+            }
+          ],
+          "initial_count": 8
+        },
+        {
+          "id": "sub1_plt_hq",
+          "name": "Subformation 1 / platoon HQ",
+          "category": "PERSONNEL",
+          "role": "COMMAND",
+          "count": 3,
+          "combat_value": 1.2,
+          "weapons": [
+            {
+              "slot": "COMMAND_RIFLE",
+              "weapon_id": "SMALL_ARMS_COMMAND_GENERIC"
+            }
+          ]
+        },
+        {
+          "id": "sub1_at_specialist",
+          "name": "Subformation 1 / anti-armor team",
+          "category": "PERSONNEL",
+          "role": "ANTI_ARMOR",
+          "count": 2,
+          "combat_value": 2.5,
+          "weapons": [
+            {
+              "slot": "AT_TEAM_RIFLE",
+              "weapon_id": "AT_TEAM_RIFLE_GENERIC"
+            },
+            {
+              "slot": "AT_WEAPON",
+              "weapon_id": "ATGM_GENERIC"
+            }
+          ]
+        },
+        {
+          "id": "sub1_designated_marksmen",
+          "name": "Subformation 1 / designated marksmen",
+          "category": "PERSONNEL",
+          "role": "DESIGNATED_MARKSMAN",
+          "count": 3,
+          "initial_count": 3,
+          "combat_value": 1.25,
+          "weapons": [
+            {
+              "slot": "MARKSMAN_RIFLE",
+              "weapon_id": "DMR_GENERIC"
+            }
+          ]
+        },
+        {
+          "id": "sub1_machine_gun_section",
+          "name": "Subformation 1 / machine-gun section",
+          "category": "PERSONNEL",
+          "role": "MACHINE_GUN",
+          "count": 0,
+          "initial_count": 0,
+          "combat_value": 1.45,
+          "min_operators": 2,
+          "metadata": {
+            "optional_attachment": {
+              "label": "Subformation 1 / Machine-gun section",
+              "present_count": 4,
+              "description": "Two-gun general-purpose machine-gun section represented as one aggregate fire element."
+            },
+            "tags": [
+              "MACHINE_GUN",
+              "SUPPORT_WEAPON"
+            ]
+          },
+          "weapons": [
+            {
+              "slot": "MACHINE_GUN",
+              "weapon_id": "GPMG_SECTION_GENERIC"
+            }
+          ]
+        },
+        {
+          "id": "sub2_rifle_1",
+          "name": "Subformation 2 / 1st rifle squad",
+          "category": "PERSONNEL",
+          "role": "RIFLE",
+          "count": 8,
+          "combat_value": 1.0,
+          "weapons": [
+            {
+              "slot": "PRIMARY_RIFLE",
+              "weapon_id": "SMALL_ARMS_GENERIC"
+            },
+            {
+              "slot": "LIGHT_AT_WEAPON",
+              "weapon_id": "AT4_MULTIROLE_GENERIC",
+              "metadata": {
+                "inventory_model": "DISPOSABLE_ROUNDS"
+              },
+              "ammo": 0
+            }
+          ],
+          "initial_count": 8
+        },
+        {
+          "id": "sub2_rifle_2",
+          "name": "Subformation 2 / 2nd rifle squad",
+          "category": "PERSONNEL",
+          "role": "RIFLE",
+          "count": 8,
+          "combat_value": 1.0,
+          "weapons": [
+            {
+              "slot": "PRIMARY_RIFLE",
+              "weapon_id": "SMALL_ARMS_GENERIC"
+            },
+            {
+              "slot": "LIGHT_AT_WEAPON",
+              "weapon_id": "AT4_MULTIROLE_GENERIC",
+              "metadata": {
+                "inventory_model": "DISPOSABLE_ROUNDS"
+              },
+              "ammo": 0
+            }
+          ],
+          "initial_count": 8
+        },
+        {
+          "id": "sub2_rifle_3",
+          "name": "Subformation 2 / 3rd rifle squad",
+          "category": "PERSONNEL",
+          "role": "RIFLE",
+          "count": 8,
+          "combat_value": 1.0,
+          "weapons": [
+            {
+              "slot": "PRIMARY_RIFLE",
+              "weapon_id": "SMALL_ARMS_GENERIC"
+            },
+            {
+              "slot": "LIGHT_AT_WEAPON",
+              "weapon_id": "AT4_MULTIROLE_GENERIC",
+              "metadata": {
+                "inventory_model": "DISPOSABLE_ROUNDS"
+              },
+              "ammo": 0
+            }
+          ],
+          "initial_count": 8
+        },
+        {
+          "id": "sub2_plt_hq",
+          "name": "Subformation 2 / platoon HQ",
+          "category": "PERSONNEL",
+          "role": "COMMAND",
+          "count": 3,
+          "combat_value": 1.2,
+          "weapons": [
+            {
+              "slot": "COMMAND_RIFLE",
+              "weapon_id": "SMALL_ARMS_COMMAND_GENERIC"
+            }
+          ]
+        },
+        {
+          "id": "sub2_at_specialist",
+          "name": "Subformation 2 / anti-armor team",
+          "category": "PERSONNEL",
+          "role": "ANTI_ARMOR",
+          "count": 2,
+          "combat_value": 2.5,
+          "weapons": [
+            {
+              "slot": "AT_TEAM_RIFLE",
+              "weapon_id": "AT_TEAM_RIFLE_GENERIC"
+            },
+            {
+              "slot": "AT_WEAPON",
+              "weapon_id": "ATGM_GENERIC"
+            }
+          ]
+        },
+        {
+          "id": "sub2_designated_marksmen",
+          "name": "Subformation 2 / designated marksmen",
+          "category": "PERSONNEL",
+          "role": "DESIGNATED_MARKSMAN",
+          "count": 3,
+          "initial_count": 3,
+          "combat_value": 1.25,
+          "weapons": [
+            {
+              "slot": "MARKSMAN_RIFLE",
+              "weapon_id": "DMR_GENERIC"
+            }
+          ]
+        },
+        {
+          "id": "sub2_machine_gun_section",
+          "name": "Subformation 2 / machine-gun section",
+          "category": "PERSONNEL",
+          "role": "MACHINE_GUN",
+          "count": 0,
+          "initial_count": 0,
+          "combat_value": 1.45,
+          "min_operators": 2,
+          "metadata": {
+            "optional_attachment": {
+              "label": "Subformation 2 / Machine-gun section",
+              "present_count": 4,
+              "description": "Two-gun general-purpose machine-gun section represented as one aggregate fire element."
+            },
+            "tags": [
+              "MACHINE_GUN",
+              "SUPPORT_WEAPON"
+            ]
+          },
+          "weapons": [
+            {
+              "slot": "MACHINE_GUN",
+              "weapon_id": "GPMG_SECTION_GENERIC"
+            }
+          ]
+        },
+        {
+          "id": "sub3_rifle_1",
+          "name": "Subformation 3 / 1st rifle squad",
+          "category": "PERSONNEL",
+          "role": "RIFLE",
+          "count": 8,
+          "combat_value": 1.0,
+          "weapons": [
+            {
+              "slot": "PRIMARY_RIFLE",
+              "weapon_id": "SMALL_ARMS_GENERIC"
+            },
+            {
+              "slot": "LIGHT_AT_WEAPON",
+              "weapon_id": "AT4_MULTIROLE_GENERIC",
+              "metadata": {
+                "inventory_model": "DISPOSABLE_ROUNDS"
+              },
+              "ammo": 0
+            }
+          ],
+          "initial_count": 8
+        },
+        {
+          "id": "sub3_rifle_2",
+          "name": "Subformation 3 / 2nd rifle squad",
+          "category": "PERSONNEL",
+          "role": "RIFLE",
+          "count": 8,
+          "combat_value": 1.0,
+          "weapons": [
+            {
+              "slot": "PRIMARY_RIFLE",
+              "weapon_id": "SMALL_ARMS_GENERIC"
+            },
+            {
+              "slot": "LIGHT_AT_WEAPON",
+              "weapon_id": "AT4_MULTIROLE_GENERIC",
+              "metadata": {
+                "inventory_model": "DISPOSABLE_ROUNDS"
+              },
+              "ammo": 0
+            }
+          ],
+          "initial_count": 8
+        },
+        {
+          "id": "sub3_rifle_3",
+          "name": "Subformation 3 / 3rd rifle squad",
+          "category": "PERSONNEL",
+          "role": "RIFLE",
+          "count": 8,
+          "combat_value": 1.0,
+          "weapons": [
+            {
+              "slot": "PRIMARY_RIFLE",
+              "weapon_id": "SMALL_ARMS_GENERIC"
+            },
+            {
+              "slot": "LIGHT_AT_WEAPON",
+              "weapon_id": "AT4_MULTIROLE_GENERIC",
+              "metadata": {
+                "inventory_model": "DISPOSABLE_ROUNDS"
+              },
+              "ammo": 0
+            }
+          ],
+          "initial_count": 8
+        },
+        {
+          "id": "sub3_plt_hq",
+          "name": "Subformation 3 / platoon HQ",
+          "category": "PERSONNEL",
+          "role": "COMMAND",
+          "count": 3,
+          "combat_value": 1.2,
+          "weapons": [
+            {
+              "slot": "COMMAND_RIFLE",
+              "weapon_id": "SMALL_ARMS_COMMAND_GENERIC"
+            }
+          ]
+        },
+        {
+          "id": "sub3_at_specialist",
+          "name": "Subformation 3 / anti-armor team",
+          "category": "PERSONNEL",
+          "role": "ANTI_ARMOR",
+          "count": 2,
+          "combat_value": 2.5,
+          "weapons": [
+            {
+              "slot": "AT_TEAM_RIFLE",
+              "weapon_id": "AT_TEAM_RIFLE_GENERIC"
+            },
+            {
+              "slot": "AT_WEAPON",
+              "weapon_id": "ATGM_GENERIC"
+            }
+          ]
+        },
+        {
+          "id": "sub3_designated_marksmen",
+          "name": "Subformation 3 / designated marksmen",
+          "category": "PERSONNEL",
+          "role": "DESIGNATED_MARKSMAN",
+          "count": 3,
+          "initial_count": 3,
+          "combat_value": 1.25,
+          "weapons": [
+            {
+              "slot": "MARKSMAN_RIFLE",
+              "weapon_id": "DMR_GENERIC"
+            }
+          ]
+        },
+        {
+          "id": "sub3_machine_gun_section",
+          "name": "Subformation 3 / machine-gun section",
+          "category": "PERSONNEL",
+          "role": "MACHINE_GUN",
+          "count": 0,
+          "initial_count": 0,
+          "combat_value": 1.45,
+          "min_operators": 2,
+          "metadata": {
+            "optional_attachment": {
+              "label": "Subformation 3 / Machine-gun section",
+              "present_count": 4,
+              "description": "Two-gun general-purpose machine-gun section represented as one aggregate fire element."
+            },
+            "tags": [
+              "MACHINE_GUN",
+              "SUPPORT_WEAPON"
+            ]
+          },
+          "weapons": [
+            {
+              "slot": "MACHINE_GUN",
+              "weapon_id": "GPMG_SECTION_GENERIC"
+            }
+          ]
+        },
+        {
+          "id": "coy_hq",
+          "name": "company HQ",
+          "category": "PERSONNEL",
+          "role": "COMMAND",
+          "count": 8,
+          "initial_count": 8,
+          "combat_value": 1.3,
+          "weapons": [
+            {
+              "slot": "COMMAND_RIFLE",
+              "weapon_id": "SMALL_ARMS_GENERIC"
+            }
+          ]
+        }
+      ],
+      "metadata": {
+        "mobility_class": "FOOT",
+        "mobility_capabilities": [],
+        "terrain_speed_factors": {
+          "OPEN": 0.6,
+          "ROAD": 1.0,
+          "BRIDGE": 0.95
+        },
+        "state_speed_factors": {
+          "MOVING": 1.0,
+          "ATTACKING": 0.75,
+          "SEARCHING": 0.6,
+          "ENGAGING": 0.0,
+          "RETREATING": 0.85,
+          "DEFENDING": 0.0,
+          "IDLE": 0.0
+        },
+        "visual_sensor": {
+          "forward_range_m": 900,
+          "watch_slew_deg_per_s": 75
+        },
+        "echelon": "COY",
+        "formation_family": "INF",
+        "aggregate_subformations": 3
+      }
+    },
+    "INF_BN": {
+      "branch": "INFANTRY",
+      "max_speed_mps": 1.11,
+      "detection_range_m": 1100,
+      "elements": [
+        {
+          "id": "sub1_rifle_1",
+          "name": "Subformation 1 / 1st rifle squad",
+          "category": "PERSONNEL",
+          "role": "RIFLE",
+          "count": 8,
+          "combat_value": 1.0,
+          "weapons": [
+            {
+              "slot": "PRIMARY_RIFLE",
+              "weapon_id": "SMALL_ARMS_GENERIC"
+            },
+            {
+              "slot": "LIGHT_AT_WEAPON",
+              "weapon_id": "AT4_MULTIROLE_GENERIC",
+              "metadata": {
+                "inventory_model": "DISPOSABLE_ROUNDS"
+              },
+              "ammo": 0
+            }
+          ],
+          "initial_count": 8
+        },
+        {
+          "id": "sub1_rifle_2",
+          "name": "Subformation 1 / 2nd rifle squad",
+          "category": "PERSONNEL",
+          "role": "RIFLE",
+          "count": 8,
+          "combat_value": 1.0,
+          "weapons": [
+            {
+              "slot": "PRIMARY_RIFLE",
+              "weapon_id": "SMALL_ARMS_GENERIC"
+            },
+            {
+              "slot": "LIGHT_AT_WEAPON",
+              "weapon_id": "AT4_MULTIROLE_GENERIC",
+              "metadata": {
+                "inventory_model": "DISPOSABLE_ROUNDS"
+              },
+              "ammo": 0
+            }
+          ],
+          "initial_count": 8
+        },
+        {
+          "id": "sub1_rifle_3",
+          "name": "Subformation 1 / 3rd rifle squad",
+          "category": "PERSONNEL",
+          "role": "RIFLE",
+          "count": 8,
+          "combat_value": 1.0,
+          "weapons": [
+            {
+              "slot": "PRIMARY_RIFLE",
+              "weapon_id": "SMALL_ARMS_GENERIC"
+            },
+            {
+              "slot": "LIGHT_AT_WEAPON",
+              "weapon_id": "AT4_MULTIROLE_GENERIC",
+              "metadata": {
+                "inventory_model": "DISPOSABLE_ROUNDS"
+              },
+              "ammo": 0
+            }
+          ],
+          "initial_count": 8
+        },
+        {
+          "id": "sub1_plt_hq",
+          "name": "Subformation 1 / platoon HQ",
+          "category": "PERSONNEL",
+          "role": "COMMAND",
+          "count": 3,
+          "combat_value": 1.2,
+          "weapons": [
+            {
+              "slot": "COMMAND_RIFLE",
+              "weapon_id": "SMALL_ARMS_COMMAND_GENERIC"
+            }
+          ]
+        },
+        {
+          "id": "sub1_at_specialist",
+          "name": "Subformation 1 / anti-armor team",
+          "category": "PERSONNEL",
+          "role": "ANTI_ARMOR",
+          "count": 2,
+          "combat_value": 2.5,
+          "weapons": [
+            {
+              "slot": "AT_TEAM_RIFLE",
+              "weapon_id": "AT_TEAM_RIFLE_GENERIC"
+            },
+            {
+              "slot": "AT_WEAPON",
+              "weapon_id": "ATGM_GENERIC"
+            }
+          ]
+        },
+        {
+          "id": "sub1_designated_marksmen",
+          "name": "Subformation 1 / designated marksmen",
+          "category": "PERSONNEL",
+          "role": "DESIGNATED_MARKSMAN",
+          "count": 3,
+          "initial_count": 3,
+          "combat_value": 1.25,
+          "weapons": [
+            {
+              "slot": "MARKSMAN_RIFLE",
+              "weapon_id": "DMR_GENERIC"
+            }
+          ]
+        },
+        {
+          "id": "sub1_machine_gun_section",
+          "name": "Subformation 1 / machine-gun section",
+          "category": "PERSONNEL",
+          "role": "MACHINE_GUN",
+          "count": 0,
+          "initial_count": 0,
+          "combat_value": 1.45,
+          "min_operators": 2,
+          "metadata": {
+            "optional_attachment": {
+              "label": "Subformation 1 / Machine-gun section",
+              "present_count": 4,
+              "description": "Two-gun general-purpose machine-gun section represented as one aggregate fire element."
+            },
+            "tags": [
+              "MACHINE_GUN",
+              "SUPPORT_WEAPON"
+            ]
+          },
+          "weapons": [
+            {
+              "slot": "MACHINE_GUN",
+              "weapon_id": "GPMG_SECTION_GENERIC"
+            }
+          ]
+        },
+        {
+          "id": "sub2_rifle_1",
+          "name": "Subformation 2 / 1st rifle squad",
+          "category": "PERSONNEL",
+          "role": "RIFLE",
+          "count": 8,
+          "combat_value": 1.0,
+          "weapons": [
+            {
+              "slot": "PRIMARY_RIFLE",
+              "weapon_id": "SMALL_ARMS_GENERIC"
+            },
+            {
+              "slot": "LIGHT_AT_WEAPON",
+              "weapon_id": "AT4_MULTIROLE_GENERIC",
+              "metadata": {
+                "inventory_model": "DISPOSABLE_ROUNDS"
+              },
+              "ammo": 0
+            }
+          ],
+          "initial_count": 8
+        },
+        {
+          "id": "sub2_rifle_2",
+          "name": "Subformation 2 / 2nd rifle squad",
+          "category": "PERSONNEL",
+          "role": "RIFLE",
+          "count": 8,
+          "combat_value": 1.0,
+          "weapons": [
+            {
+              "slot": "PRIMARY_RIFLE",
+              "weapon_id": "SMALL_ARMS_GENERIC"
+            },
+            {
+              "slot": "LIGHT_AT_WEAPON",
+              "weapon_id": "AT4_MULTIROLE_GENERIC",
+              "metadata": {
+                "inventory_model": "DISPOSABLE_ROUNDS"
+              },
+              "ammo": 0
+            }
+          ],
+          "initial_count": 8
+        },
+        {
+          "id": "sub2_rifle_3",
+          "name": "Subformation 2 / 3rd rifle squad",
+          "category": "PERSONNEL",
+          "role": "RIFLE",
+          "count": 8,
+          "combat_value": 1.0,
+          "weapons": [
+            {
+              "slot": "PRIMARY_RIFLE",
+              "weapon_id": "SMALL_ARMS_GENERIC"
+            },
+            {
+              "slot": "LIGHT_AT_WEAPON",
+              "weapon_id": "AT4_MULTIROLE_GENERIC",
+              "metadata": {
+                "inventory_model": "DISPOSABLE_ROUNDS"
+              },
+              "ammo": 0
+            }
+          ],
+          "initial_count": 8
+        },
+        {
+          "id": "sub2_plt_hq",
+          "name": "Subformation 2 / platoon HQ",
+          "category": "PERSONNEL",
+          "role": "COMMAND",
+          "count": 3,
+          "combat_value": 1.2,
+          "weapons": [
+            {
+              "slot": "COMMAND_RIFLE",
+              "weapon_id": "SMALL_ARMS_COMMAND_GENERIC"
+            }
+          ]
+        },
+        {
+          "id": "sub2_at_specialist",
+          "name": "Subformation 2 / anti-armor team",
+          "category": "PERSONNEL",
+          "role": "ANTI_ARMOR",
+          "count": 2,
+          "combat_value": 2.5,
+          "weapons": [
+            {
+              "slot": "AT_TEAM_RIFLE",
+              "weapon_id": "AT_TEAM_RIFLE_GENERIC"
+            },
+            {
+              "slot": "AT_WEAPON",
+              "weapon_id": "ATGM_GENERIC"
+            }
+          ]
+        },
+        {
+          "id": "sub2_designated_marksmen",
+          "name": "Subformation 2 / designated marksmen",
+          "category": "PERSONNEL",
+          "role": "DESIGNATED_MARKSMAN",
+          "count": 3,
+          "initial_count": 3,
+          "combat_value": 1.25,
+          "weapons": [
+            {
+              "slot": "MARKSMAN_RIFLE",
+              "weapon_id": "DMR_GENERIC"
+            }
+          ]
+        },
+        {
+          "id": "sub2_machine_gun_section",
+          "name": "Subformation 2 / machine-gun section",
+          "category": "PERSONNEL",
+          "role": "MACHINE_GUN",
+          "count": 0,
+          "initial_count": 0,
+          "combat_value": 1.45,
+          "min_operators": 2,
+          "metadata": {
+            "optional_attachment": {
+              "label": "Subformation 2 / Machine-gun section",
+              "present_count": 4,
+              "description": "Two-gun general-purpose machine-gun section represented as one aggregate fire element."
+            },
+            "tags": [
+              "MACHINE_GUN",
+              "SUPPORT_WEAPON"
+            ]
+          },
+          "weapons": [
+            {
+              "slot": "MACHINE_GUN",
+              "weapon_id": "GPMG_SECTION_GENERIC"
+            }
+          ]
+        },
+        {
+          "id": "sub3_rifle_1",
+          "name": "Subformation 3 / 1st rifle squad",
+          "category": "PERSONNEL",
+          "role": "RIFLE",
+          "count": 8,
+          "combat_value": 1.0,
+          "weapons": [
+            {
+              "slot": "PRIMARY_RIFLE",
+              "weapon_id": "SMALL_ARMS_GENERIC"
+            },
+            {
+              "slot": "LIGHT_AT_WEAPON",
+              "weapon_id": "AT4_MULTIROLE_GENERIC",
+              "metadata": {
+                "inventory_model": "DISPOSABLE_ROUNDS"
+              },
+              "ammo": 0
+            }
+          ],
+          "initial_count": 8
+        },
+        {
+          "id": "sub3_rifle_2",
+          "name": "Subformation 3 / 2nd rifle squad",
+          "category": "PERSONNEL",
+          "role": "RIFLE",
+          "count": 8,
+          "combat_value": 1.0,
+          "weapons": [
+            {
+              "slot": "PRIMARY_RIFLE",
+              "weapon_id": "SMALL_ARMS_GENERIC"
+            },
+            {
+              "slot": "LIGHT_AT_WEAPON",
+              "weapon_id": "AT4_MULTIROLE_GENERIC",
+              "metadata": {
+                "inventory_model": "DISPOSABLE_ROUNDS"
+              },
+              "ammo": 0
+            }
+          ],
+          "initial_count": 8
+        },
+        {
+          "id": "sub3_rifle_3",
+          "name": "Subformation 3 / 3rd rifle squad",
+          "category": "PERSONNEL",
+          "role": "RIFLE",
+          "count": 8,
+          "combat_value": 1.0,
+          "weapons": [
+            {
+              "slot": "PRIMARY_RIFLE",
+              "weapon_id": "SMALL_ARMS_GENERIC"
+            },
+            {
+              "slot": "LIGHT_AT_WEAPON",
+              "weapon_id": "AT4_MULTIROLE_GENERIC",
+              "metadata": {
+                "inventory_model": "DISPOSABLE_ROUNDS"
+              },
+              "ammo": 0
+            }
+          ],
+          "initial_count": 8
+        },
+        {
+          "id": "sub3_plt_hq",
+          "name": "Subformation 3 / platoon HQ",
+          "category": "PERSONNEL",
+          "role": "COMMAND",
+          "count": 3,
+          "combat_value": 1.2,
+          "weapons": [
+            {
+              "slot": "COMMAND_RIFLE",
+              "weapon_id": "SMALL_ARMS_COMMAND_GENERIC"
+            }
+          ]
+        },
+        {
+          "id": "sub3_at_specialist",
+          "name": "Subformation 3 / anti-armor team",
+          "category": "PERSONNEL",
+          "role": "ANTI_ARMOR",
+          "count": 2,
+          "combat_value": 2.5,
+          "weapons": [
+            {
+              "slot": "AT_TEAM_RIFLE",
+              "weapon_id": "AT_TEAM_RIFLE_GENERIC"
+            },
+            {
+              "slot": "AT_WEAPON",
+              "weapon_id": "ATGM_GENERIC"
+            }
+          ]
+        },
+        {
+          "id": "sub3_designated_marksmen",
+          "name": "Subformation 3 / designated marksmen",
+          "category": "PERSONNEL",
+          "role": "DESIGNATED_MARKSMAN",
+          "count": 3,
+          "initial_count": 3,
+          "combat_value": 1.25,
+          "weapons": [
+            {
+              "slot": "MARKSMAN_RIFLE",
+              "weapon_id": "DMR_GENERIC"
+            }
+          ]
+        },
+        {
+          "id": "sub3_machine_gun_section",
+          "name": "Subformation 3 / machine-gun section",
+          "category": "PERSONNEL",
+          "role": "MACHINE_GUN",
+          "count": 0,
+          "initial_count": 0,
+          "combat_value": 1.45,
+          "min_operators": 2,
+          "metadata": {
+            "optional_attachment": {
+              "label": "Subformation 3 / Machine-gun section",
+              "present_count": 4,
+              "description": "Two-gun general-purpose machine-gun section represented as one aggregate fire element."
+            },
+            "tags": [
+              "MACHINE_GUN",
+              "SUPPORT_WEAPON"
+            ]
+          },
+          "weapons": [
+            {
+              "slot": "MACHINE_GUN",
+              "weapon_id": "GPMG_SECTION_GENERIC"
+            }
+          ]
+        },
+        {
+          "id": "sub4_rifle_1",
+          "name": "Subformation 4 / 1st rifle squad",
+          "category": "PERSONNEL",
+          "role": "RIFLE",
+          "count": 8,
+          "combat_value": 1.0,
+          "weapons": [
+            {
+              "slot": "PRIMARY_RIFLE",
+              "weapon_id": "SMALL_ARMS_GENERIC"
+            },
+            {
+              "slot": "LIGHT_AT_WEAPON",
+              "weapon_id": "AT4_MULTIROLE_GENERIC",
+              "metadata": {
+                "inventory_model": "DISPOSABLE_ROUNDS"
+              },
+              "ammo": 0
+            }
+          ],
+          "initial_count": 8
+        },
+        {
+          "id": "sub4_rifle_2",
+          "name": "Subformation 4 / 2nd rifle squad",
+          "category": "PERSONNEL",
+          "role": "RIFLE",
+          "count": 8,
+          "combat_value": 1.0,
+          "weapons": [
+            {
+              "slot": "PRIMARY_RIFLE",
+              "weapon_id": "SMALL_ARMS_GENERIC"
+            },
+            {
+              "slot": "LIGHT_AT_WEAPON",
+              "weapon_id": "AT4_MULTIROLE_GENERIC",
+              "metadata": {
+                "inventory_model": "DISPOSABLE_ROUNDS"
+              },
+              "ammo": 0
+            }
+          ],
+          "initial_count": 8
+        },
+        {
+          "id": "sub4_rifle_3",
+          "name": "Subformation 4 / 3rd rifle squad",
+          "category": "PERSONNEL",
+          "role": "RIFLE",
+          "count": 8,
+          "combat_value": 1.0,
+          "weapons": [
+            {
+              "slot": "PRIMARY_RIFLE",
+              "weapon_id": "SMALL_ARMS_GENERIC"
+            },
+            {
+              "slot": "LIGHT_AT_WEAPON",
+              "weapon_id": "AT4_MULTIROLE_GENERIC",
+              "metadata": {
+                "inventory_model": "DISPOSABLE_ROUNDS"
+              },
+              "ammo": 0
+            }
+          ],
+          "initial_count": 8
+        },
+        {
+          "id": "sub4_plt_hq",
+          "name": "Subformation 4 / platoon HQ",
+          "category": "PERSONNEL",
+          "role": "COMMAND",
+          "count": 3,
+          "combat_value": 1.2,
+          "weapons": [
+            {
+              "slot": "COMMAND_RIFLE",
+              "weapon_id": "SMALL_ARMS_COMMAND_GENERIC"
+            }
+          ]
+        },
+        {
+          "id": "sub4_at_specialist",
+          "name": "Subformation 4 / anti-armor team",
+          "category": "PERSONNEL",
+          "role": "ANTI_ARMOR",
+          "count": 2,
+          "combat_value": 2.5,
+          "weapons": [
+            {
+              "slot": "AT_TEAM_RIFLE",
+              "weapon_id": "AT_TEAM_RIFLE_GENERIC"
+            },
+            {
+              "slot": "AT_WEAPON",
+              "weapon_id": "ATGM_GENERIC"
+            }
+          ]
+        },
+        {
+          "id": "sub4_designated_marksmen",
+          "name": "Subformation 4 / designated marksmen",
+          "category": "PERSONNEL",
+          "role": "DESIGNATED_MARKSMAN",
+          "count": 3,
+          "initial_count": 3,
+          "combat_value": 1.25,
+          "weapons": [
+            {
+              "slot": "MARKSMAN_RIFLE",
+              "weapon_id": "DMR_GENERIC"
+            }
+          ]
+        },
+        {
+          "id": "sub4_machine_gun_section",
+          "name": "Subformation 4 / machine-gun section",
+          "category": "PERSONNEL",
+          "role": "MACHINE_GUN",
+          "count": 0,
+          "initial_count": 0,
+          "combat_value": 1.45,
+          "min_operators": 2,
+          "metadata": {
+            "optional_attachment": {
+              "label": "Subformation 4 / Machine-gun section",
+              "present_count": 4,
+              "description": "Two-gun general-purpose machine-gun section represented as one aggregate fire element."
+            },
+            "tags": [
+              "MACHINE_GUN",
+              "SUPPORT_WEAPON"
+            ]
+          },
+          "weapons": [
+            {
+              "slot": "MACHINE_GUN",
+              "weapon_id": "GPMG_SECTION_GENERIC"
+            }
+          ]
+        },
+        {
+          "id": "sub5_rifle_1",
+          "name": "Subformation 5 / 1st rifle squad",
+          "category": "PERSONNEL",
+          "role": "RIFLE",
+          "count": 8,
+          "combat_value": 1.0,
+          "weapons": [
+            {
+              "slot": "PRIMARY_RIFLE",
+              "weapon_id": "SMALL_ARMS_GENERIC"
+            },
+            {
+              "slot": "LIGHT_AT_WEAPON",
+              "weapon_id": "AT4_MULTIROLE_GENERIC",
+              "metadata": {
+                "inventory_model": "DISPOSABLE_ROUNDS"
+              },
+              "ammo": 0
+            }
+          ],
+          "initial_count": 8
+        },
+        {
+          "id": "sub5_rifle_2",
+          "name": "Subformation 5 / 2nd rifle squad",
+          "category": "PERSONNEL",
+          "role": "RIFLE",
+          "count": 8,
+          "combat_value": 1.0,
+          "weapons": [
+            {
+              "slot": "PRIMARY_RIFLE",
+              "weapon_id": "SMALL_ARMS_GENERIC"
+            },
+            {
+              "slot": "LIGHT_AT_WEAPON",
+              "weapon_id": "AT4_MULTIROLE_GENERIC",
+              "metadata": {
+                "inventory_model": "DISPOSABLE_ROUNDS"
+              },
+              "ammo": 0
+            }
+          ],
+          "initial_count": 8
+        },
+        {
+          "id": "sub5_rifle_3",
+          "name": "Subformation 5 / 3rd rifle squad",
+          "category": "PERSONNEL",
+          "role": "RIFLE",
+          "count": 8,
+          "combat_value": 1.0,
+          "weapons": [
+            {
+              "slot": "PRIMARY_RIFLE",
+              "weapon_id": "SMALL_ARMS_GENERIC"
+            },
+            {
+              "slot": "LIGHT_AT_WEAPON",
+              "weapon_id": "AT4_MULTIROLE_GENERIC",
+              "metadata": {
+                "inventory_model": "DISPOSABLE_ROUNDS"
+              },
+              "ammo": 0
+            }
+          ],
+          "initial_count": 8
+        },
+        {
+          "id": "sub5_plt_hq",
+          "name": "Subformation 5 / platoon HQ",
+          "category": "PERSONNEL",
+          "role": "COMMAND",
+          "count": 3,
+          "combat_value": 1.2,
+          "weapons": [
+            {
+              "slot": "COMMAND_RIFLE",
+              "weapon_id": "SMALL_ARMS_COMMAND_GENERIC"
+            }
+          ]
+        },
+        {
+          "id": "sub5_at_specialist",
+          "name": "Subformation 5 / anti-armor team",
+          "category": "PERSONNEL",
+          "role": "ANTI_ARMOR",
+          "count": 2,
+          "combat_value": 2.5,
+          "weapons": [
+            {
+              "slot": "AT_TEAM_RIFLE",
+              "weapon_id": "AT_TEAM_RIFLE_GENERIC"
+            },
+            {
+              "slot": "AT_WEAPON",
+              "weapon_id": "ATGM_GENERIC"
+            }
+          ]
+        },
+        {
+          "id": "sub5_designated_marksmen",
+          "name": "Subformation 5 / designated marksmen",
+          "category": "PERSONNEL",
+          "role": "DESIGNATED_MARKSMAN",
+          "count": 3,
+          "initial_count": 3,
+          "combat_value": 1.25,
+          "weapons": [
+            {
+              "slot": "MARKSMAN_RIFLE",
+              "weapon_id": "DMR_GENERIC"
+            }
+          ]
+        },
+        {
+          "id": "sub5_machine_gun_section",
+          "name": "Subformation 5 / machine-gun section",
+          "category": "PERSONNEL",
+          "role": "MACHINE_GUN",
+          "count": 0,
+          "initial_count": 0,
+          "combat_value": 1.45,
+          "min_operators": 2,
+          "metadata": {
+            "optional_attachment": {
+              "label": "Subformation 5 / Machine-gun section",
+              "present_count": 4,
+              "description": "Two-gun general-purpose machine-gun section represented as one aggregate fire element."
+            },
+            "tags": [
+              "MACHINE_GUN",
+              "SUPPORT_WEAPON"
+            ]
+          },
+          "weapons": [
+            {
+              "slot": "MACHINE_GUN",
+              "weapon_id": "GPMG_SECTION_GENERIC"
+            }
+          ]
+        },
+        {
+          "id": "sub6_rifle_1",
+          "name": "Subformation 6 / 1st rifle squad",
+          "category": "PERSONNEL",
+          "role": "RIFLE",
+          "count": 8,
+          "combat_value": 1.0,
+          "weapons": [
+            {
+              "slot": "PRIMARY_RIFLE",
+              "weapon_id": "SMALL_ARMS_GENERIC"
+            },
+            {
+              "slot": "LIGHT_AT_WEAPON",
+              "weapon_id": "AT4_MULTIROLE_GENERIC",
+              "metadata": {
+                "inventory_model": "DISPOSABLE_ROUNDS"
+              },
+              "ammo": 0
+            }
+          ],
+          "initial_count": 8
+        },
+        {
+          "id": "sub6_rifle_2",
+          "name": "Subformation 6 / 2nd rifle squad",
+          "category": "PERSONNEL",
+          "role": "RIFLE",
+          "count": 8,
+          "combat_value": 1.0,
+          "weapons": [
+            {
+              "slot": "PRIMARY_RIFLE",
+              "weapon_id": "SMALL_ARMS_GENERIC"
+            },
+            {
+              "slot": "LIGHT_AT_WEAPON",
+              "weapon_id": "AT4_MULTIROLE_GENERIC",
+              "metadata": {
+                "inventory_model": "DISPOSABLE_ROUNDS"
+              },
+              "ammo": 0
+            }
+          ],
+          "initial_count": 8
+        },
+        {
+          "id": "sub6_rifle_3",
+          "name": "Subformation 6 / 3rd rifle squad",
+          "category": "PERSONNEL",
+          "role": "RIFLE",
+          "count": 8,
+          "combat_value": 1.0,
+          "weapons": [
+            {
+              "slot": "PRIMARY_RIFLE",
+              "weapon_id": "SMALL_ARMS_GENERIC"
+            },
+            {
+              "slot": "LIGHT_AT_WEAPON",
+              "weapon_id": "AT4_MULTIROLE_GENERIC",
+              "metadata": {
+                "inventory_model": "DISPOSABLE_ROUNDS"
+              },
+              "ammo": 0
+            }
+          ],
+          "initial_count": 8
+        },
+        {
+          "id": "sub6_plt_hq",
+          "name": "Subformation 6 / platoon HQ",
+          "category": "PERSONNEL",
+          "role": "COMMAND",
+          "count": 3,
+          "combat_value": 1.2,
+          "weapons": [
+            {
+              "slot": "COMMAND_RIFLE",
+              "weapon_id": "SMALL_ARMS_COMMAND_GENERIC"
+            }
+          ]
+        },
+        {
+          "id": "sub6_at_specialist",
+          "name": "Subformation 6 / anti-armor team",
+          "category": "PERSONNEL",
+          "role": "ANTI_ARMOR",
+          "count": 2,
+          "combat_value": 2.5,
+          "weapons": [
+            {
+              "slot": "AT_TEAM_RIFLE",
+              "weapon_id": "AT_TEAM_RIFLE_GENERIC"
+            },
+            {
+              "slot": "AT_WEAPON",
+              "weapon_id": "ATGM_GENERIC"
+            }
+          ]
+        },
+        {
+          "id": "sub6_designated_marksmen",
+          "name": "Subformation 6 / designated marksmen",
+          "category": "PERSONNEL",
+          "role": "DESIGNATED_MARKSMAN",
+          "count": 3,
+          "initial_count": 3,
+          "combat_value": 1.25,
+          "weapons": [
+            {
+              "slot": "MARKSMAN_RIFLE",
+              "weapon_id": "DMR_GENERIC"
+            }
+          ]
+        },
+        {
+          "id": "sub6_machine_gun_section",
+          "name": "Subformation 6 / machine-gun section",
+          "category": "PERSONNEL",
+          "role": "MACHINE_GUN",
+          "count": 0,
+          "initial_count": 0,
+          "combat_value": 1.45,
+          "min_operators": 2,
+          "metadata": {
+            "optional_attachment": {
+              "label": "Subformation 6 / Machine-gun section",
+              "present_count": 4,
+              "description": "Two-gun general-purpose machine-gun section represented as one aggregate fire element."
+            },
+            "tags": [
+              "MACHINE_GUN",
+              "SUPPORT_WEAPON"
+            ]
+          },
+          "weapons": [
+            {
+              "slot": "MACHINE_GUN",
+              "weapon_id": "GPMG_SECTION_GENERIC"
+            }
+          ]
+        },
+        {
+          "id": "sub7_rifle_1",
+          "name": "Subformation 7 / 1st rifle squad",
+          "category": "PERSONNEL",
+          "role": "RIFLE",
+          "count": 8,
+          "combat_value": 1.0,
+          "weapons": [
+            {
+              "slot": "PRIMARY_RIFLE",
+              "weapon_id": "SMALL_ARMS_GENERIC"
+            },
+            {
+              "slot": "LIGHT_AT_WEAPON",
+              "weapon_id": "AT4_MULTIROLE_GENERIC",
+              "metadata": {
+                "inventory_model": "DISPOSABLE_ROUNDS"
+              },
+              "ammo": 0
+            }
+          ],
+          "initial_count": 8
+        },
+        {
+          "id": "sub7_rifle_2",
+          "name": "Subformation 7 / 2nd rifle squad",
+          "category": "PERSONNEL",
+          "role": "RIFLE",
+          "count": 8,
+          "combat_value": 1.0,
+          "weapons": [
+            {
+              "slot": "PRIMARY_RIFLE",
+              "weapon_id": "SMALL_ARMS_GENERIC"
+            },
+            {
+              "slot": "LIGHT_AT_WEAPON",
+              "weapon_id": "AT4_MULTIROLE_GENERIC",
+              "metadata": {
+                "inventory_model": "DISPOSABLE_ROUNDS"
+              },
+              "ammo": 0
+            }
+          ],
+          "initial_count": 8
+        },
+        {
+          "id": "sub7_rifle_3",
+          "name": "Subformation 7 / 3rd rifle squad",
+          "category": "PERSONNEL",
+          "role": "RIFLE",
+          "count": 8,
+          "combat_value": 1.0,
+          "weapons": [
+            {
+              "slot": "PRIMARY_RIFLE",
+              "weapon_id": "SMALL_ARMS_GENERIC"
+            },
+            {
+              "slot": "LIGHT_AT_WEAPON",
+              "weapon_id": "AT4_MULTIROLE_GENERIC",
+              "metadata": {
+                "inventory_model": "DISPOSABLE_ROUNDS"
+              },
+              "ammo": 0
+            }
+          ],
+          "initial_count": 8
+        },
+        {
+          "id": "sub7_plt_hq",
+          "name": "Subformation 7 / platoon HQ",
+          "category": "PERSONNEL",
+          "role": "COMMAND",
+          "count": 3,
+          "combat_value": 1.2,
+          "weapons": [
+            {
+              "slot": "COMMAND_RIFLE",
+              "weapon_id": "SMALL_ARMS_COMMAND_GENERIC"
+            }
+          ]
+        },
+        {
+          "id": "sub7_at_specialist",
+          "name": "Subformation 7 / anti-armor team",
+          "category": "PERSONNEL",
+          "role": "ANTI_ARMOR",
+          "count": 2,
+          "combat_value": 2.5,
+          "weapons": [
+            {
+              "slot": "AT_TEAM_RIFLE",
+              "weapon_id": "AT_TEAM_RIFLE_GENERIC"
+            },
+            {
+              "slot": "AT_WEAPON",
+              "weapon_id": "ATGM_GENERIC"
+            }
+          ]
+        },
+        {
+          "id": "sub7_designated_marksmen",
+          "name": "Subformation 7 / designated marksmen",
+          "category": "PERSONNEL",
+          "role": "DESIGNATED_MARKSMAN",
+          "count": 3,
+          "initial_count": 3,
+          "combat_value": 1.25,
+          "weapons": [
+            {
+              "slot": "MARKSMAN_RIFLE",
+              "weapon_id": "DMR_GENERIC"
+            }
+          ]
+        },
+        {
+          "id": "sub7_machine_gun_section",
+          "name": "Subformation 7 / machine-gun section",
+          "category": "PERSONNEL",
+          "role": "MACHINE_GUN",
+          "count": 0,
+          "initial_count": 0,
+          "combat_value": 1.45,
+          "min_operators": 2,
+          "metadata": {
+            "optional_attachment": {
+              "label": "Subformation 7 / Machine-gun section",
+              "present_count": 4,
+              "description": "Two-gun general-purpose machine-gun section represented as one aggregate fire element."
+            },
+            "tags": [
+              "MACHINE_GUN",
+              "SUPPORT_WEAPON"
+            ]
+          },
+          "weapons": [
+            {
+              "slot": "MACHINE_GUN",
+              "weapon_id": "GPMG_SECTION_GENERIC"
+            }
+          ]
+        },
+        {
+          "id": "sub8_rifle_1",
+          "name": "Subformation 8 / 1st rifle squad",
+          "category": "PERSONNEL",
+          "role": "RIFLE",
+          "count": 8,
+          "combat_value": 1.0,
+          "weapons": [
+            {
+              "slot": "PRIMARY_RIFLE",
+              "weapon_id": "SMALL_ARMS_GENERIC"
+            },
+            {
+              "slot": "LIGHT_AT_WEAPON",
+              "weapon_id": "AT4_MULTIROLE_GENERIC",
+              "metadata": {
+                "inventory_model": "DISPOSABLE_ROUNDS"
+              },
+              "ammo": 0
+            }
+          ],
+          "initial_count": 8
+        },
+        {
+          "id": "sub8_rifle_2",
+          "name": "Subformation 8 / 2nd rifle squad",
+          "category": "PERSONNEL",
+          "role": "RIFLE",
+          "count": 8,
+          "combat_value": 1.0,
+          "weapons": [
+            {
+              "slot": "PRIMARY_RIFLE",
+              "weapon_id": "SMALL_ARMS_GENERIC"
+            },
+            {
+              "slot": "LIGHT_AT_WEAPON",
+              "weapon_id": "AT4_MULTIROLE_GENERIC",
+              "metadata": {
+                "inventory_model": "DISPOSABLE_ROUNDS"
+              },
+              "ammo": 0
+            }
+          ],
+          "initial_count": 8
+        },
+        {
+          "id": "sub8_rifle_3",
+          "name": "Subformation 8 / 3rd rifle squad",
+          "category": "PERSONNEL",
+          "role": "RIFLE",
+          "count": 8,
+          "combat_value": 1.0,
+          "weapons": [
+            {
+              "slot": "PRIMARY_RIFLE",
+              "weapon_id": "SMALL_ARMS_GENERIC"
+            },
+            {
+              "slot": "LIGHT_AT_WEAPON",
+              "weapon_id": "AT4_MULTIROLE_GENERIC",
+              "metadata": {
+                "inventory_model": "DISPOSABLE_ROUNDS"
+              },
+              "ammo": 0
+            }
+          ],
+          "initial_count": 8
+        },
+        {
+          "id": "sub8_plt_hq",
+          "name": "Subformation 8 / platoon HQ",
+          "category": "PERSONNEL",
+          "role": "COMMAND",
+          "count": 3,
+          "combat_value": 1.2,
+          "weapons": [
+            {
+              "slot": "COMMAND_RIFLE",
+              "weapon_id": "SMALL_ARMS_COMMAND_GENERIC"
+            }
+          ]
+        },
+        {
+          "id": "sub8_at_specialist",
+          "name": "Subformation 8 / anti-armor team",
+          "category": "PERSONNEL",
+          "role": "ANTI_ARMOR",
+          "count": 2,
+          "combat_value": 2.5,
+          "weapons": [
+            {
+              "slot": "AT_TEAM_RIFLE",
+              "weapon_id": "AT_TEAM_RIFLE_GENERIC"
+            },
+            {
+              "slot": "AT_WEAPON",
+              "weapon_id": "ATGM_GENERIC"
+            }
+          ]
+        },
+        {
+          "id": "sub8_designated_marksmen",
+          "name": "Subformation 8 / designated marksmen",
+          "category": "PERSONNEL",
+          "role": "DESIGNATED_MARKSMAN",
+          "count": 3,
+          "initial_count": 3,
+          "combat_value": 1.25,
+          "weapons": [
+            {
+              "slot": "MARKSMAN_RIFLE",
+              "weapon_id": "DMR_GENERIC"
+            }
+          ]
+        },
+        {
+          "id": "sub8_machine_gun_section",
+          "name": "Subformation 8 / machine-gun section",
+          "category": "PERSONNEL",
+          "role": "MACHINE_GUN",
+          "count": 0,
+          "initial_count": 0,
+          "combat_value": 1.45,
+          "min_operators": 2,
+          "metadata": {
+            "optional_attachment": {
+              "label": "Subformation 8 / Machine-gun section",
+              "present_count": 4,
+              "description": "Two-gun general-purpose machine-gun section represented as one aggregate fire element."
+            },
+            "tags": [
+              "MACHINE_GUN",
+              "SUPPORT_WEAPON"
+            ]
+          },
+          "weapons": [
+            {
+              "slot": "MACHINE_GUN",
+              "weapon_id": "GPMG_SECTION_GENERIC"
+            }
+          ]
+        },
+        {
+          "id": "sub9_rifle_1",
+          "name": "Subformation 9 / 1st rifle squad",
+          "category": "PERSONNEL",
+          "role": "RIFLE",
+          "count": 8,
+          "combat_value": 1.0,
+          "weapons": [
+            {
+              "slot": "PRIMARY_RIFLE",
+              "weapon_id": "SMALL_ARMS_GENERIC"
+            },
+            {
+              "slot": "LIGHT_AT_WEAPON",
+              "weapon_id": "AT4_MULTIROLE_GENERIC",
+              "metadata": {
+                "inventory_model": "DISPOSABLE_ROUNDS"
+              },
+              "ammo": 0
+            }
+          ],
+          "initial_count": 8
+        },
+        {
+          "id": "sub9_rifle_2",
+          "name": "Subformation 9 / 2nd rifle squad",
+          "category": "PERSONNEL",
+          "role": "RIFLE",
+          "count": 8,
+          "combat_value": 1.0,
+          "weapons": [
+            {
+              "slot": "PRIMARY_RIFLE",
+              "weapon_id": "SMALL_ARMS_GENERIC"
+            },
+            {
+              "slot": "LIGHT_AT_WEAPON",
+              "weapon_id": "AT4_MULTIROLE_GENERIC",
+              "metadata": {
+                "inventory_model": "DISPOSABLE_ROUNDS"
+              },
+              "ammo": 0
+            }
+          ],
+          "initial_count": 8
+        },
+        {
+          "id": "sub9_rifle_3",
+          "name": "Subformation 9 / 3rd rifle squad",
+          "category": "PERSONNEL",
+          "role": "RIFLE",
+          "count": 8,
+          "combat_value": 1.0,
+          "weapons": [
+            {
+              "slot": "PRIMARY_RIFLE",
+              "weapon_id": "SMALL_ARMS_GENERIC"
+            },
+            {
+              "slot": "LIGHT_AT_WEAPON",
+              "weapon_id": "AT4_MULTIROLE_GENERIC",
+              "metadata": {
+                "inventory_model": "DISPOSABLE_ROUNDS"
+              },
+              "ammo": 0
+            }
+          ],
+          "initial_count": 8
+        },
+        {
+          "id": "sub9_plt_hq",
+          "name": "Subformation 9 / platoon HQ",
+          "category": "PERSONNEL",
+          "role": "COMMAND",
+          "count": 3,
+          "combat_value": 1.2,
+          "weapons": [
+            {
+              "slot": "COMMAND_RIFLE",
+              "weapon_id": "SMALL_ARMS_COMMAND_GENERIC"
+            }
+          ]
+        },
+        {
+          "id": "sub9_at_specialist",
+          "name": "Subformation 9 / anti-armor team",
+          "category": "PERSONNEL",
+          "role": "ANTI_ARMOR",
+          "count": 2,
+          "combat_value": 2.5,
+          "weapons": [
+            {
+              "slot": "AT_TEAM_RIFLE",
+              "weapon_id": "AT_TEAM_RIFLE_GENERIC"
+            },
+            {
+              "slot": "AT_WEAPON",
+              "weapon_id": "ATGM_GENERIC"
+            }
+          ]
+        },
+        {
+          "id": "sub9_designated_marksmen",
+          "name": "Subformation 9 / designated marksmen",
+          "category": "PERSONNEL",
+          "role": "DESIGNATED_MARKSMAN",
+          "count": 3,
+          "initial_count": 3,
+          "combat_value": 1.25,
+          "weapons": [
+            {
+              "slot": "MARKSMAN_RIFLE",
+              "weapon_id": "DMR_GENERIC"
+            }
+          ]
+        },
+        {
+          "id": "sub9_machine_gun_section",
+          "name": "Subformation 9 / machine-gun section",
+          "category": "PERSONNEL",
+          "role": "MACHINE_GUN",
+          "count": 0,
+          "initial_count": 0,
+          "combat_value": 1.45,
+          "min_operators": 2,
+          "metadata": {
+            "optional_attachment": {
+              "label": "Subformation 9 / Machine-gun section",
+              "present_count": 4,
+              "description": "Two-gun general-purpose machine-gun section represented as one aggregate fire element."
+            },
+            "tags": [
+              "MACHINE_GUN",
+              "SUPPORT_WEAPON"
+            ]
+          },
+          "weapons": [
+            {
+              "slot": "MACHINE_GUN",
+              "weapon_id": "GPMG_SECTION_GENERIC"
+            }
+          ]
+        },
+        {
+          "id": "bn_hq",
+          "name": "battalion HQ",
+          "category": "PERSONNEL",
+          "role": "COMMAND",
+          "count": 20,
+          "initial_count": 20,
+          "combat_value": 1.5,
+          "weapons": [
+            {
+              "slot": "COMMAND_RIFLE",
+              "weapon_id": "SMALL_ARMS_GENERIC"
+            }
+          ]
+        }
+      ],
+      "metadata": {
+        "mobility_class": "FOOT",
+        "mobility_capabilities": [],
+        "terrain_speed_factors": {
+          "OPEN": 0.6,
+          "ROAD": 1.0,
+          "BRIDGE": 0.95
+        },
+        "state_speed_factors": {
+          "MOVING": 1.0,
+          "ATTACKING": 0.75,
+          "SEARCHING": 0.6,
+          "ENGAGING": 0.0,
+          "RETREATING": 0.85,
+          "DEFENDING": 0.0,
+          "IDLE": 0.0
+        },
+        "visual_sensor": {
+          "forward_range_m": 1100,
+          "watch_slew_deg_per_s": 75
+        },
+        "echelon": "BN",
+        "formation_family": "INF",
+        "aggregate_subformations": 9
+      }
+    },
+    "TANK_COY": {
+      "branch": "ARMOR",
+      "max_speed_mps": 10.0,
+      "detection_range_m": 1500,
+      "elements": [
+        {
+          "id": "sub1_tanks",
+          "name": "Subformation 1 / main battle tanks",
+          "category": "EQUIPMENT",
+          "role": "ARMOR",
+          "count": 4,
+          "combat_value": 12.0,
+          "metadata": {
+            "tags": [
+              "ARMOR"
+            ],
+            "protection_class": "HEAVY_ARMOR",
+            "auto_split_on_mobility_kill": true,
+            "crew_per_weapon": 4,
+            "crew_elements": [
+              "sub1_tanks_crew"
+            ]
+          },
+          "weapons": [
+            {
+              "slot": "MAIN_GUN_AP",
+              "weapon_id": "TANK_GUN_AP_GENERIC"
+            },
+            {
+              "slot": "MAIN_GUN_HE",
+              "weapon_id": "TANK_GUN_HE_GENERIC"
+            },
+            {
+              "slot": "COAX_MG",
+              "weapon_id": "COAX_MG_GENERIC"
+            }
+          ]
+        },
+        {
+          "id": "sub1_tanks_crew",
+          "name": "Subformation 1 / main battle tanks crews",
+          "category": "PERSONNEL",
+          "role": "CREW",
+          "count": 16,
+          "initial_count": 16,
+          "combat_value": 0.8,
+          "min_operators": 1,
+          "weapons": [],
+          "metadata": {
+            "protected_by": "sub1_tanks"
+          }
+        },
+        {
+          "id": "sub2_tanks",
+          "name": "Subformation 2 / main battle tanks",
+          "category": "EQUIPMENT",
+          "role": "ARMOR",
+          "count": 4,
+          "combat_value": 12.0,
+          "metadata": {
+            "tags": [
+              "ARMOR"
+            ],
+            "protection_class": "HEAVY_ARMOR",
+            "auto_split_on_mobility_kill": true,
+            "crew_per_weapon": 4,
+            "crew_elements": [
+              "sub2_tanks_crew"
+            ]
+          },
+          "weapons": [
+            {
+              "slot": "MAIN_GUN_AP",
+              "weapon_id": "TANK_GUN_AP_GENERIC"
+            },
+            {
+              "slot": "MAIN_GUN_HE",
+              "weapon_id": "TANK_GUN_HE_GENERIC"
+            },
+            {
+              "slot": "COAX_MG",
+              "weapon_id": "COAX_MG_GENERIC"
+            }
+          ]
+        },
+        {
+          "id": "sub2_tanks_crew",
+          "name": "Subformation 2 / main battle tanks crews",
+          "category": "PERSONNEL",
+          "role": "CREW",
+          "count": 16,
+          "initial_count": 16,
+          "combat_value": 0.8,
+          "min_operators": 1,
+          "weapons": [],
+          "metadata": {
+            "protected_by": "sub2_tanks"
+          }
+        },
+        {
+          "id": "sub3_tanks",
+          "name": "Subformation 3 / main battle tanks",
+          "category": "EQUIPMENT",
+          "role": "ARMOR",
+          "count": 4,
+          "combat_value": 12.0,
+          "metadata": {
+            "tags": [
+              "ARMOR"
+            ],
+            "protection_class": "HEAVY_ARMOR",
+            "auto_split_on_mobility_kill": true,
+            "crew_per_weapon": 4,
+            "crew_elements": [
+              "sub3_tanks_crew"
+            ]
+          },
+          "weapons": [
+            {
+              "slot": "MAIN_GUN_AP",
+              "weapon_id": "TANK_GUN_AP_GENERIC"
+            },
+            {
+              "slot": "MAIN_GUN_HE",
+              "weapon_id": "TANK_GUN_HE_GENERIC"
+            },
+            {
+              "slot": "COAX_MG",
+              "weapon_id": "COAX_MG_GENERIC"
+            }
+          ]
+        },
+        {
+          "id": "sub3_tanks_crew",
+          "name": "Subformation 3 / main battle tanks crews",
+          "category": "PERSONNEL",
+          "role": "CREW",
+          "count": 16,
+          "initial_count": 16,
+          "combat_value": 0.8,
+          "min_operators": 1,
+          "weapons": [],
+          "metadata": {
+            "protected_by": "sub3_tanks"
+          }
+        },
+        {
+          "id": "coy_hq_tanks",
+          "name": "company HQ tanks",
+          "category": "EQUIPMENT",
+          "role": "MAIN_BATTLE_TANK",
+          "count": 2,
+          "initial_count": 2,
+          "combat_value": 8.0,
+          "weapons": [
+            {
+              "slot": "MAIN_GUN_AP",
+              "weapon_id": "TANK_GUN_AP_GENERIC"
+            },
+            {
+              "slot": "MAIN_GUN_HE",
+              "weapon_id": "TANK_GUN_HE_GENERIC"
+            },
+            {
+              "slot": "COAX_MG",
+              "weapon_id": "COAX_MG_GENERIC"
+            }
+          ],
+          "metadata": {
+            "tags": [
+              "ARMOR"
+            ],
+            "protection_class": "HEAVY_ARMOR",
+            "auto_split_on_mobility_kill": true,
+            "crew_per_weapon": 4,
+            "crew_elements": [
+              "coy_hq_tanks_crew"
+            ]
+          }
+        },
+        {
+          "id": "coy_hq_tanks_crew",
+          "name": "company HQ tanks crews",
+          "category": "PERSONNEL",
+          "role": "CREW",
+          "count": 8,
+          "initial_count": 8,
+          "combat_value": 0.8,
+          "min_operators": 1,
+          "weapons": [],
+          "metadata": {
+            "protected_by": "coy_hq_tanks"
+          }
+        }
+      ],
+      "metadata": {
+        "mobility_class": "TRACKED",
+        "mobility_capabilities": [],
+        "terrain_speed_factors": {
+          "OPEN": 0.85,
+          "ROAD": 1.2,
+          "BRIDGE": 0.8
+        },
+        "state_speed_factors": {
+          "MOVING": 1.0,
+          "ATTACKING": 0.75,
+          "SEARCHING": 0.55,
+          "ENGAGING": 0.0,
+          "RETREATING": 0.8,
+          "DEFENDING": 0.0,
+          "IDLE": 0.0
+        },
+        "visual_sensor": {
+          "forward_range_m": 1300,
+          "watch_slew_deg_per_s": 55
+        },
+        "echelon": "COY",
+        "formation_family": "TANK",
+        "aggregate_subformations": 3
+      }
+    },
+    "TANK_BN": {
+      "branch": "ARMOR",
+      "max_speed_mps": 10.0,
+      "detection_range_m": 1700,
+      "elements": [
+        {
+          "id": "sub1_tanks",
+          "name": "Subformation 1 / main battle tanks",
+          "category": "EQUIPMENT",
+          "role": "ARMOR",
+          "count": 4,
+          "combat_value": 12.0,
+          "metadata": {
+            "tags": [
+              "ARMOR"
+            ],
+            "protection_class": "HEAVY_ARMOR",
+            "auto_split_on_mobility_kill": true,
+            "crew_per_weapon": 4,
+            "crew_elements": [
+              "sub1_tanks_crew"
+            ]
+          },
+          "weapons": [
+            {
+              "slot": "MAIN_GUN_AP",
+              "weapon_id": "TANK_GUN_AP_GENERIC"
+            },
+            {
+              "slot": "MAIN_GUN_HE",
+              "weapon_id": "TANK_GUN_HE_GENERIC"
+            },
+            {
+              "slot": "COAX_MG",
+              "weapon_id": "COAX_MG_GENERIC"
+            }
+          ]
+        },
+        {
+          "id": "sub1_tanks_crew",
+          "name": "Subformation 1 / main battle tanks crews",
+          "category": "PERSONNEL",
+          "role": "CREW",
+          "count": 16,
+          "initial_count": 16,
+          "combat_value": 0.8,
+          "min_operators": 1,
+          "weapons": [],
+          "metadata": {
+            "protected_by": "sub1_tanks"
+          }
+        },
+        {
+          "id": "sub2_tanks",
+          "name": "Subformation 2 / main battle tanks",
+          "category": "EQUIPMENT",
+          "role": "ARMOR",
+          "count": 4,
+          "combat_value": 12.0,
+          "metadata": {
+            "tags": [
+              "ARMOR"
+            ],
+            "protection_class": "HEAVY_ARMOR",
+            "auto_split_on_mobility_kill": true,
+            "crew_per_weapon": 4,
+            "crew_elements": [
+              "sub2_tanks_crew"
+            ]
+          },
+          "weapons": [
+            {
+              "slot": "MAIN_GUN_AP",
+              "weapon_id": "TANK_GUN_AP_GENERIC"
+            },
+            {
+              "slot": "MAIN_GUN_HE",
+              "weapon_id": "TANK_GUN_HE_GENERIC"
+            },
+            {
+              "slot": "COAX_MG",
+              "weapon_id": "COAX_MG_GENERIC"
+            }
+          ]
+        },
+        {
+          "id": "sub2_tanks_crew",
+          "name": "Subformation 2 / main battle tanks crews",
+          "category": "PERSONNEL",
+          "role": "CREW",
+          "count": 16,
+          "initial_count": 16,
+          "combat_value": 0.8,
+          "min_operators": 1,
+          "weapons": [],
+          "metadata": {
+            "protected_by": "sub2_tanks"
+          }
+        },
+        {
+          "id": "sub3_tanks",
+          "name": "Subformation 3 / main battle tanks",
+          "category": "EQUIPMENT",
+          "role": "ARMOR",
+          "count": 4,
+          "combat_value": 12.0,
+          "metadata": {
+            "tags": [
+              "ARMOR"
+            ],
+            "protection_class": "HEAVY_ARMOR",
+            "auto_split_on_mobility_kill": true,
+            "crew_per_weapon": 4,
+            "crew_elements": [
+              "sub3_tanks_crew"
+            ]
+          },
+          "weapons": [
+            {
+              "slot": "MAIN_GUN_AP",
+              "weapon_id": "TANK_GUN_AP_GENERIC"
+            },
+            {
+              "slot": "MAIN_GUN_HE",
+              "weapon_id": "TANK_GUN_HE_GENERIC"
+            },
+            {
+              "slot": "COAX_MG",
+              "weapon_id": "COAX_MG_GENERIC"
+            }
+          ]
+        },
+        {
+          "id": "sub3_tanks_crew",
+          "name": "Subformation 3 / main battle tanks crews",
+          "category": "PERSONNEL",
+          "role": "CREW",
+          "count": 16,
+          "initial_count": 16,
+          "combat_value": 0.8,
+          "min_operators": 1,
+          "weapons": [],
+          "metadata": {
+            "protected_by": "sub3_tanks"
+          }
+        },
+        {
+          "id": "sub4_tanks",
+          "name": "Subformation 4 / main battle tanks",
+          "category": "EQUIPMENT",
+          "role": "ARMOR",
+          "count": 4,
+          "combat_value": 12.0,
+          "metadata": {
+            "tags": [
+              "ARMOR"
+            ],
+            "protection_class": "HEAVY_ARMOR",
+            "auto_split_on_mobility_kill": true,
+            "crew_per_weapon": 4,
+            "crew_elements": [
+              "sub4_tanks_crew"
+            ]
+          },
+          "weapons": [
+            {
+              "slot": "MAIN_GUN_AP",
+              "weapon_id": "TANK_GUN_AP_GENERIC"
+            },
+            {
+              "slot": "MAIN_GUN_HE",
+              "weapon_id": "TANK_GUN_HE_GENERIC"
+            },
+            {
+              "slot": "COAX_MG",
+              "weapon_id": "COAX_MG_GENERIC"
+            }
+          ]
+        },
+        {
+          "id": "sub4_tanks_crew",
+          "name": "Subformation 4 / main battle tanks crews",
+          "category": "PERSONNEL",
+          "role": "CREW",
+          "count": 16,
+          "initial_count": 16,
+          "combat_value": 0.8,
+          "min_operators": 1,
+          "weapons": [],
+          "metadata": {
+            "protected_by": "sub4_tanks"
+          }
+        },
+        {
+          "id": "sub5_tanks",
+          "name": "Subformation 5 / main battle tanks",
+          "category": "EQUIPMENT",
+          "role": "ARMOR",
+          "count": 4,
+          "combat_value": 12.0,
+          "metadata": {
+            "tags": [
+              "ARMOR"
+            ],
+            "protection_class": "HEAVY_ARMOR",
+            "auto_split_on_mobility_kill": true,
+            "crew_per_weapon": 4,
+            "crew_elements": [
+              "sub5_tanks_crew"
+            ]
+          },
+          "weapons": [
+            {
+              "slot": "MAIN_GUN_AP",
+              "weapon_id": "TANK_GUN_AP_GENERIC"
+            },
+            {
+              "slot": "MAIN_GUN_HE",
+              "weapon_id": "TANK_GUN_HE_GENERIC"
+            },
+            {
+              "slot": "COAX_MG",
+              "weapon_id": "COAX_MG_GENERIC"
+            }
+          ]
+        },
+        {
+          "id": "sub5_tanks_crew",
+          "name": "Subformation 5 / main battle tanks crews",
+          "category": "PERSONNEL",
+          "role": "CREW",
+          "count": 16,
+          "initial_count": 16,
+          "combat_value": 0.8,
+          "min_operators": 1,
+          "weapons": [],
+          "metadata": {
+            "protected_by": "sub5_tanks"
+          }
+        },
+        {
+          "id": "sub6_tanks",
+          "name": "Subformation 6 / main battle tanks",
+          "category": "EQUIPMENT",
+          "role": "ARMOR",
+          "count": 4,
+          "combat_value": 12.0,
+          "metadata": {
+            "tags": [
+              "ARMOR"
+            ],
+            "protection_class": "HEAVY_ARMOR",
+            "auto_split_on_mobility_kill": true,
+            "crew_per_weapon": 4,
+            "crew_elements": [
+              "sub6_tanks_crew"
+            ]
+          },
+          "weapons": [
+            {
+              "slot": "MAIN_GUN_AP",
+              "weapon_id": "TANK_GUN_AP_GENERIC"
+            },
+            {
+              "slot": "MAIN_GUN_HE",
+              "weapon_id": "TANK_GUN_HE_GENERIC"
+            },
+            {
+              "slot": "COAX_MG",
+              "weapon_id": "COAX_MG_GENERIC"
+            }
+          ]
+        },
+        {
+          "id": "sub6_tanks_crew",
+          "name": "Subformation 6 / main battle tanks crews",
+          "category": "PERSONNEL",
+          "role": "CREW",
+          "count": 16,
+          "initial_count": 16,
+          "combat_value": 0.8,
+          "min_operators": 1,
+          "weapons": [],
+          "metadata": {
+            "protected_by": "sub6_tanks"
+          }
+        },
+        {
+          "id": "sub7_tanks",
+          "name": "Subformation 7 / main battle tanks",
+          "category": "EQUIPMENT",
+          "role": "ARMOR",
+          "count": 4,
+          "combat_value": 12.0,
+          "metadata": {
+            "tags": [
+              "ARMOR"
+            ],
+            "protection_class": "HEAVY_ARMOR",
+            "auto_split_on_mobility_kill": true,
+            "crew_per_weapon": 4,
+            "crew_elements": [
+              "sub7_tanks_crew"
+            ]
+          },
+          "weapons": [
+            {
+              "slot": "MAIN_GUN_AP",
+              "weapon_id": "TANK_GUN_AP_GENERIC"
+            },
+            {
+              "slot": "MAIN_GUN_HE",
+              "weapon_id": "TANK_GUN_HE_GENERIC"
+            },
+            {
+              "slot": "COAX_MG",
+              "weapon_id": "COAX_MG_GENERIC"
+            }
+          ]
+        },
+        {
+          "id": "sub7_tanks_crew",
+          "name": "Subformation 7 / main battle tanks crews",
+          "category": "PERSONNEL",
+          "role": "CREW",
+          "count": 16,
+          "initial_count": 16,
+          "combat_value": 0.8,
+          "min_operators": 1,
+          "weapons": [],
+          "metadata": {
+            "protected_by": "sub7_tanks"
+          }
+        },
+        {
+          "id": "sub8_tanks",
+          "name": "Subformation 8 / main battle tanks",
+          "category": "EQUIPMENT",
+          "role": "ARMOR",
+          "count": 4,
+          "combat_value": 12.0,
+          "metadata": {
+            "tags": [
+              "ARMOR"
+            ],
+            "protection_class": "HEAVY_ARMOR",
+            "auto_split_on_mobility_kill": true,
+            "crew_per_weapon": 4,
+            "crew_elements": [
+              "sub8_tanks_crew"
+            ]
+          },
+          "weapons": [
+            {
+              "slot": "MAIN_GUN_AP",
+              "weapon_id": "TANK_GUN_AP_GENERIC"
+            },
+            {
+              "slot": "MAIN_GUN_HE",
+              "weapon_id": "TANK_GUN_HE_GENERIC"
+            },
+            {
+              "slot": "COAX_MG",
+              "weapon_id": "COAX_MG_GENERIC"
+            }
+          ]
+        },
+        {
+          "id": "sub8_tanks_crew",
+          "name": "Subformation 8 / main battle tanks crews",
+          "category": "PERSONNEL",
+          "role": "CREW",
+          "count": 16,
+          "initial_count": 16,
+          "combat_value": 0.8,
+          "min_operators": 1,
+          "weapons": [],
+          "metadata": {
+            "protected_by": "sub8_tanks"
+          }
+        },
+        {
+          "id": "sub9_tanks",
+          "name": "Subformation 9 / main battle tanks",
+          "category": "EQUIPMENT",
+          "role": "ARMOR",
+          "count": 4,
+          "combat_value": 12.0,
+          "metadata": {
+            "tags": [
+              "ARMOR"
+            ],
+            "protection_class": "HEAVY_ARMOR",
+            "auto_split_on_mobility_kill": true,
+            "crew_per_weapon": 4,
+            "crew_elements": [
+              "sub9_tanks_crew"
+            ]
+          },
+          "weapons": [
+            {
+              "slot": "MAIN_GUN_AP",
+              "weapon_id": "TANK_GUN_AP_GENERIC"
+            },
+            {
+              "slot": "MAIN_GUN_HE",
+              "weapon_id": "TANK_GUN_HE_GENERIC"
+            },
+            {
+              "slot": "COAX_MG",
+              "weapon_id": "COAX_MG_GENERIC"
+            }
+          ]
+        },
+        {
+          "id": "sub9_tanks_crew",
+          "name": "Subformation 9 / main battle tanks crews",
+          "category": "PERSONNEL",
+          "role": "CREW",
+          "count": 16,
+          "initial_count": 16,
+          "combat_value": 0.8,
+          "min_operators": 1,
+          "weapons": [],
+          "metadata": {
+            "protected_by": "sub9_tanks"
+          }
+        },
+        {
+          "id": "bn_hq_tanks",
+          "name": "battalion HQ tanks",
+          "category": "EQUIPMENT",
+          "role": "MAIN_BATTLE_TANK",
+          "count": 4,
+          "initial_count": 4,
+          "combat_value": 8.0,
+          "weapons": [
+            {
+              "slot": "MAIN_GUN_AP",
+              "weapon_id": "TANK_GUN_AP_GENERIC"
+            },
+            {
+              "slot": "MAIN_GUN_HE",
+              "weapon_id": "TANK_GUN_HE_GENERIC"
+            },
+            {
+              "slot": "COAX_MG",
+              "weapon_id": "COAX_MG_GENERIC"
+            }
+          ],
+          "metadata": {
+            "tags": [
+              "ARMOR"
+            ],
+            "protection_class": "HEAVY_ARMOR",
+            "auto_split_on_mobility_kill": true,
+            "crew_per_weapon": 4,
+            "crew_elements": [
+              "bn_hq_tanks_crew"
+            ]
+          }
+        },
+        {
+          "id": "bn_hq_tanks_crew",
+          "name": "battalion HQ tanks crews",
+          "category": "PERSONNEL",
+          "role": "CREW",
+          "count": 16,
+          "initial_count": 16,
+          "combat_value": 0.8,
+          "min_operators": 1,
+          "weapons": [],
+          "metadata": {
+            "protected_by": "bn_hq_tanks"
+          }
+        }
+      ],
+      "metadata": {
+        "mobility_class": "TRACKED",
+        "mobility_capabilities": [],
+        "terrain_speed_factors": {
+          "OPEN": 0.85,
+          "ROAD": 1.2,
+          "BRIDGE": 0.8
+        },
+        "state_speed_factors": {
+          "MOVING": 1.0,
+          "ATTACKING": 0.75,
+          "SEARCHING": 0.55,
+          "ENGAGING": 0.0,
+          "RETREATING": 0.8,
+          "DEFENDING": 0.0,
+          "IDLE": 0.0
+        },
+        "visual_sensor": {
+          "forward_range_m": 1300,
+          "watch_slew_deg_per_s": 55
+        },
+        "echelon": "BN",
+        "formation_family": "TANK",
+        "aggregate_subformations": 9
+      }
+    },
+    "ARTY_COY": {
+      "branch": "ARTILLERY",
+      "max_speed_mps": 8.0,
+      "detection_range_m": 850,
+      "elements": [
+        {
+          "id": "sub1_towed_guns",
+          "name": "Subformation 1 / towed artillery pieces",
+          "category": "EQUIPMENT",
+          "role": "ARTILLERY",
+          "count": 5,
+          "combat_value": 7.0,
+          "metadata": {
+            "tags": [
+              "ARTILLERY",
+              "TOWED_GUN"
+            ],
+            "protection_class": "UNARMORED_GUN",
+            "auto_split_on_mobility_kill": false
+          },
+          "weapons": [
+            {
+              "slot": "INDIRECT_PRIMARY",
+              "weapon_id": "TOWED_ARTY_GENERIC"
+            }
+          ],
+          "initial_count": 5
+        },
+        {
+          "id": "sub1_gun_crew",
+          "name": "Subformation 1 / towed-gun crews",
+          "category": "PERSONNEL",
+          "role": "ARTILLERY_CREW",
+          "count": 25,
+          "combat_value": 0.8,
+          "initial_count": 25,
+          "weapons": []
+        },
+        {
+          "id": "sub1_cb_radar",
+          "name": "Subformation 1 / counter-battery radar",
+          "category": "EQUIPMENT",
+          "role": "COUNTER_BATTERY_RADAR",
+          "count": 1,
+          "combat_value": 6.0,
+          "metadata": {
+            "tags": [
+              "RADAR",
+              "SENSOR"
+            ],
+            "radar_range_m": 3200,
+            "detect_p_near": 0.82,
+            "detect_p_edge": 0.28,
+            "max_salvo_detection_opportunities": 3,
+            "salvo_solution_gain_exponent": 0.2,
+            "position_error_min_m": 35,
+            "position_error_max_m": 180,
+            "operator_role": "RADAR_CREW",
+            "min_crew": 2,
+            "processing_delay_min_s": 2.0,
+            "processing_delay_max_s": 6.0,
+            "protection_class": "RADAR_SENSOR"
+          },
+          "weapons": []
+        },
+        {
+          "id": "sub1_radar_crew",
+          "name": "Subformation 1 / counter-battery radar crew",
+          "category": "PERSONNEL",
+          "role": "RADAR_CREW",
+          "count": 4,
+          "combat_value": 0.9,
+          "weapons": []
+        },
+        {
+          "id": "sub2_towed_guns",
+          "name": "Subformation 2 / towed artillery pieces",
+          "category": "EQUIPMENT",
+          "role": "ARTILLERY",
+          "count": 5,
+          "combat_value": 7.0,
+          "metadata": {
+            "tags": [
+              "ARTILLERY",
+              "TOWED_GUN"
+            ],
+            "protection_class": "UNARMORED_GUN",
+            "auto_split_on_mobility_kill": false
+          },
+          "weapons": [
+            {
+              "slot": "INDIRECT_PRIMARY",
+              "weapon_id": "TOWED_ARTY_GENERIC"
+            }
+          ],
+          "initial_count": 5
+        },
+        {
+          "id": "sub2_gun_crew",
+          "name": "Subformation 2 / towed-gun crews",
+          "category": "PERSONNEL",
+          "role": "ARTILLERY_CREW",
+          "count": 25,
+          "combat_value": 0.8,
+          "initial_count": 25,
+          "weapons": []
+        },
+        {
+          "id": "sub2_cb_radar",
+          "name": "Subformation 2 / counter-battery radar",
+          "category": "EQUIPMENT",
+          "role": "COUNTER_BATTERY_RADAR",
+          "count": 1,
+          "combat_value": 6.0,
+          "metadata": {
+            "tags": [
+              "RADAR",
+              "SENSOR"
+            ],
+            "radar_range_m": 3200,
+            "detect_p_near": 0.82,
+            "detect_p_edge": 0.28,
+            "max_salvo_detection_opportunities": 3,
+            "salvo_solution_gain_exponent": 0.2,
+            "position_error_min_m": 35,
+            "position_error_max_m": 180,
+            "operator_role": "RADAR_CREW",
+            "min_crew": 2,
+            "processing_delay_min_s": 2.0,
+            "processing_delay_max_s": 6.0,
+            "protection_class": "RADAR_SENSOR"
+          },
+          "weapons": []
+        },
+        {
+          "id": "sub2_radar_crew",
+          "name": "Subformation 2 / counter-battery radar crew",
+          "category": "PERSONNEL",
+          "role": "RADAR_CREW",
+          "count": 4,
+          "combat_value": 0.9,
+          "weapons": []
+        },
+        {
+          "id": "sub3_towed_guns",
+          "name": "Subformation 3 / towed artillery pieces",
+          "category": "EQUIPMENT",
+          "role": "ARTILLERY",
+          "count": 5,
+          "combat_value": 7.0,
+          "metadata": {
+            "tags": [
+              "ARTILLERY",
+              "TOWED_GUN"
+            ],
+            "protection_class": "UNARMORED_GUN",
+            "auto_split_on_mobility_kill": false
+          },
+          "weapons": [
+            {
+              "slot": "INDIRECT_PRIMARY",
+              "weapon_id": "TOWED_ARTY_GENERIC"
+            }
+          ],
+          "initial_count": 5
+        },
+        {
+          "id": "sub3_gun_crew",
+          "name": "Subformation 3 / towed-gun crews",
+          "category": "PERSONNEL",
+          "role": "ARTILLERY_CREW",
+          "count": 25,
+          "combat_value": 0.8,
+          "initial_count": 25,
+          "weapons": []
+        },
+        {
+          "id": "sub3_cb_radar",
+          "name": "Subformation 3 / counter-battery radar",
+          "category": "EQUIPMENT",
+          "role": "COUNTER_BATTERY_RADAR",
+          "count": 1,
+          "combat_value": 6.0,
+          "metadata": {
+            "tags": [
+              "RADAR",
+              "SENSOR"
+            ],
+            "radar_range_m": 3200,
+            "detect_p_near": 0.82,
+            "detect_p_edge": 0.28,
+            "max_salvo_detection_opportunities": 3,
+            "salvo_solution_gain_exponent": 0.2,
+            "position_error_min_m": 35,
+            "position_error_max_m": 180,
+            "operator_role": "RADAR_CREW",
+            "min_crew": 2,
+            "processing_delay_min_s": 2.0,
+            "processing_delay_max_s": 6.0,
+            "protection_class": "RADAR_SENSOR"
+          },
+          "weapons": []
+        },
+        {
+          "id": "sub3_radar_crew",
+          "name": "Subformation 3 / counter-battery radar crew",
+          "category": "PERSONNEL",
+          "role": "RADAR_CREW",
+          "count": 4,
+          "combat_value": 0.9,
+          "weapons": []
+        }
+      ],
+      "metadata": {
+        "mobility_class": "WHEELED_TOWED",
+        "mobility_capabilities": [],
+        "terrain_speed_factors": {
+          "OPEN": 0.55,
+          "ROAD": 1.2,
+          "BRIDGE": 0.75
+        },
+        "state_speed_factors": {
+          "MOVING": 1.0,
+          "ATTACKING": 0.85,
+          "SEARCHING": 0.6,
+          "ENGAGING": 0.0,
+          "RETREATING": 0.9,
+          "DEFENDING": 0.0,
+          "IDLE": 0.0
+        },
+        "visual_sensor": {
+          "forward_range_m": 700,
+          "watch_slew_deg_per_s": 60
+        },
+        "echelon": "COY",
+        "formation_family": "ARTY",
+        "aggregate_subformations": 3
+      }
+    },
+    "ARTY_BN": {
+      "branch": "ARTILLERY",
+      "max_speed_mps": 8.0,
+      "detection_range_m": 1000,
+      "elements": [
+        {
+          "id": "sub1_towed_guns",
+          "name": "Subformation 1 / towed artillery pieces",
+          "category": "EQUIPMENT",
+          "role": "ARTILLERY",
+          "count": 5,
+          "combat_value": 7.0,
+          "metadata": {
+            "tags": [
+              "ARTILLERY",
+              "TOWED_GUN"
+            ],
+            "protection_class": "UNARMORED_GUN",
+            "auto_split_on_mobility_kill": false
+          },
+          "weapons": [
+            {
+              "slot": "INDIRECT_PRIMARY",
+              "weapon_id": "TOWED_ARTY_GENERIC"
+            }
+          ],
+          "initial_count": 5
+        },
+        {
+          "id": "sub1_gun_crew",
+          "name": "Subformation 1 / towed-gun crews",
+          "category": "PERSONNEL",
+          "role": "ARTILLERY_CREW",
+          "count": 25,
+          "combat_value": 0.8,
+          "initial_count": 25,
+          "weapons": []
+        },
+        {
+          "id": "sub1_cb_radar",
+          "name": "Subformation 1 / counter-battery radar",
+          "category": "EQUIPMENT",
+          "role": "COUNTER_BATTERY_RADAR",
+          "count": 1,
+          "combat_value": 6.0,
+          "metadata": {
+            "tags": [
+              "RADAR",
+              "SENSOR"
+            ],
+            "radar_range_m": 3200,
+            "detect_p_near": 0.82,
+            "detect_p_edge": 0.28,
+            "max_salvo_detection_opportunities": 3,
+            "salvo_solution_gain_exponent": 0.2,
+            "position_error_min_m": 35,
+            "position_error_max_m": 180,
+            "operator_role": "RADAR_CREW",
+            "min_crew": 2,
+            "processing_delay_min_s": 2.0,
+            "processing_delay_max_s": 6.0,
+            "protection_class": "RADAR_SENSOR"
+          },
+          "weapons": []
+        },
+        {
+          "id": "sub1_radar_crew",
+          "name": "Subformation 1 / counter-battery radar crew",
+          "category": "PERSONNEL",
+          "role": "RADAR_CREW",
+          "count": 4,
+          "combat_value": 0.9,
+          "weapons": []
+        },
+        {
+          "id": "sub2_towed_guns",
+          "name": "Subformation 2 / towed artillery pieces",
+          "category": "EQUIPMENT",
+          "role": "ARTILLERY",
+          "count": 5,
+          "combat_value": 7.0,
+          "metadata": {
+            "tags": [
+              "ARTILLERY",
+              "TOWED_GUN"
+            ],
+            "protection_class": "UNARMORED_GUN",
+            "auto_split_on_mobility_kill": false
+          },
+          "weapons": [
+            {
+              "slot": "INDIRECT_PRIMARY",
+              "weapon_id": "TOWED_ARTY_GENERIC"
+            }
+          ],
+          "initial_count": 5
+        },
+        {
+          "id": "sub2_gun_crew",
+          "name": "Subformation 2 / towed-gun crews",
+          "category": "PERSONNEL",
+          "role": "ARTILLERY_CREW",
+          "count": 25,
+          "combat_value": 0.8,
+          "initial_count": 25,
+          "weapons": []
+        },
+        {
+          "id": "sub2_cb_radar",
+          "name": "Subformation 2 / counter-battery radar",
+          "category": "EQUIPMENT",
+          "role": "COUNTER_BATTERY_RADAR",
+          "count": 1,
+          "combat_value": 6.0,
+          "metadata": {
+            "tags": [
+              "RADAR",
+              "SENSOR"
+            ],
+            "radar_range_m": 3200,
+            "detect_p_near": 0.82,
+            "detect_p_edge": 0.28,
+            "max_salvo_detection_opportunities": 3,
+            "salvo_solution_gain_exponent": 0.2,
+            "position_error_min_m": 35,
+            "position_error_max_m": 180,
+            "operator_role": "RADAR_CREW",
+            "min_crew": 2,
+            "processing_delay_min_s": 2.0,
+            "processing_delay_max_s": 6.0,
+            "protection_class": "RADAR_SENSOR"
+          },
+          "weapons": []
+        },
+        {
+          "id": "sub2_radar_crew",
+          "name": "Subformation 2 / counter-battery radar crew",
+          "category": "PERSONNEL",
+          "role": "RADAR_CREW",
+          "count": 4,
+          "combat_value": 0.9,
+          "weapons": []
+        },
+        {
+          "id": "sub3_towed_guns",
+          "name": "Subformation 3 / towed artillery pieces",
+          "category": "EQUIPMENT",
+          "role": "ARTILLERY",
+          "count": 5,
+          "combat_value": 7.0,
+          "metadata": {
+            "tags": [
+              "ARTILLERY",
+              "TOWED_GUN"
+            ],
+            "protection_class": "UNARMORED_GUN",
+            "auto_split_on_mobility_kill": false
+          },
+          "weapons": [
+            {
+              "slot": "INDIRECT_PRIMARY",
+              "weapon_id": "TOWED_ARTY_GENERIC"
+            }
+          ],
+          "initial_count": 5
+        },
+        {
+          "id": "sub3_gun_crew",
+          "name": "Subformation 3 / towed-gun crews",
+          "category": "PERSONNEL",
+          "role": "ARTILLERY_CREW",
+          "count": 25,
+          "combat_value": 0.8,
+          "initial_count": 25,
+          "weapons": []
+        },
+        {
+          "id": "sub3_cb_radar",
+          "name": "Subformation 3 / counter-battery radar",
+          "category": "EQUIPMENT",
+          "role": "COUNTER_BATTERY_RADAR",
+          "count": 1,
+          "combat_value": 6.0,
+          "metadata": {
+            "tags": [
+              "RADAR",
+              "SENSOR"
+            ],
+            "radar_range_m": 3200,
+            "detect_p_near": 0.82,
+            "detect_p_edge": 0.28,
+            "max_salvo_detection_opportunities": 3,
+            "salvo_solution_gain_exponent": 0.2,
+            "position_error_min_m": 35,
+            "position_error_max_m": 180,
+            "operator_role": "RADAR_CREW",
+            "min_crew": 2,
+            "processing_delay_min_s": 2.0,
+            "processing_delay_max_s": 6.0,
+            "protection_class": "RADAR_SENSOR"
+          },
+          "weapons": []
+        },
+        {
+          "id": "sub3_radar_crew",
+          "name": "Subformation 3 / counter-battery radar crew",
+          "category": "PERSONNEL",
+          "role": "RADAR_CREW",
+          "count": 4,
+          "combat_value": 0.9,
+          "weapons": []
+        },
+        {
+          "id": "sub4_towed_guns",
+          "name": "Subformation 4 / towed artillery pieces",
+          "category": "EQUIPMENT",
+          "role": "ARTILLERY",
+          "count": 5,
+          "combat_value": 7.0,
+          "metadata": {
+            "tags": [
+              "ARTILLERY",
+              "TOWED_GUN"
+            ],
+            "protection_class": "UNARMORED_GUN",
+            "auto_split_on_mobility_kill": false
+          },
+          "weapons": [
+            {
+              "slot": "INDIRECT_PRIMARY",
+              "weapon_id": "TOWED_ARTY_GENERIC"
+            }
+          ],
+          "initial_count": 5
+        },
+        {
+          "id": "sub4_gun_crew",
+          "name": "Subformation 4 / towed-gun crews",
+          "category": "PERSONNEL",
+          "role": "ARTILLERY_CREW",
+          "count": 25,
+          "combat_value": 0.8,
+          "initial_count": 25,
+          "weapons": []
+        },
+        {
+          "id": "sub4_cb_radar",
+          "name": "Subformation 4 / counter-battery radar",
+          "category": "EQUIPMENT",
+          "role": "COUNTER_BATTERY_RADAR",
+          "count": 1,
+          "combat_value": 6.0,
+          "metadata": {
+            "tags": [
+              "RADAR",
+              "SENSOR"
+            ],
+            "radar_range_m": 3200,
+            "detect_p_near": 0.82,
+            "detect_p_edge": 0.28,
+            "max_salvo_detection_opportunities": 3,
+            "salvo_solution_gain_exponent": 0.2,
+            "position_error_min_m": 35,
+            "position_error_max_m": 180,
+            "operator_role": "RADAR_CREW",
+            "min_crew": 2,
+            "processing_delay_min_s": 2.0,
+            "processing_delay_max_s": 6.0,
+            "protection_class": "RADAR_SENSOR"
+          },
+          "weapons": []
+        },
+        {
+          "id": "sub4_radar_crew",
+          "name": "Subformation 4 / counter-battery radar crew",
+          "category": "PERSONNEL",
+          "role": "RADAR_CREW",
+          "count": 4,
+          "combat_value": 0.9,
+          "weapons": []
+        },
+        {
+          "id": "sub5_towed_guns",
+          "name": "Subformation 5 / towed artillery pieces",
+          "category": "EQUIPMENT",
+          "role": "ARTILLERY",
+          "count": 5,
+          "combat_value": 7.0,
+          "metadata": {
+            "tags": [
+              "ARTILLERY",
+              "TOWED_GUN"
+            ],
+            "protection_class": "UNARMORED_GUN",
+            "auto_split_on_mobility_kill": false
+          },
+          "weapons": [
+            {
+              "slot": "INDIRECT_PRIMARY",
+              "weapon_id": "TOWED_ARTY_GENERIC"
+            }
+          ],
+          "initial_count": 5
+        },
+        {
+          "id": "sub5_gun_crew",
+          "name": "Subformation 5 / towed-gun crews",
+          "category": "PERSONNEL",
+          "role": "ARTILLERY_CREW",
+          "count": 25,
+          "combat_value": 0.8,
+          "initial_count": 25,
+          "weapons": []
+        },
+        {
+          "id": "sub5_cb_radar",
+          "name": "Subformation 5 / counter-battery radar",
+          "category": "EQUIPMENT",
+          "role": "COUNTER_BATTERY_RADAR",
+          "count": 1,
+          "combat_value": 6.0,
+          "metadata": {
+            "tags": [
+              "RADAR",
+              "SENSOR"
+            ],
+            "radar_range_m": 3200,
+            "detect_p_near": 0.82,
+            "detect_p_edge": 0.28,
+            "max_salvo_detection_opportunities": 3,
+            "salvo_solution_gain_exponent": 0.2,
+            "position_error_min_m": 35,
+            "position_error_max_m": 180,
+            "operator_role": "RADAR_CREW",
+            "min_crew": 2,
+            "processing_delay_min_s": 2.0,
+            "processing_delay_max_s": 6.0,
+            "protection_class": "RADAR_SENSOR"
+          },
+          "weapons": []
+        },
+        {
+          "id": "sub5_radar_crew",
+          "name": "Subformation 5 / counter-battery radar crew",
+          "category": "PERSONNEL",
+          "role": "RADAR_CREW",
+          "count": 4,
+          "combat_value": 0.9,
+          "weapons": []
+        },
+        {
+          "id": "sub6_towed_guns",
+          "name": "Subformation 6 / towed artillery pieces",
+          "category": "EQUIPMENT",
+          "role": "ARTILLERY",
+          "count": 5,
+          "combat_value": 7.0,
+          "metadata": {
+            "tags": [
+              "ARTILLERY",
+              "TOWED_GUN"
+            ],
+            "protection_class": "UNARMORED_GUN",
+            "auto_split_on_mobility_kill": false
+          },
+          "weapons": [
+            {
+              "slot": "INDIRECT_PRIMARY",
+              "weapon_id": "TOWED_ARTY_GENERIC"
+            }
+          ],
+          "initial_count": 5
+        },
+        {
+          "id": "sub6_gun_crew",
+          "name": "Subformation 6 / towed-gun crews",
+          "category": "PERSONNEL",
+          "role": "ARTILLERY_CREW",
+          "count": 25,
+          "combat_value": 0.8,
+          "initial_count": 25,
+          "weapons": []
+        },
+        {
+          "id": "sub6_cb_radar",
+          "name": "Subformation 6 / counter-battery radar",
+          "category": "EQUIPMENT",
+          "role": "COUNTER_BATTERY_RADAR",
+          "count": 1,
+          "combat_value": 6.0,
+          "metadata": {
+            "tags": [
+              "RADAR",
+              "SENSOR"
+            ],
+            "radar_range_m": 3200,
+            "detect_p_near": 0.82,
+            "detect_p_edge": 0.28,
+            "max_salvo_detection_opportunities": 3,
+            "salvo_solution_gain_exponent": 0.2,
+            "position_error_min_m": 35,
+            "position_error_max_m": 180,
+            "operator_role": "RADAR_CREW",
+            "min_crew": 2,
+            "processing_delay_min_s": 2.0,
+            "processing_delay_max_s": 6.0,
+            "protection_class": "RADAR_SENSOR"
+          },
+          "weapons": []
+        },
+        {
+          "id": "sub6_radar_crew",
+          "name": "Subformation 6 / counter-battery radar crew",
+          "category": "PERSONNEL",
+          "role": "RADAR_CREW",
+          "count": 4,
+          "combat_value": 0.9,
+          "weapons": []
+        },
+        {
+          "id": "sub7_towed_guns",
+          "name": "Subformation 7 / towed artillery pieces",
+          "category": "EQUIPMENT",
+          "role": "ARTILLERY",
+          "count": 5,
+          "combat_value": 7.0,
+          "metadata": {
+            "tags": [
+              "ARTILLERY",
+              "TOWED_GUN"
+            ],
+            "protection_class": "UNARMORED_GUN",
+            "auto_split_on_mobility_kill": false
+          },
+          "weapons": [
+            {
+              "slot": "INDIRECT_PRIMARY",
+              "weapon_id": "TOWED_ARTY_GENERIC"
+            }
+          ],
+          "initial_count": 5
+        },
+        {
+          "id": "sub7_gun_crew",
+          "name": "Subformation 7 / towed-gun crews",
+          "category": "PERSONNEL",
+          "role": "ARTILLERY_CREW",
+          "count": 25,
+          "combat_value": 0.8,
+          "initial_count": 25,
+          "weapons": []
+        },
+        {
+          "id": "sub7_cb_radar",
+          "name": "Subformation 7 / counter-battery radar",
+          "category": "EQUIPMENT",
+          "role": "COUNTER_BATTERY_RADAR",
+          "count": 1,
+          "combat_value": 6.0,
+          "metadata": {
+            "tags": [
+              "RADAR",
+              "SENSOR"
+            ],
+            "radar_range_m": 3200,
+            "detect_p_near": 0.82,
+            "detect_p_edge": 0.28,
+            "max_salvo_detection_opportunities": 3,
+            "salvo_solution_gain_exponent": 0.2,
+            "position_error_min_m": 35,
+            "position_error_max_m": 180,
+            "operator_role": "RADAR_CREW",
+            "min_crew": 2,
+            "processing_delay_min_s": 2.0,
+            "processing_delay_max_s": 6.0,
+            "protection_class": "RADAR_SENSOR"
+          },
+          "weapons": []
+        },
+        {
+          "id": "sub7_radar_crew",
+          "name": "Subformation 7 / counter-battery radar crew",
+          "category": "PERSONNEL",
+          "role": "RADAR_CREW",
+          "count": 4,
+          "combat_value": 0.9,
+          "weapons": []
+        },
+        {
+          "id": "sub8_towed_guns",
+          "name": "Subformation 8 / towed artillery pieces",
+          "category": "EQUIPMENT",
+          "role": "ARTILLERY",
+          "count": 5,
+          "combat_value": 7.0,
+          "metadata": {
+            "tags": [
+              "ARTILLERY",
+              "TOWED_GUN"
+            ],
+            "protection_class": "UNARMORED_GUN",
+            "auto_split_on_mobility_kill": false
+          },
+          "weapons": [
+            {
+              "slot": "INDIRECT_PRIMARY",
+              "weapon_id": "TOWED_ARTY_GENERIC"
+            }
+          ],
+          "initial_count": 5
+        },
+        {
+          "id": "sub8_gun_crew",
+          "name": "Subformation 8 / towed-gun crews",
+          "category": "PERSONNEL",
+          "role": "ARTILLERY_CREW",
+          "count": 25,
+          "combat_value": 0.8,
+          "initial_count": 25,
+          "weapons": []
+        },
+        {
+          "id": "sub8_cb_radar",
+          "name": "Subformation 8 / counter-battery radar",
+          "category": "EQUIPMENT",
+          "role": "COUNTER_BATTERY_RADAR",
+          "count": 1,
+          "combat_value": 6.0,
+          "metadata": {
+            "tags": [
+              "RADAR",
+              "SENSOR"
+            ],
+            "radar_range_m": 3200,
+            "detect_p_near": 0.82,
+            "detect_p_edge": 0.28,
+            "max_salvo_detection_opportunities": 3,
+            "salvo_solution_gain_exponent": 0.2,
+            "position_error_min_m": 35,
+            "position_error_max_m": 180,
+            "operator_role": "RADAR_CREW",
+            "min_crew": 2,
+            "processing_delay_min_s": 2.0,
+            "processing_delay_max_s": 6.0,
+            "protection_class": "RADAR_SENSOR"
+          },
+          "weapons": []
+        },
+        {
+          "id": "sub8_radar_crew",
+          "name": "Subformation 8 / counter-battery radar crew",
+          "category": "PERSONNEL",
+          "role": "RADAR_CREW",
+          "count": 4,
+          "combat_value": 0.9,
+          "weapons": []
+        },
+        {
+          "id": "sub9_towed_guns",
+          "name": "Subformation 9 / towed artillery pieces",
+          "category": "EQUIPMENT",
+          "role": "ARTILLERY",
+          "count": 5,
+          "combat_value": 7.0,
+          "metadata": {
+            "tags": [
+              "ARTILLERY",
+              "TOWED_GUN"
+            ],
+            "protection_class": "UNARMORED_GUN",
+            "auto_split_on_mobility_kill": false
+          },
+          "weapons": [
+            {
+              "slot": "INDIRECT_PRIMARY",
+              "weapon_id": "TOWED_ARTY_GENERIC"
+            }
+          ],
+          "initial_count": 5
+        },
+        {
+          "id": "sub9_gun_crew",
+          "name": "Subformation 9 / towed-gun crews",
+          "category": "PERSONNEL",
+          "role": "ARTILLERY_CREW",
+          "count": 25,
+          "combat_value": 0.8,
+          "initial_count": 25,
+          "weapons": []
+        },
+        {
+          "id": "sub9_cb_radar",
+          "name": "Subformation 9 / counter-battery radar",
+          "category": "EQUIPMENT",
+          "role": "COUNTER_BATTERY_RADAR",
+          "count": 1,
+          "combat_value": 6.0,
+          "metadata": {
+            "tags": [
+              "RADAR",
+              "SENSOR"
+            ],
+            "radar_range_m": 3200,
+            "detect_p_near": 0.82,
+            "detect_p_edge": 0.28,
+            "max_salvo_detection_opportunities": 3,
+            "salvo_solution_gain_exponent": 0.2,
+            "position_error_min_m": 35,
+            "position_error_max_m": 180,
+            "operator_role": "RADAR_CREW",
+            "min_crew": 2,
+            "processing_delay_min_s": 2.0,
+            "processing_delay_max_s": 6.0,
+            "protection_class": "RADAR_SENSOR"
+          },
+          "weapons": []
+        },
+        {
+          "id": "sub9_radar_crew",
+          "name": "Subformation 9 / counter-battery radar crew",
+          "category": "PERSONNEL",
+          "role": "RADAR_CREW",
+          "count": 4,
+          "combat_value": 0.9,
+          "weapons": []
+        }
+      ],
+      "metadata": {
+        "mobility_class": "WHEELED_TOWED",
+        "mobility_capabilities": [],
+        "terrain_speed_factors": {
+          "OPEN": 0.55,
+          "ROAD": 1.2,
+          "BRIDGE": 0.75
+        },
+        "state_speed_factors": {
+          "MOVING": 1.0,
+          "ATTACKING": 0.85,
+          "SEARCHING": 0.6,
+          "ENGAGING": 0.0,
+          "RETREATING": 0.9,
+          "DEFENDING": 0.0,
+          "IDLE": 0.0
+        },
+        "visual_sensor": {
+          "forward_range_m": 700,
+          "watch_slew_deg_per_s": 60
+        },
+        "echelon": "BN",
+        "formation_family": "ARTY",
+        "aggregate_subformations": 9
+      }
+    },
+    "INF_IND": {
+      "branch": "INFANTRY",
+      "max_speed_mps": 1.2,
+      "detection_range_m": 500,
+      "elements": [
+        {
+          "id": "rifleman",
+          "name": "rifleman",
+          "category": "PERSONNEL",
+          "role": "RIFLE",
+          "count": 1,
+          "initial_count": 1,
+          "combat_value": 1.0,
+          "min_operators": 1,
+          "weapons": [
+            {
+              "slot": "RIFLEMAN_WEAPON",
+              "weapon_id": "SMALL_ARMS_GENERIC"
+            },
+            {
+              "slot": "LIGHT_AT_WEAPON",
+              "weapon_id": "AT4_MULTIROLE_GENERIC",
+              "metadata": {
+                "inventory_model": "DISPOSABLE_ROUNDS"
+              },
+              "ammo": 0
+            }
+          ]
+        }
+      ],
+      "metadata": {
+        "mobility_class": "FOOT",
+        "mobility_capabilities": [],
+        "terrain_speed_factors": {
+          "OPEN": 0.6,
+          "ROAD": 1.0,
+          "BRIDGE": 0.9
+        },
+        "state_speed_factors": {
+          "MOVING": 1.0,
+          "ATTACKING": 0.75,
+          "SEARCHING": 0.6,
+          "ENGAGING": 0.0,
+          "RETREATING": 0.85,
+          "DEFENDING": 0.0,
+          "IDLE": 0.0
+        },
+        "visual_sensor": {
+          "forward_range_m": 500,
+          "watch_slew_deg_per_s": 70
+        },
+        "echelon": "IND",
+        "formation_family": "INF"
+      }
+    },
+    "RIFLE_SQD": {
+      "branch": "INFANTRY",
+      "max_speed_mps": 1.15,
+      "detection_range_m": 600,
+      "elements": [
+        {
+          "id": "squad_leader",
+          "name": "squad leader",
+          "category": "PERSONNEL",
+          "role": "COMMAND",
+          "count": 1,
+          "initial_count": 1,
+          "combat_value": 1.2,
+          "min_operators": 1,
+          "weapons": [
+            {
+              "slot": "SQUAD_LEADER_WEAPON",
+              "weapon_id": "SMALL_ARMS_COMMAND_GENERIC"
+            }
+          ]
+        },
+        {
+          "id": "riflemen",
+          "name": "riflemen",
+          "category": "PERSONNEL",
+          "role": "RIFLE",
+          "count": 8,
+          "initial_count": 8,
+          "combat_value": 1.0,
+          "min_operators": 1,
+          "weapons": [
+            {
+              "slot": "RIFLEMEN_WEAPON",
+              "weapon_id": "SMALL_ARMS_GENERIC"
+            },
+            {
+              "slot": "LIGHT_AT_WEAPON",
+              "weapon_id": "AT4_MULTIROLE_GENERIC",
+              "metadata": {
+                "inventory_model": "DISPOSABLE_ROUNDS"
+              },
+              "ammo": 0
+            }
+          ]
+        },
+        {
+          "id": "machine_gun_attachment",
+          "name": "machine-gun attachment",
+          "category": "PERSONNEL",
+          "role": "MACHINE_GUN",
+          "count": 0,
+          "initial_count": 0,
+          "combat_value": 1.35,
+          "min_operators": 2,
+          "metadata": {
+            "optional_attachment": {
+              "label": "Machine-gun team",
+              "present_count": 2,
+              "description": "Optional one-gun support attachment; absent by default."
+            },
+            "tags": [
+              "MACHINE_GUN",
+              "SUPPORT_WEAPON"
+            ]
+          },
+          "weapons": [
+            {
+              "slot": "MG_ATTACHMENT_WEAPON",
+              "weapon_id": "GPMG_SINGLE_GENERIC",
+              "metadata": {
+                "system_count": 1,
+                "operators_per_system": 2
+              }
+            }
+          ]
+        }
+      ],
+      "metadata": {
+        "mobility_class": "FOOT",
+        "mobility_capabilities": [],
+        "terrain_speed_factors": {
+          "OPEN": 0.6,
+          "ROAD": 1.0,
+          "BRIDGE": 0.9
+        },
+        "state_speed_factors": {
+          "MOVING": 1.0,
+          "ATTACKING": 0.75,
+          "SEARCHING": 0.6,
+          "ENGAGING": 0.0,
+          "RETREATING": 0.85,
+          "DEFENDING": 0.0,
+          "IDLE": 0.0
+        },
+        "visual_sensor": {
+          "forward_range_m": 600,
+          "watch_slew_deg_per_s": 70
+        },
+        "echelon": "SQD",
+        "formation_family": "INF"
+      }
+    },
+    "US_RIFLE_SQD": {
+      "branch": "INFANTRY",
+      "max_speed_mps": 1.15,
+      "detection_range_m": 600,
+      "elements": [
+        {
+          "id": "squad_leader",
+          "name": "squad leader",
+          "category": "PERSONNEL",
+          "role": "COMMAND",
+          "count": 1,
+          "initial_count": 1,
+          "combat_value": 1.2,
+          "min_operators": 1,
+          "weapons": [
+            {
+              "slot": "SQUAD_LEADER_WEAPON",
+              "weapon_id": "SMALL_ARMS_COMMAND_GENERIC"
+            }
+          ]
+        },
+        {
+          "id": "riflemen",
+          "name": "riflemen",
+          "category": "PERSONNEL",
+          "role": "RIFLE",
+          "count": 4,
+          "initial_count": 4,
+          "combat_value": 1.0,
+          "min_operators": 1,
+          "weapons": [
+            {
+              "slot": "RIFLEMEN_WEAPON",
+              "weapon_id": "SMALL_ARMS_GENERIC"
+            },
+            {
+              "slot": "LIGHT_AT_WEAPON",
+              "weapon_id": "AT4_MULTIROLE_GENERIC",
+              "metadata": {
+                "inventory_model": "DISPOSABLE_ROUNDS"
+              },
+              "ammo": 0
+            }
+          ]
+        },
+        {
+          "id": "automatic_riflemen",
+          "name": "automatic riflemen",
+          "category": "PERSONNEL",
+          "role": "AUTOMATIC_RIFLE",
+          "count": 2,
+          "initial_count": 2,
+          "combat_value": 1.35,
+          "min_operators": 1,
+          "weapons": [
+            {
+              "slot": "AUTOMATIC_RIFLEMEN_WEAPON",
+              "weapon_id": "SAW_GENERIC",
+              "metadata": {
+                "system_count": 2,
+                "operators_per_system": 1
+              }
+            }
+          ]
+        },
+        {
+          "id": "grenadiers",
+          "name": "grenadiers",
+          "category": "PERSONNEL",
+          "role": "GRENADIER",
+          "count": 2,
+          "initial_count": 2,
+          "combat_value": 1.1,
+          "min_operators": 1,
+          "weapons": [
+            {
+              "slot": "GRENADIERS_WEAPON",
+              "weapon_id": "SMALL_ARMS_GENERIC"
+            },
+            {
+              "slot": "LIGHT_AT_WEAPON",
+              "weapon_id": "AT4_MULTIROLE_GENERIC",
+              "metadata": {
+                "inventory_model": "DISPOSABLE_ROUNDS"
+              },
+              "ammo": 0
+            }
+          ]
+        }
+      ],
+      "metadata": {
+        "mobility_class": "FOOT",
+        "mobility_capabilities": [],
+        "terrain_speed_factors": {
+          "OPEN": 0.6,
+          "ROAD": 1.0,
+          "BRIDGE": 0.9
+        },
+        "state_speed_factors": {
+          "MOVING": 1.0,
+          "ATTACKING": 0.75,
+          "SEARCHING": 0.6,
+          "ENGAGING": 0.0,
+          "RETREATING": 0.85,
+          "DEFENDING": 0.0,
+          "IDLE": 0.0
+        },
+        "visual_sensor": {
+          "forward_range_m": 600,
+          "watch_slew_deg_per_s": 70
+        },
+        "echelon": "SQD",
+        "formation_family": "INF"
+      }
+    },
+    "MG_SQD": {
+      "branch": "INFANTRY",
+      "max_speed_mps": 1.0,
+      "detection_range_m": 700,
+      "elements": [
+        {
+          "id": "mg_crew",
+          "name": "machine-gun crews",
+          "category": "PERSONNEL",
+          "role": "MACHINE_GUN",
+          "count": 6,
+          "initial_count": 6,
+          "combat_value": 1.4,
+          "min_operators": 2,
+          "weapons": [
+            {
+              "slot": "MG_CREW_WEAPON",
+              "weapon_id": "GPMG_SINGLE_GENERIC",
+              "metadata": {
+                "system_count": 2,
+                "operators_per_system": 3
+              }
+            }
+          ]
+        }
+      ],
+      "metadata": {
+        "mobility_class": "FOOT",
+        "mobility_capabilities": [],
+        "terrain_speed_factors": {
+          "OPEN": 0.6,
+          "ROAD": 1.0,
+          "BRIDGE": 0.9
+        },
+        "state_speed_factors": {
+          "MOVING": 1.0,
+          "ATTACKING": 0.75,
+          "SEARCHING": 0.6,
+          "ENGAGING": 0.0,
+          "RETREATING": 0.85,
+          "DEFENDING": 0.0,
+          "IDLE": 0.0
+        },
+        "visual_sensor": {
+          "forward_range_m": 700,
+          "watch_slew_deg_per_s": 70
+        },
+        "echelon": "SQD",
+        "formation_family": "MG"
+      }
+    },
+    "MG_PLT": {
+      "branch": "INFANTRY",
+      "max_speed_mps": 1.0,
+      "detection_range_m": 800,
+      "elements": [
+        {
+          "id": "plt_hq",
+          "name": "platoon HQ",
+          "category": "PERSONNEL",
+          "role": "COMMAND",
+          "count": 3,
+          "initial_count": 3,
+          "combat_value": 1.2,
+          "min_operators": 1,
+          "weapons": [
+            {
+              "slot": "PLT_HQ_WEAPON",
+              "weapon_id": "SMALL_ARMS_COMMAND_GENERIC"
+            }
+          ]
+        },
+        {
+          "id": "mg_crew",
+          "name": "machine-gun crews",
+          "category": "PERSONNEL",
+          "role": "MACHINE_GUN",
+          "count": 18,
+          "initial_count": 18,
+          "combat_value": 1.4,
+          "min_operators": 2,
+          "weapons": [
+            {
+              "slot": "MG_CREW_WEAPON",
+              "weapon_id": "GPMG_SINGLE_GENERIC",
+              "metadata": {
+                "system_count": 6,
+                "operators_per_system": 3
+              }
+            }
+          ]
+        }
+      ],
+      "metadata": {
+        "mobility_class": "FOOT",
+        "mobility_capabilities": [],
+        "terrain_speed_factors": {
+          "OPEN": 0.6,
+          "ROAD": 1.0,
+          "BRIDGE": 0.9
+        },
+        "state_speed_factors": {
+          "MOVING": 1.0,
+          "ATTACKING": 0.75,
+          "SEARCHING": 0.6,
+          "ENGAGING": 0.0,
+          "RETREATING": 0.85,
+          "DEFENDING": 0.0,
+          "IDLE": 0.0
+        },
+        "visual_sensor": {
+          "forward_range_m": 800,
+          "watch_slew_deg_per_s": 70
+        },
+        "echelon": "PLT",
+        "formation_family": "MG"
+      }
+    },
+    "US_MECH_INF_PLT_BRADLEY": {
+      "branch": "MECH_INFANTRY",
+      "max_speed_mps": 12.0,
+      "detection_range_m": 1400,
+      "elements": [
+        {
+          "id": "ifv",
+          "name": "M2 Bradley IFVs",
+          "category": "EQUIPMENT",
+          "role": "MECH_INFANTRY",
+          "count": 4,
+          "initial_count": 4,
+          "combat_value": 5.0,
+          "metadata": {
+            "tags": [
+              "ARMOR",
+              "IFV",
+              "MECH_INFANTRY"
+            ],
+            "protection_class": "MEDIUM_ARMOR",
+            "auto_split_on_mobility_kill": true
+          },
+          "weapons": [
+            {
+              "slot": "IFV_CANNON",
+              "weapon_id": "IFV_CANNON_GENERIC",
+              "metadata": {
+                "system_count": 4,
+                "systems_per_provider": 1
+              }
+            },
+            {
+              "slot": "IFV_COAX",
+              "weapon_id": "COAX_MG_GENERIC",
+              "metadata": {
+                "system_count": 4,
+                "systems_per_provider": 1
+              }
+            }
+          ],
+          "platform_id": "M2_BRADLEY"
+        },
+        {
+          "id": "vehicle_crew",
+          "name": "vehicle crews",
+          "category": "PERSONNEL",
+          "role": "CREW",
+          "count": 12,
+          "initial_count": 12,
+          "combat_value": 0.8,
+          "min_operators": 1,
+          "weapons": []
+        },
+        {
+          "id": "dismount_rifle",
+          "name": "dismounted riflemen",
+          "category": "PERSONNEL",
+          "role": "RIFLE",
+          "count": 18,
+          "initial_count": 18,
+          "combat_value": 1.0,
+          "min_operators": 1,
+          "weapons": [
+            {
+              "slot": "DISMOUNT_RIFLE_WEAPON",
+              "weapon_id": "SMALL_ARMS_GENERIC"
+            },
+            {
+              "slot": "LIGHT_AT_WEAPON",
+              "weapon_id": "AT4_MULTIROLE_GENERIC",
+              "metadata": {
+                "inventory_model": "DISPOSABLE_ROUNDS"
+              },
+              "ammo": 0
+            }
+          ],
+          "metadata": {
+            "dismountable": true
+          }
+        },
+        {
+          "id": "dismount_ar",
+          "name": "dismounted automatic riflemen",
+          "category": "PERSONNEL",
+          "role": "MACHINE_GUN",
+          "count": 4,
+          "initial_count": 4,
+          "combat_value": 1.35,
+          "min_operators": 1,
+          "weapons": [
+            {
+              "slot": "DISMOUNT_AR_WEAPON",
+              "weapon_id": "SAW_GENERIC",
+              "metadata": {
+                "system_count": 4,
+                "operators_per_system": 1
+              }
+            }
+          ],
+          "metadata": {
+            "dismountable": true
+          }
+        },
+        {
+          "id": "at_team",
+          "name": "dismounted anti-armor team",
+          "category": "PERSONNEL",
+          "role": "ANTI_ARMOR",
+          "count": 2,
+          "initial_count": 2,
+          "combat_value": 2.2,
+          "min_operators": 2,
+          "weapons": [
+            {
+              "slot": "AT_TEAM_WEAPON",
+              "weapon_id": "JAVELIN_FGM148",
+              "metadata": {
+                "system_count": 1,
+                "operators_per_system": 2
+              }
+            }
+          ],
+          "metadata": {
+            "dismountable": true
+          }
+        }
+      ],
+      "metadata": {
+        "mobility_class": "TRACKED",
+        "mobility_capabilities": [],
+        "terrain_speed_factors": {
+          "OPEN": 0.8,
+          "ROAD": 1.1,
+          "BRIDGE": 0.9
+        },
+        "state_speed_factors": {
+          "MOVING": 1.0,
+          "ATTACKING": 0.75,
+          "SEARCHING": 0.6,
+          "ENGAGING": 0.0,
+          "RETREATING": 0.85,
+          "DEFENDING": 0.0,
+          "IDLE": 0.0
+        },
+        "visual_sensor": {
+          "forward_range_m": 1400,
+          "watch_slew_deg_per_s": 70
+        },
+        "echelon": "PLT",
+        "formation_family": "MECH_INF",
+        "mount_state_default": "MOUNTED",
+        "embark_radius_m": 20.0,
+        "embark_time_s": 20.0,
+        "dismount_time_s": 15.0
+      }
+    },
+    "US_MOT_INF_PLT_HMMWV": {
+      "branch": "MOTORIZED_INFANTRY",
+      "max_speed_mps": 14.0,
+      "detection_range_m": 1200,
+      "elements": [
+        {
+          "id": "hmmwv",
+          "name": "HMMWVs",
+          "category": "EQUIPMENT",
+          "role": "MOTORIZED_INFANTRY",
+          "count": 4,
+          "initial_count": 4,
+          "combat_value": 5.0,
+          "metadata": {
+            "tags": [
+              "VEHICLE",
+              "WHEELED"
+            ],
+            "protection_class": "LIGHT_ARMOR",
+            "auto_split_on_mobility_kill": true
+          },
+          "weapons": [
+            {
+              "slot": "HMMWV_HMG",
+              "weapon_id": "HMG_GENERIC",
+              "metadata": {
+                "system_count": 2,
+                "systems_per_provider": 1
+              }
+            }
+          ],
+          "platform_id": "HMMWV"
+        },
+        {
+          "id": "vehicle_crew",
+          "name": "vehicle crews",
+          "category": "PERSONNEL",
+          "role": "CREW",
+          "count": 8,
+          "initial_count": 8,
+          "combat_value": 0.8,
+          "min_operators": 1,
+          "weapons": []
+        },
+        {
+          "id": "rifle",
+          "name": "mounted/dismounted riflemen",
+          "category": "PERSONNEL",
+          "role": "RIFLE",
+          "count": 24,
+          "initial_count": 24,
+          "combat_value": 1.0,
+          "min_operators": 1,
+          "weapons": [
+            {
+              "slot": "RIFLE_WEAPON",
+              "weapon_id": "SMALL_ARMS_GENERIC"
+            },
+            {
+              "slot": "LIGHT_AT_WEAPON",
+              "weapon_id": "AT4_MULTIROLE_GENERIC",
+              "metadata": {
+                "inventory_model": "DISPOSABLE_ROUNDS"
+              },
+              "ammo": 0
+            }
+          ]
+        },
+        {
+          "id": "mg_team",
+          "name": "machine-gun teams",
+          "category": "PERSONNEL",
+          "role": "MACHINE_GUN",
+          "count": 6,
+          "initial_count": 6,
+          "combat_value": 1.4,
+          "min_operators": 2,
+          "weapons": [
+            {
+              "slot": "MG_TEAM_WEAPON",
+              "weapon_id": "GPMG_SINGLE_GENERIC",
+              "metadata": {
+                "system_count": 2,
+                "operators_per_system": 3
+              }
+            }
+          ]
+        },
+        {
+          "id": "at_team",
+          "name": "anti-armor team",
+          "category": "PERSONNEL",
+          "role": "ANTI_ARMOR",
+          "count": 4,
+          "initial_count": 4,
+          "combat_value": 2.2,
+          "min_operators": 2,
+          "weapons": [
+            {
+              "slot": "AT_TEAM_WEAPON",
+              "weapon_id": "JAVELIN_FGM148",
+              "metadata": {
+                "system_count": 2,
+                "operators_per_system": 2
+              }
+            }
+          ]
+        }
+      ],
+      "metadata": {
+        "mobility_class": "WHEELED",
+        "mobility_capabilities": [],
+        "terrain_speed_factors": {
+          "OPEN": 0.8,
+          "ROAD": 1.1,
+          "BRIDGE": 0.9
+        },
+        "state_speed_factors": {
+          "MOVING": 1.0,
+          "ATTACKING": 0.75,
+          "SEARCHING": 0.6,
+          "ENGAGING": 0.0,
+          "RETREATING": 0.85,
+          "DEFENDING": 0.0,
+          "IDLE": 0.0
+        },
+        "visual_sensor": {
+          "forward_range_m": 1200,
+          "watch_slew_deg_per_s": 70
+        },
+        "echelon": "PLT",
+        "formation_family": "MOT_INF"
+      }
+    },
+    "BMP_MECH_INF_PLT": {
+      "branch": "MECH_INFANTRY",
+      "max_speed_mps": 11.0,
+      "detection_range_m": 1200,
+      "elements": [
+        {
+          "id": "ifv",
+          "name": "BMP-type IFVs",
+          "category": "EQUIPMENT",
+          "role": "MECH_INFANTRY",
+          "count": 3,
+          "initial_count": 3,
+          "combat_value": 5.0,
+          "metadata": {
+            "tags": [
+              "ARMOR",
+              "IFV",
+              "MECH_INFANTRY"
+            ],
+            "protection_class": "MEDIUM_ARMOR",
+            "auto_split_on_mobility_kill": true
+          },
+          "weapons": [
+            {
+              "slot": "BMP_CANNON",
+              "weapon_id": "IFV_CANNON_GENERIC",
+              "metadata": {
+                "system_count": 3,
+                "systems_per_provider": 1
+              }
+            },
+            {
+              "slot": "BMP_COAX",
+              "weapon_id": "COAX_MG_GENERIC",
+              "metadata": {
+                "system_count": 3,
+                "systems_per_provider": 1
+              }
+            }
+          ],
+          "platform_id": "BMP_GENERIC"
+        },
+        {
+          "id": "vehicle_crew",
+          "name": "vehicle crews",
+          "category": "PERSONNEL",
+          "role": "CREW",
+          "count": 9,
+          "initial_count": 9,
+          "combat_value": 0.8,
+          "min_operators": 1,
+          "weapons": []
+        },
+        {
+          "id": "dismount_rifle",
+          "name": "dismounted riflemen",
+          "category": "PERSONNEL",
+          "role": "RIFLE",
+          "count": 15,
+          "initial_count": 15,
+          "combat_value": 1.0,
+          "min_operators": 1,
+          "weapons": [
+            {
+              "slot": "DISMOUNT_RIFLE_WEAPON",
+              "weapon_id": "SMALL_ARMS_GENERIC"
+            },
+            {
+              "slot": "LIGHT_AT_WEAPON",
+              "weapon_id": "AT4_MULTIROLE_GENERIC",
+              "metadata": {
+                "inventory_model": "DISPOSABLE_ROUNDS"
+              },
+              "ammo": 0
+            }
+          ],
+          "metadata": {
+            "dismountable": true
+          }
+        },
+        {
+          "id": "dismount_mg",
+          "name": "dismounted machine-gun crew",
+          "category": "PERSONNEL",
+          "role": "MACHINE_GUN",
+          "count": 4,
+          "initial_count": 4,
+          "combat_value": 1.4,
+          "min_operators": 2,
+          "weapons": [
+            {
+              "slot": "DISMOUNT_MG_WEAPON",
+              "weapon_id": "GPMG_SINGLE_GENERIC",
+              "metadata": {
+                "system_count": 2,
+                "operators_per_system": 2
+              }
+            }
+          ],
+          "metadata": {
+            "dismountable": true
+          }
+        },
+        {
+          "id": "at_team",
+          "name": "dismounted anti-armor",
+          "category": "PERSONNEL",
+          "role": "ANTI_ARMOR",
+          "count": 2,
+          "initial_count": 2,
+          "combat_value": 2.2,
+          "min_operators": 2,
+          "weapons": [
+            {
+              "slot": "AT_TEAM_WEAPON",
+              "weapon_id": "ATGM_GENERIC",
+              "metadata": {
+                "system_count": 1,
+                "operators_per_system": 2
+              }
+            }
+          ],
+          "metadata": {
+            "dismountable": true
+          }
+        }
+      ],
+      "metadata": {
+        "mobility_class": "TRACKED",
+        "mobility_capabilities": [],
+        "terrain_speed_factors": {
+          "OPEN": 0.8,
+          "ROAD": 1.1,
+          "BRIDGE": 0.9
+        },
+        "state_speed_factors": {
+          "MOVING": 1.0,
+          "ATTACKING": 0.75,
+          "SEARCHING": 0.6,
+          "ENGAGING": 0.0,
+          "RETREATING": 0.85,
+          "DEFENDING": 0.0,
+          "IDLE": 0.0
+        },
+        "visual_sensor": {
+          "forward_range_m": 1200,
+          "watch_slew_deg_per_s": 70
+        },
+        "echelon": "PLT",
+        "formation_family": "MECH_INF",
+        "mount_state_default": "MOUNTED",
+        "embark_radius_m": 20.0,
+        "embark_time_s": 20.0,
+        "dismount_time_s": 15.0
+      }
+    },
+    "ROK_MECH_INF_PLT_K200": {
+      "branch": "MECH_INFANTRY",
+      "max_speed_mps": 12.0,
+      "detection_range_m": 1200,
+      "elements": [
+        {
+          "id": "apc",
+          "name": "K200-type APCs",
+          "category": "EQUIPMENT",
+          "role": "MECH_INFANTRY",
+          "count": 4,
+          "initial_count": 4,
+          "combat_value": 5.0,
+          "metadata": {
+            "tags": [
+              "ARMOR",
+              "APC",
+              "MECH_INFANTRY"
+            ],
+            "protection_class": "LIGHT_ARMOR",
+            "auto_split_on_mobility_kill": true
+          },
+          "weapons": [
+            {
+              "slot": "APC_HMG",
+              "weapon_id": "HMG_GENERIC",
+              "metadata": {
+                "system_count": 4,
+                "systems_per_provider": 1
+              }
+            }
+          ],
+          "platform_id": "K200_GENERIC"
+        },
+        {
+          "id": "vehicle_crew",
+          "name": "vehicle crews",
+          "category": "PERSONNEL",
+          "role": "CREW",
+          "count": 12,
+          "initial_count": 12,
+          "combat_value": 0.8,
+          "min_operators": 1,
+          "weapons": []
+        },
+        {
+          "id": "dismount_rifle",
+          "name": "dismounted riflemen",
+          "category": "PERSONNEL",
+          "role": "RIFLE",
+          "count": 24,
+          "initial_count": 24,
+          "combat_value": 1.0,
+          "min_operators": 1,
+          "weapons": [
+            {
+              "slot": "DISMOUNT_RIFLE_WEAPON",
+              "weapon_id": "SMALL_ARMS_GENERIC"
+            },
+            {
+              "slot": "LIGHT_AT_WEAPON",
+              "weapon_id": "AT4_MULTIROLE_GENERIC",
+              "metadata": {
+                "inventory_model": "DISPOSABLE_ROUNDS"
+              },
+              "ammo": 0
+            }
+          ],
+          "metadata": {
+            "dismountable": true
+          }
+        },
+        {
+          "id": "dismount_mg",
+          "name": "machine-gun teams",
+          "category": "PERSONNEL",
+          "role": "MACHINE_GUN",
+          "count": 6,
+          "initial_count": 6,
+          "combat_value": 1.4,
+          "min_operators": 2,
+          "weapons": [
+            {
+              "slot": "DISMOUNT_MG_WEAPON",
+              "weapon_id": "GPMG_SINGLE_GENERIC",
+              "metadata": {
+                "system_count": 2,
+                "operators_per_system": 3
+              }
+            }
+          ],
+          "metadata": {
+            "dismountable": true
+          }
+        },
+        {
+          "id": "at_team",
+          "name": "anti-armor team",
+          "category": "PERSONNEL",
+          "role": "ANTI_ARMOR",
+          "count": 4,
+          "initial_count": 4,
+          "combat_value": 2.2,
+          "min_operators": 2,
+          "weapons": [
+            {
+              "slot": "AT_TEAM_WEAPON",
+              "weapon_id": "ATGM_GENERIC",
+              "metadata": {
+                "system_count": 2,
+                "operators_per_system": 2
+              }
+            }
+          ],
+          "metadata": {
+            "dismountable": true
+          }
+        }
+      ],
+      "metadata": {
+        "mobility_class": "TRACKED",
+        "mobility_capabilities": [],
+        "terrain_speed_factors": {
+          "OPEN": 0.8,
+          "ROAD": 1.1,
+          "BRIDGE": 0.9
+        },
+        "state_speed_factors": {
+          "MOVING": 1.0,
+          "ATTACKING": 0.75,
+          "SEARCHING": 0.6,
+          "ENGAGING": 0.0,
+          "RETREATING": 0.85,
+          "DEFENDING": 0.0,
+          "IDLE": 0.0
+        },
+        "visual_sensor": {
+          "forward_range_m": 1200,
+          "watch_slew_deg_per_s": 70
+        },
+        "echelon": "PLT",
+        "formation_family": "MECH_INF",
+        "mount_state_default": "MOUNTED",
+        "embark_radius_m": 20.0,
+        "embark_time_s": 20.0,
+        "dismount_time_s": 15.0
+      }
+    },
+    "US_M1A2_ABRAMS_IND": {
+      "branch": "ARMOR",
+      "max_speed_mps": 12.0,
+      "detection_range_m": 1500,
+      "elements": [
+        {
+          "id": "vehicle",
+          "name": "M1A2 Abrams",
+          "category": "EQUIPMENT",
+          "role": "ARMOR",
+          "count": 1,
+          "initial_count": 1,
+          "combat_value": 12.0,
+          "metadata": {
+            "tags": [
+              "ARMOR",
+              "ARMOR"
+            ],
+            "protection_class": "HEAVY_ARMOR",
+            "auto_split_on_mobility_kill": true,
+            "crew_per_weapon": 4,
+            "crew_elements": [
+              "vehicle_crew"
+            ]
+          },
+          "weapons": [
+            {
+              "slot": "MAIN_GUN_AP",
+              "weapon_id": "TANK_GUN_AP_GENERIC",
+              "metadata": {
+                "system_count": 1,
+                "systems_per_provider": 1
+              }
+            },
+            {
+              "slot": "MAIN_GUN_HE",
+              "weapon_id": "TANK_GUN_HE_GENERIC",
+              "metadata": {
+                "system_count": 1,
+                "systems_per_provider": 1
+              }
+            },
+            {
+              "slot": "COAX_MG",
+              "weapon_id": "COAX_MG_GENERIC",
+              "metadata": {
+                "system_count": 1,
+                "systems_per_provider": 1
+              }
+            },
+            {
+              "slot": "COMMANDER_HMG",
+              "weapon_id": "HMG_GENERIC",
+              "metadata": {
+                "system_count": 1,
+                "systems_per_provider": 1
+              }
+            },
+            {
+              "slot": "LOADER_MG",
+              "weapon_id": "GPMG_SINGLE_GENERIC",
+              "metadata": {
+                "system_count": 1,
+                "systems_per_provider": 1,
+                "inventory_model": "PLATFORM_MOUNT",
+                "editor_show_crew": false
+              }
+            }
+          ],
+          "platform_id": "M1A2_ABRAMS"
+        },
+        {
+          "id": "vehicle_crew",
+          "name": "M1A2 Abrams crews",
+          "category": "PERSONNEL",
+          "role": "CREW",
+          "count": 4,
+          "initial_count": 4,
+          "combat_value": 0.8,
+          "min_operators": 1,
+          "weapons": [],
+          "metadata": {
+            "protected_by": "vehicle"
+          }
+        }
+      ],
+      "metadata": {
+        "mobility_class": "TRACKED",
+        "mobility_capabilities": [],
+        "terrain_speed_factors": {
+          "OPEN": 0.85,
+          "ROAD": 1.2,
+          "BRIDGE": 0.85
+        },
+        "state_speed_factors": {
+          "MOVING": 1.0,
+          "ATTACKING": 0.75,
+          "SEARCHING": 0.55,
+          "ENGAGING": 0.0,
+          "RETREATING": 0.8,
+          "DEFENDING": 0.0,
+          "IDLE": 0.0
+        },
+        "visual_sensor": {
+          "forward_range_m": 1500,
+          "watch_slew_deg_per_s": 60
+        },
+        "echelon": "IND",
+        "formation_family": "TANK"
+      }
+    },
+    "ROK_K2_TANK_IND": {
+      "branch": "ARMOR",
+      "max_speed_mps": 12.5,
+      "detection_range_m": 1600,
+      "elements": [
+        {
+          "id": "vehicle",
+          "name": "K2 Black Panther",
+          "category": "EQUIPMENT",
+          "role": "ARMOR",
+          "count": 1,
+          "initial_count": 1,
+          "combat_value": 12.0,
+          "metadata": {
+            "tags": [
+              "ARMOR",
+              "ARMOR"
+            ],
+            "protection_class": "HEAVY_ARMOR",
+            "auto_split_on_mobility_kill": true,
+            "crew_per_weapon": 3,
+            "crew_elements": [
+              "vehicle_crew"
+            ]
+          },
+          "weapons": [
+            {
+              "slot": "MAIN_GUN_AP",
+              "weapon_id": "TANK_GUN_AP_GENERIC",
+              "metadata": {
+                "system_count": 1,
+                "systems_per_provider": 1
+              }
+            },
+            {
+              "slot": "MAIN_GUN_HE",
+              "weapon_id": "TANK_GUN_HE_GENERIC",
+              "metadata": {
+                "system_count": 1,
+                "systems_per_provider": 1
+              }
+            },
+            {
+              "slot": "COAX_MG",
+              "weapon_id": "COAX_MG_GENERIC",
+              "metadata": {
+                "system_count": 1,
+                "systems_per_provider": 1
+              }
+            }
+          ],
+          "platform_id": "K2_BLACK_PANTHER"
+        },
+        {
+          "id": "vehicle_crew",
+          "name": "K2 Black Panther crews",
+          "category": "PERSONNEL",
+          "role": "CREW",
+          "count": 3,
+          "initial_count": 3,
+          "combat_value": 0.8,
+          "min_operators": 1,
+          "weapons": [],
+          "metadata": {
+            "protected_by": "vehicle"
+          }
+        }
+      ],
+      "metadata": {
+        "mobility_class": "TRACKED",
+        "mobility_capabilities": [],
+        "terrain_speed_factors": {
+          "OPEN": 0.85,
+          "ROAD": 1.2,
+          "BRIDGE": 0.85
+        },
+        "state_speed_factors": {
+          "MOVING": 1.0,
+          "ATTACKING": 0.75,
+          "SEARCHING": 0.55,
+          "ENGAGING": 0.0,
+          "RETREATING": 0.8,
+          "DEFENDING": 0.0,
+          "IDLE": 0.0
+        },
+        "visual_sensor": {
+          "forward_range_m": 1600,
+          "watch_slew_deg_per_s": 60
+        },
+        "echelon": "IND",
+        "formation_family": "TANK"
+      }
+    },
+    "US_M2_BRADLEY_IND": {
+      "branch": "MECH_INFANTRY",
+      "max_speed_mps": 12.0,
+      "detection_range_m": 1400,
+      "elements": [
+        {
+          "id": "vehicle",
+          "name": "M2 Bradley IFV",
+          "category": "EQUIPMENT",
+          "role": "MECH_INFANTRY",
+          "count": 1,
+          "initial_count": 1,
+          "combat_value": 5.0,
+          "metadata": {
+            "tags": [
+              "ARMOR",
+              "MECH_INFANTRY"
+            ],
+            "protection_class": "MEDIUM_ARMOR",
+            "auto_split_on_mobility_kill": true
+          },
+          "weapons": [
+            {
+              "slot": "IFV_CANNON",
+              "weapon_id": "IFV_CANNON_GENERIC",
+              "metadata": {
+                "system_count": 1,
+                "systems_per_provider": 1
+              }
+            },
+            {
+              "slot": "IFV_COAX",
+              "weapon_id": "COAX_MG_GENERIC",
+              "metadata": {
+                "system_count": 1,
+                "systems_per_provider": 1
+              }
+            }
+          ],
+          "platform_id": "M2_BRADLEY"
+        },
+        {
+          "id": "vehicle_crew",
+          "name": "vehicle crew",
+          "category": "PERSONNEL",
+          "role": "CREW",
+          "count": 3,
+          "initial_count": 3,
+          "combat_value": 0.8,
+          "min_operators": 1,
+          "metadata": {
+            "tags": [
+              "CREW"
+            ]
+          },
+          "weapons": []
+        }
+      ],
+      "metadata": {
+        "mobility_class": "TRACKED",
+        "mobility_capabilities": [],
+        "terrain_speed_factors": {
+          "OPEN": 0.85,
+          "ROAD": 1.2,
+          "BRIDGE": 0.85
+        },
+        "state_speed_factors": {
+          "MOVING": 1.0,
+          "ATTACKING": 0.75,
+          "SEARCHING": 0.55,
+          "ENGAGING": 0.0,
+          "RETREATING": 0.8,
+          "DEFENDING": 0.0,
+          "IDLE": 0.0
+        },
+        "visual_sensor": {
+          "forward_range_m": 1400,
+          "watch_slew_deg_per_s": 60
+        },
+        "echelon": "IND",
+        "formation_family": "MECH_INF",
+        "mount_state_default": "MOUNTED",
+        "embark_radius_m": 20.0,
+        "embark_time_s": 20.0,
+        "dismount_time_s": 15.0
+      }
+    },
+    "BMP_IFV_IND": {
+      "branch": "MECH_INFANTRY",
+      "max_speed_mps": 11.0,
+      "detection_range_m": 1200,
+      "elements": [
+        {
+          "id": "vehicle",
+          "name": "BMP-type IFV",
+          "category": "EQUIPMENT",
+          "role": "MECH_INFANTRY",
+          "count": 1,
+          "initial_count": 1,
+          "combat_value": 5.0,
+          "metadata": {
+            "tags": [
+              "ARMOR",
+              "MECH_INFANTRY"
+            ],
+            "protection_class": "MEDIUM_ARMOR",
+            "auto_split_on_mobility_kill": true
+          },
+          "weapons": [
+            {
+              "slot": "BMP_CANNON",
+              "weapon_id": "IFV_CANNON_GENERIC",
+              "metadata": {
+                "system_count": 1,
+                "systems_per_provider": 1
+              }
+            },
+            {
+              "slot": "BMP_COAX",
+              "weapon_id": "COAX_MG_GENERIC",
+              "metadata": {
+                "system_count": 1,
+                "systems_per_provider": 1
+              }
+            }
+          ],
+          "platform_id": "BMP_GENERIC"
+        },
+        {
+          "id": "vehicle_crew",
+          "name": "vehicle crew",
+          "category": "PERSONNEL",
+          "role": "CREW",
+          "count": 3,
+          "initial_count": 3,
+          "combat_value": 0.8,
+          "min_operators": 1,
+          "metadata": {
+            "tags": [
+              "CREW"
+            ]
+          },
+          "weapons": []
+        }
+      ],
+      "metadata": {
+        "mobility_class": "TRACKED",
+        "mobility_capabilities": [],
+        "terrain_speed_factors": {
+          "OPEN": 0.85,
+          "ROAD": 1.2,
+          "BRIDGE": 0.85
+        },
+        "state_speed_factors": {
+          "MOVING": 1.0,
+          "ATTACKING": 0.75,
+          "SEARCHING": 0.55,
+          "ENGAGING": 0.0,
+          "RETREATING": 0.8,
+          "DEFENDING": 0.0,
+          "IDLE": 0.0
+        },
+        "visual_sensor": {
+          "forward_range_m": 1200,
+          "watch_slew_deg_per_s": 60
+        },
+        "echelon": "IND",
+        "formation_family": "MECH_INF",
+        "mount_state_default": "MOUNTED",
+        "embark_radius_m": 20.0,
+        "embark_time_s": 20.0,
+        "dismount_time_s": 15.0
+      }
+    },
+    "ROK_K200_APC_IND": {
+      "branch": "MECH_INFANTRY",
+      "max_speed_mps": 12.0,
+      "detection_range_m": 1200,
+      "elements": [
+        {
+          "id": "vehicle",
+          "name": "K200-type APC",
+          "category": "EQUIPMENT",
+          "role": "MECH_INFANTRY",
+          "count": 1,
+          "initial_count": 1,
+          "combat_value": 5.0,
+          "metadata": {
+            "tags": [
+              "ARMOR",
+              "MECH_INFANTRY"
+            ],
+            "protection_class": "LIGHT_ARMOR",
+            "auto_split_on_mobility_kill": true
+          },
+          "weapons": [
+            {
+              "slot": "APC_HMG",
+              "weapon_id": "HMG_GENERIC",
+              "metadata": {
+                "system_count": 1,
+                "systems_per_provider": 1
+              }
+            }
+          ],
+          "platform_id": "K200_GENERIC"
+        },
+        {
+          "id": "vehicle_crew",
+          "name": "vehicle crew",
+          "category": "PERSONNEL",
+          "role": "CREW",
+          "count": 3,
+          "initial_count": 3,
+          "combat_value": 0.8,
+          "min_operators": 1,
+          "metadata": {
+            "tags": [
+              "CREW"
+            ]
+          },
+          "weapons": []
+        }
+      ],
+      "metadata": {
+        "mobility_class": "TRACKED",
+        "mobility_capabilities": [],
+        "terrain_speed_factors": {
+          "OPEN": 0.85,
+          "ROAD": 1.2,
+          "BRIDGE": 0.85
+        },
+        "state_speed_factors": {
+          "MOVING": 1.0,
+          "ATTACKING": 0.75,
+          "SEARCHING": 0.55,
+          "ENGAGING": 0.0,
+          "RETREATING": 0.8,
+          "DEFENDING": 0.0,
+          "IDLE": 0.0
+        },
+        "visual_sensor": {
+          "forward_range_m": 1200,
+          "watch_slew_deg_per_s": 60
+        },
+        "echelon": "IND",
+        "formation_family": "MECH_INF",
+        "mount_state_default": "MOUNTED",
+        "embark_radius_m": 20.0,
+        "embark_time_s": 20.0,
+        "dismount_time_s": 15.0
+      }
+    },
+    "US_HMMWV_IND": {
+      "branch": "MOTORIZED_INFANTRY",
+      "max_speed_mps": 14.0,
+      "detection_range_m": 1200,
+      "elements": [
+        {
+          "id": "vehicle",
+          "name": "HMMWV",
+          "category": "EQUIPMENT",
+          "role": "MOTORIZED_INFANTRY",
+          "count": 1,
+          "initial_count": 1,
+          "combat_value": 5.0,
+          "metadata": {
+            "tags": [
+              "VEHICLE",
+              "WHEELED"
+            ],
+            "protection_class": "LIGHT_ARMOR",
+            "auto_split_on_mobility_kill": true
+          },
+          "weapons": [
+            {
+              "slot": "HMMWV_HMG",
+              "weapon_id": "HMG_GENERIC",
+              "metadata": {
+                "system_count": 1,
+                "systems_per_provider": 1
+              }
+            }
+          ],
+          "platform_id": "HMMWV"
+        },
+        {
+          "id": "vehicle_crew",
+          "name": "vehicle crew",
+          "category": "PERSONNEL",
+          "role": "CREW",
+          "count": 2,
+          "initial_count": 2,
+          "combat_value": 0.8,
+          "min_operators": 1,
+          "metadata": {
+            "tags": [
+              "CREW"
+            ]
+          },
+          "weapons": []
+        }
+      ],
+      "metadata": {
+        "mobility_class": "WHEELED",
+        "mobility_capabilities": [],
+        "terrain_speed_factors": {
+          "OPEN": 0.8,
+          "ROAD": 1.15,
+          "BRIDGE": 0.85
+        },
+        "state_speed_factors": {
+          "MOVING": 1.0,
+          "ATTACKING": 0.75,
+          "SEARCHING": 0.55,
+          "ENGAGING": 0.0,
+          "RETREATING": 0.8,
+          "DEFENDING": 0.0,
+          "IDLE": 0.0
+        },
+        "visual_sensor": {
+          "forward_range_m": 1200,
+          "watch_slew_deg_per_s": 60
+        },
+        "echelon": "IND",
+        "formation_family": "MOT_INF"
+      }
+    }
+  },
+  "weapon_database_file": "../database/weapons.csv",
+  "loadouts_file": "../database/loadouts.json",
+  "platform_database_file": "../database/platforms.csv"
+}

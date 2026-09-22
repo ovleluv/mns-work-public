@@ -1,0 +1,54 @@
+{
+  "side": "BLUE",
+  "replace_existing_orders": true,
+  "missions": [
+    {
+      "id": "AMBUSH-WAIT",
+      "unit": "B-WAIT",
+      "task": "HOLD",
+      "directives": {
+        "hold_at_all_costs": true,
+        "allow_withdrawal": false,
+        "allow_break_contact": false
+      },
+      "conditions": [
+        {
+          "lhs": "sim.time",
+          "op": ">=",
+          "rhs": 120
+        }
+      ],
+      "on_true": {
+        "id": "AMBUSH-TIMED-ATTACK",
+        "task": "ATTACK_POSITION",
+        "destination": [
+          650,
+          500
+        ],
+        "persistent": true,
+        "deadline_s": 180,
+        "on_deadline": {
+          "id": "AMBUSH-DISPLACE",
+          "task": "WITHDRAW",
+          "destination": [
+            400,
+            750
+          ]
+        }
+      }
+    },
+    {
+      "id": "AMBUSH-RALLY",
+      "unit": "B-WAIT",
+      "task": "HOLD",
+      "directives": {
+        "hold_at_all_costs": true,
+        "allow_withdrawal": false,
+        "allow_break_contact": false
+      }
+    }
+  ],
+  "notes": [
+    "Approximation only: HOLD is not a weapons-hold order; timed attack does not guarantee controlled initiation."
+  ]
+}

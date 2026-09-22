@@ -1,0 +1,228 @@
+{
+  "seed": 7,
+  "world": {
+    "width_m": 3000.0,
+    "height_m": 4000.0
+  },
+  "objectives": {},
+  "units": [
+    {
+      "id": "B-INF_PLT-1",
+      "name": "B-INF_PLT-1",
+      "side": "BLUE",
+      "echelon": "PLT",
+      "type": "INF_PLT",
+      "pos": [
+        1255.6,
+        2044.4
+      ],
+      "heading_deg": 0.0,
+      "orders": [
+        {
+          "id": "B-INF_PLT-1-HOLD",
+          "kind": "HOLD",
+          "params": {
+            "duration_s": 9999
+          }
+        }
+      ]
+    },
+    {
+      "id": "R-ARTY_PLT-1",
+      "name": "R-ARTY_PLT-1",
+      "side": "RED",
+      "echelon": "PLT",
+      "type": "ARTY_PLT",
+      "pos": [
+        2704.4,
+        684.4
+      ],
+      "heading_deg": 0.0,
+      "orders": [
+        {
+          "id": "R-ARTY_PLT-1-HOLD",
+          "kind": "HOLD",
+          "params": {
+            "duration_s": 9999
+          }
+        }
+      ]
+    },
+    {
+      "id": "B-INF_BN-1",
+      "name": "B-INF_BN-1",
+      "side": "BLUE",
+      "echelon": "BN",
+      "type": "INF_BN",
+      "pos": [
+        2251.1,
+        2986.7
+      ],
+      "heading_deg": 0.0,
+      "orders": [
+        {
+          "id": "B-INF_BN-1-HOLD",
+          "kind": "HOLD",
+          "params": {
+            "duration_s": 9999
+          }
+        }
+      ]
+    },
+    {
+      "id": "R-INF_PLT-1",
+      "name": "R-INF_PLT-1",
+      "side": "RED",
+      "echelon": "PLT",
+      "type": "INF_PLT",
+      "pos": [
+        2066.7,
+        2775.4
+      ],
+      "heading_deg": 0.0,
+      "orders": [
+        {
+          "id": "R-INF_PLT-1-HOLD",
+          "kind": "HOLD",
+          "params": {
+            "duration_s": 9999
+          }
+        }
+      ]
+    },
+    {
+      "id": "R-INF_PLT-2",
+      "name": "R-INF_PLT-2",
+      "side": "RED",
+      "echelon": "PLT",
+      "type": "INF_PLT",
+      "pos": [
+        2355.6,
+        2634.7
+      ],
+      "heading_deg": 0.0,
+      "orders": [
+        {
+          "id": "R-INF_PLT-2-HOLD",
+          "kind": "HOLD",
+          "params": {
+            "duration_s": 9999
+          }
+        }
+      ]
+    },
+    {
+      "id": "R-INF_PLT-3",
+      "name": "R-INF_PLT-3",
+      "side": "RED",
+      "echelon": "PLT",
+      "type": "INF_PLT",
+      "pos": [
+        2448.1,
+        2016.2
+      ],
+      "heading_deg": 0.0,
+      "orders": [
+        {
+          "id": "R-INF_PLT-3-HOLD",
+          "kind": "HOLD",
+          "params": {
+            "duration_s": 9999
+          }
+        }
+      ]
+    },
+    {
+      "id": "R-INF_PLT-4",
+      "name": "R-INF_PLT-4",
+      "side": "RED",
+      "echelon": "PLT",
+      "type": "INF_PLT",
+      "pos": [
+        2348.1,
+        768.0
+      ],
+      "heading_deg": 0.0,
+      "orders": [
+        {
+          "id": "R-INF_PLT-4-HOLD",
+          "kind": "HOLD",
+          "params": {
+            "duration_s": 9999
+          }
+        }
+      ]
+    },
+    {
+      "id": "B-INF_PLT-2",
+      "name": "B-INF_PLT-2",
+      "side": "BLUE",
+      "echelon": "PLT",
+      "type": "INF_PLT",
+      "pos": [
+        1388.9,
+        2142.1
+      ],
+      "heading_deg": 0.0,
+      "orders": [
+        {
+          "id": "B-INF_PLT-2-HOLD",
+          "kind": "HOLD",
+          "params": {
+            "duration_s": 9999
+          }
+        }
+      ]
+    },
+    {
+      "id": "R-INF_PLT-5",
+      "name": "R-INF_PLT-5",
+      "side": "RED",
+      "echelon": "PLT",
+      "type": "INF_PLT",
+      "pos": [
+        1014.8,
+        1253.2
+      ],
+      "heading_deg": 0.0,
+      "orders": [
+        {
+          "id": "R-INF_PLT-5-HOLD",
+          "kind": "HOLD",
+          "params": {
+            "duration_s": 9999
+          }
+        }
+      ]
+    },
+    {
+      "id": "R-INF_COY-1",
+      "name": "R-INF_COY-1",
+      "side": "RED",
+      "echelon": "COY",
+      "type": "INF_COY",
+      "pos": [
+        2166.7,
+        2519.9
+      ],
+      "heading_deg": 0.0,
+      "orders": [
+        {
+          "id": "R-INF_COY-1-HOLD",
+          "kind": "HOLD",
+          "params": {
+            "duration_s": 9999
+          }
+        }
+      ]
+    }
+  ],
+  "aggregations": [],
+  "config_file": "../../config/defaults.json",
+  "unit_types_file": "../../config/toe_templates.json",
+  "artillery_doctrine_file": "../../config/artillery_doctrine.json",
+  "targeting_doctrine_file": "../../config/targeting_doctrine.json",
+  "terrain_file": "tdg1_terrain.json",
+  "weapon_database_file": "../../database/weapons.csv",
+  "loadouts_file": "../../database/loadouts.json"
+}

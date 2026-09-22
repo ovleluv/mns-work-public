@@ -1,0 +1,32 @@
+{
+  "roads": [],
+  "rivers": [],
+  "bridges": [],
+  "areas": [
+    {
+      "id": "AMBUSH_COVER",
+      "type": "FOREST",
+      "polygon": [
+        [
+          550,
+          620
+        ],
+        [
+          700,
+          620
+        ],
+        [
+          700,
+          700
+        ],
+        [
+          550,
+          700
+        ]
+      ],
+      "movement_factor": 0.65,
+      "target_concealment_factor": 0.5,
+      "max_visual_penetration_m": 75
+    }
+  ]
+}

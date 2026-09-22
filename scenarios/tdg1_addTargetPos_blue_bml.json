@@ -1,0 +1,52 @@
+{
+  "side": "BLUE",
+  "replace_existing_orders": true,
+  "missions": [
+    {
+      "id": "BLUE-BN-DESTROY-ARTY1",
+      "unit": "B-INF_BN-1",
+      "task": "DESTROY_UNIT",
+      "target": "R-INF_PLT-1",
+      "target_position": [
+        2507.4,
+        797.8
+      ]
+    },
+    {
+      "id": "BLUE-BN-SWEEP-NORTHWEST-MOUNTAIN",
+      "unit": "B-INF_BN-1",
+      "task": "ATTACK_POSITION",
+      "destination": [
+        960.0,
+        1130.0
+      ],
+      "persistent": true
+    },
+    {
+      "id": "BLUE-PLT1-RECON-CENTRAL-MOUNTAIN",
+      "unit": "B-INF_PLT-1",
+      "task": "ATTACK_POSITION",
+      "destination": [
+        1180.0,
+        1800.0
+      ],
+      "persistent": true
+    },
+    {
+      "id": "BLUE-PLT2-RECON-EAST-MOUNTAIN",
+      "unit": "B-INF_PLT-2",
+      "task": "ATTACK_POSITION",
+      "destination": [
+        1980.0,
+        1750.0
+      ],
+      "persistent": true
+    }
+  ],
+  "notes": [
+    "B-INF_BN-1 prioritizes its mission target when tracked, but may engage intervening actionable contacts.",
+    "After the first target-unit mission completes, B-INF_BN-1 sweeps the upper portion of the western forested mountain where RED contact is suspected.",
+    "target_position is an explicit commander-provided planning/intelligence reference, not a live ground-truth link.",
+    "B-INF_PLT-1 and B-INF_PLT-2 use coordinate-based ATTACK_POSITION missions to recon/search separate sectors of the nearby forested mountain area."
+  ]
+}

@@ -1,0 +1,1367 @@
+{
+  "seed": 7,
+  "world": {
+    "width_m": 2016.0,
+    "height_m": 2592.0
+  },
+  "terrain_file": "tdg3_terrain.json",
+  "weapon_database_file": "../database/weapons.csv",
+  "objectives": {
+    "ORV": [
+      1748.0,
+      1252.0
+    ],
+    "RP": [
+      1648.0,
+      756.0
+    ],
+    "VP": [
+      1400.0,
+      632.0
+    ],
+    "AP": [
+      1144,
+      632
+    ],
+    "BRIDGE": [
+      1316,
+      808
+    ],
+    "SOUTH_EXIT_PROXY": [
+      1132.0,
+      2560.0
+    ]
+  },
+  "combat": {
+    "environment": {
+      "weather": "CLEAR",
+      "illumination": "NIGHT",
+      "illumination_observation_modifiers": {
+        "NIGHT": {
+          "range_factor": 0.55,
+          "fov_factor": 0.9,
+          "awareness_factor": 0.85,
+          "detection_factor": 0.65
+        }
+      }
+    }
+  },
+  "unit_types": {
+    "TDG3_RIFLE_SECTION": {
+      "branch": "INFANTRY",
+      "max_speed_mps": 1.15,
+      "detection_range_m": 600,
+      "elements": [
+        {
+          "id": "section_leader",
+          "name": "section leader",
+          "category": "PERSONNEL",
+          "role": "COMMAND",
+          "count": 1,
+          "initial_count": 1,
+          "combat_value": 1.0,
+          "weapons": [
+            {
+              "weapon_id": "SMALL_ARMS_COMMAND_GENERIC",
+              "metadata": {
+                "system_count": 1,
+                "operators_per_system": 1
+              }
+            }
+          ]
+        },
+        {
+          "id": "riflemen",
+          "name": "riflemen",
+          "category": "PERSONNEL",
+          "role": "RIFLE",
+          "count": 5,
+          "initial_count": 5,
+          "combat_value": 1.0,
+          "weapons": [
+            {
+              "weapon_id": "SMALL_ARMS_GENERIC",
+              "metadata": {
+                "system_count": 1,
+                "operators_per_system": 1
+              }
+            }
+          ]
+        },
+        {
+          "id": "automatic_riflemen",
+          "name": "automatic riflemen",
+          "category": "PERSONNEL",
+          "role": "MACHINE_GUN",
+          "count": 2,
+          "initial_count": 2,
+          "combat_value": 1.0,
+          "weapons": [
+            {
+              "weapon_id": "SAW_GENERIC",
+              "metadata": {
+                "system_count": 2,
+                "operators_per_system": 1
+              }
+            }
+          ]
+        }
+      ],
+      "metadata": {
+        "mobility_class": "FOOT",
+        "mobility_capabilities": [],
+        "terrain_speed_factors": {
+          "OPEN": 0.6,
+          "ROAD": 1.0,
+          "BRIDGE": 0.9
+        },
+        "state_speed_factors": {
+          "MOVING": 1.0,
+          "ATTACKING": 0.75,
+          "SEARCHING": 0.6,
+          "ENGAGING": 0.0,
+          "RETREATING": 0.85,
+          "DEFENDING": 0.0,
+          "IDLE": 0.0
+        },
+        "visual_sensor": {
+          "forward_range_m": 600,
+          "watch_slew_deg_per_s": 70
+        },
+        "echelon": "SQD",
+        "formation_family": "TDG3_RIFLE_SECTION"
+      }
+    },
+    "TDG3_SECURITY_PAIR": {
+      "branch": "INFANTRY",
+      "max_speed_mps": 1.15,
+      "detection_range_m": 600,
+      "elements": [
+        {
+          "id": "scouts",
+          "name": "scouts",
+          "category": "PERSONNEL",
+          "role": "RIFLE",
+          "count": 2,
+          "initial_count": 2,
+          "combat_value": 1.0,
+          "weapons": [
+            {
+              "weapon_id": "SMALL_ARMS_GENERIC",
+              "metadata": {
+                "system_count": 1,
+                "operators_per_system": 1
+              }
+            }
+          ]
+        }
+      ],
+      "metadata": {
+        "mobility_class": "FOOT",
+        "mobility_capabilities": [],
+        "terrain_speed_factors": {
+          "OPEN": 0.6,
+          "ROAD": 1.0,
+          "BRIDGE": 0.9
+        },
+        "state_speed_factors": {
+          "MOVING": 1.0,
+          "ATTACKING": 0.75,
+          "SEARCHING": 0.6,
+          "ENGAGING": 0.0,
+          "RETREATING": 0.85,
+          "DEFENDING": 0.0,
+          "IDLE": 0.0
+        },
+        "visual_sensor": {
+          "forward_range_m": 600,
+          "watch_slew_deg_per_s": 70
+        },
+        "echelon": "SQD",
+        "formation_family": "TDG3_SECURITY_PAIR"
+      }
+    },
+    "TDG3_SECURITY_SAW_PAIR": {
+      "branch": "INFANTRY",
+      "max_speed_mps": 1.15,
+      "detection_range_m": 600,
+      "elements": [
+        {
+          "id": "scout",
+          "name": "scout",
+          "category": "PERSONNEL",
+          "role": "RIFLE",
+          "count": 1,
+          "initial_count": 1,
+          "combat_value": 1.0,
+          "weapons": [
+            {
+              "weapon_id": "SMALL_ARMS_GENERIC",
+              "metadata": {
+                "system_count": 1,
+                "operators_per_system": 1
+              }
+            }
+          ]
+        },
+        {
+          "id": "automatic_rifleman",
+          "name": "automatic rifleman",
+          "category": "PERSONNEL",
+          "role": "MACHINE_GUN",
+          "count": 1,
+          "initial_count": 1,
+          "combat_value": 1.0,
+          "weapons": [
+            {
+              "weapon_id": "SAW_GENERIC",
+              "metadata": {
+                "system_count": 1,
+                "operators_per_system": 1
+              }
+            }
+          ]
+        }
+      ],
+      "metadata": {
+        "mobility_class": "FOOT",
+        "mobility_capabilities": [],
+        "terrain_speed_factors": {
+          "OPEN": 0.6,
+          "ROAD": 1.0,
+          "BRIDGE": 0.9
+        },
+        "state_speed_factors": {
+          "MOVING": 1.0,
+          "ATTACKING": 0.75,
+          "SEARCHING": 0.6,
+          "ENGAGING": 0.0,
+          "RETREATING": 0.85,
+          "DEFENDING": 0.0,
+          "IDLE": 0.0
+        },
+        "visual_sensor": {
+          "forward_range_m": 600,
+          "watch_slew_deg_per_s": 70
+        },
+        "echelon": "SQD",
+        "formation_family": "TDG3_SECURITY_SAW_PAIR"
+      }
+    },
+    "TDG3_HQ": {
+      "branch": "INFANTRY",
+      "max_speed_mps": 1.15,
+      "detection_range_m": 600,
+      "elements": [
+        {
+          "id": "command_team",
+          "name": "command team",
+          "category": "PERSONNEL",
+          "role": "COMMAND",
+          "count": 3,
+          "initial_count": 3,
+          "combat_value": 1.0,
+          "weapons": [
+            {
+              "weapon_id": "SMALL_ARMS_COMMAND_GENERIC",
+              "metadata": {
+                "system_count": 1,
+                "operators_per_system": 1
+              }
+            }
+          ]
+        }
+      ],
+      "metadata": {
+        "mobility_class": "FOOT",
+        "mobility_capabilities": [],
+        "terrain_speed_factors": {
+          "OPEN": 0.6,
+          "ROAD": 1.0,
+          "BRIDGE": 0.9
+        },
+        "state_speed_factors": {
+          "MOVING": 1.0,
+          "ATTACKING": 0.75,
+          "SEARCHING": 0.6,
+          "ENGAGING": 0.0,
+          "RETREATING": 0.85,
+          "DEFENDING": 0.0,
+          "IDLE": 0.0
+        },
+        "visual_sensor": {
+          "forward_range_m": 600,
+          "watch_slew_deg_per_s": 70
+        },
+        "echelon": "SQD",
+        "formation_family": "TDG3_HQ"
+      }
+    },
+    "TDG3_GPMG_TEAM": {
+      "branch": "INFANTRY",
+      "max_speed_mps": 1.15,
+      "detection_range_m": 600,
+      "elements": [
+        {
+          "id": "gun_crew",
+          "name": "gun crew",
+          "category": "PERSONNEL",
+          "role": "MACHINE_GUN",
+          "count": 2,
+          "initial_count": 2,
+          "combat_value": 1.0,
+          "weapons": [
+            {
+              "weapon_id": "SMALL_ARMS_GENERIC",
+              "metadata": {
+                "system_count": 1,
+                "operators_per_system": 1
+              }
+            },
+            {
+              "weapon_id": "GPMG_SINGLE_GENERIC",
+              "metadata": {
+                "system_count": 1,
+                "operators_per_system": 2
+              }
+            }
+          ]
+        }
+      ],
+      "metadata": {
+        "mobility_class": "FOOT",
+        "mobility_capabilities": [],
+        "terrain_speed_factors": {
+          "OPEN": 0.6,
+          "ROAD": 1.0,
+          "BRIDGE": 0.9
+        },
+        "state_speed_factors": {
+          "MOVING": 1.0,
+          "ATTACKING": 0.75,
+          "SEARCHING": 0.6,
+          "ENGAGING": 0.0,
+          "RETREATING": 0.85,
+          "DEFENDING": 0.0,
+          "IDLE": 0.0
+        },
+        "visual_sensor": {
+          "forward_range_m": 600,
+          "watch_slew_deg_per_s": 70
+        },
+        "echelon": "SQD",
+        "formation_family": "TDG3_GPMG_TEAM"
+      }
+    },
+    "TDG3_AT_TEAM": {
+      "branch": "INFANTRY",
+      "max_speed_mps": 1.15,
+      "detection_range_m": 600,
+      "elements": [
+        {
+          "id": "at_crew",
+          "name": "at crew",
+          "category": "PERSONNEL",
+          "role": "ANTI_ARMOR",
+          "count": 2,
+          "initial_count": 2,
+          "combat_value": 1.0,
+          "weapons": [
+            {
+              "weapon_id": "AT_TEAM_RIFLE_GENERIC",
+              "metadata": {
+                "system_count": 1,
+                "operators_per_system": 1
+              }
+            },
+            {
+              "weapon_id": "ATGM_GENERIC",
+              "metadata": {
+                "system_count": 1,
+                "operators_per_system": 2
+              },
+              "ammo": 3
+            }
+          ]
+        }
+      ],
+      "metadata": {
+        "mobility_class": "FOOT",
+        "mobility_capabilities": [],
+        "terrain_speed_factors": {
+          "OPEN": 0.6,
+          "ROAD": 1.0,
+          "BRIDGE": 0.9
+        },
+        "state_speed_factors": {
+          "MOVING": 1.0,
+          "ATTACKING": 0.75,
+          "SEARCHING": 0.6,
+          "ENGAGING": 0.0,
+          "RETREATING": 0.85,
+          "DEFENDING": 0.0,
+          "IDLE": 0.0
+        },
+        "visual_sensor": {
+          "forward_range_m": 600,
+          "watch_slew_deg_per_s": 70
+        },
+        "echelon": "SQD",
+        "formation_family": "TDG3_AT_TEAM"
+      }
+    },
+    "TDG3_T55": {
+      "branch": "ARMOR",
+      "max_speed_mps": 7.0,
+      "detection_range_m": 900.0,
+      "elements": [
+        {
+          "id": "tank",
+          "name": "T-55 (generic legacy tank proxy)",
+          "category": "EQUIPMENT",
+          "role": "ARMOR",
+          "count": 1,
+          "initial_count": 1,
+          "combat_value": 12.0,
+          "metadata": {
+            "tags": [
+              "ARMOR",
+              "MBT"
+            ],
+            "protection_class": "HEAVY_ARMOR",
+            "crew": 4,
+            "passengers": 0,
+            "auto_split_on_mobility_kill": true
+          },
+          "weapons": [
+            {
+              "weapon_id": "TANK_GUN_AP_GENERIC",
+              "metadata": {
+                "system_count": 1,
+                "operators_per_system": 1
+              },
+              "ammo": 15
+            },
+            {
+              "weapon_id": "TANK_GUN_HE_GENERIC",
+              "metadata": {
+                "system_count": 1,
+                "operators_per_system": 1
+              },
+              "ammo": 20
+            },
+            {
+              "weapon_id": "COAX_MG_GENERIC",
+              "metadata": {
+                "system_count": 1,
+                "operators_per_system": 1
+              }
+            }
+          ]
+        }
+      ],
+      "metadata": {
+        "mobility_class": "TRACKED",
+        "mobility_capabilities": [],
+        "terrain_speed_factors": {
+          "OPEN": 0.85,
+          "ROAD": 1.2,
+          "BRIDGE": 0.8
+        },
+        "state_speed_factors": {
+          "MOVING": 1.0,
+          "ATTACKING": 0.75,
+          "SEARCHING": 0.55,
+          "ENGAGING": 0.0,
+          "RETREATING": 0.8,
+          "DEFENDING": 0.0,
+          "IDLE": 0.0
+        },
+        "visual_sensor": {
+          "forward_range_m": 900,
+          "watch_slew_deg_per_s": 45,
+          "sensor_mode": "VISUAL"
+        },
+        "echelon": "IND",
+        "formation_family": "TDG3_T55"
+      }
+    },
+    "TDG3_TRUCK": {
+      "branch": "LOGISTICS",
+      "max_speed_mps": 8.0,
+      "detection_range_m": 400.0,
+      "metadata": {
+        "echelon": "IND",
+        "formation_family": "TDG3_TRUCK",
+        "mobility_class": "WHEELED",
+        "mobility_capabilities": [],
+        "terrain_speed_factors": {
+          "OPEN": 0.5,
+          "ROAD": 1.0,
+          "BRIDGE": 0.5
+        },
+        "visual_sensor": {
+          "forward_range_m": 400,
+          "sensor_mode": "VISUAL"
+        }
+      },
+      "elements": [
+        {
+          "id": "truck",
+          "name": "Unarmed large truck (generic proxy)",
+          "category": "EQUIPMENT",
+          "role": "TRANSPORT",
+          "count": 1,
+          "initial_count": 1,
+          "combat_value": 1.0,
+          "weapons": [],
+          "metadata": {
+            "tags": [
+              "VEHICLE",
+              "TRANSPORT",
+              "EQUIPMENT"
+            ],
+            "protection_class": "UNARMORED",
+            "crew": 2,
+            "passengers": 0
+          }
+        }
+      ]
+    }
+  },
+  "units": [
+    {
+      "id": "B-HQ",
+      "name": "9 Platoon HQ / ORV",
+      "side": "BLUE",
+      "type": "TDG3_HQ",
+      "echelon": "SQD",
+      "pos": [
+        1748.0,
+        1252.0
+      ],
+      "heading_deg": 270,
+      "watch_heading_deg": 270,
+      "metadata": {
+        "formation_footprint": {
+          "length_m": 12,
+          "width_m": 8,
+          "pattern": "ELLIPSE",
+          "density_model": "UNIFORM"
+        },
+        "formation_echelon_scale": 1.0,
+        "dispersion_posture": "NORMAL"
+      },
+      "orders": [
+        {
+          "id": "B-HQ-INITIAL-HOLD",
+          "kind": "HOLD",
+          "params": {
+            "duration_s": -1
+          }
+        }
+      ]
+    },
+    {
+      "id": "B-ALPHA",
+      "name": "Alpha rifle section",
+      "side": "BLUE",
+      "type": "TDG3_RIFLE_SECTION",
+      "echelon": "SQD",
+      "pos": [
+        1704,
+        1220
+      ],
+      "heading_deg": 270,
+      "watch_heading_deg": 270,
+      "metadata": {
+        "formation_footprint": {
+          "length_m": 24,
+          "width_m": 18,
+          "pattern": "ELLIPSE",
+          "density_model": "UNIFORM"
+        },
+        "formation_echelon_scale": 1.0,
+        "dispersion_posture": "NORMAL"
+      },
+      "orders": [
+        {
+          "id": "B-ALPHA-INITIAL-HOLD",
+          "kind": "HOLD",
+          "params": {
+            "duration_s": -1
+          }
+        }
+      ],
+      "parent_id": "B-HQ"
+    },
+    {
+      "id": "B-BRAVO",
+      "name": "Bravo rifle section",
+      "side": "BLUE",
+      "type": "TDG3_RIFLE_SECTION",
+      "echelon": "SQD",
+      "pos": [
+        1776,
+        1216
+      ],
+      "heading_deg": 270,
+      "watch_heading_deg": 270,
+      "metadata": {
+        "formation_footprint": {
+          "length_m": 24,
+          "width_m": 18,
+          "pattern": "ELLIPSE",
+          "density_model": "UNIFORM"
+        },
+        "formation_echelon_scale": 1.0,
+        "dispersion_posture": "NORMAL"
+      },
+      "orders": [
+        {
+          "id": "B-BRAVO-INITIAL-HOLD",
+          "kind": "HOLD",
+          "params": {
+            "duration_s": -1
+          }
+        }
+      ],
+      "parent_id": "B-HQ"
+    },
+    {
+      "id": "B-SEC-A",
+      "name": "Charlie / A Security / VP",
+      "side": "BLUE",
+      "type": "TDG3_SECURITY_PAIR",
+      "echelon": "SQD",
+      "pos": [
+        1400.0,
+        632.0
+      ],
+      "heading_deg": 270,
+      "watch_heading_deg": 270,
+      "metadata": {
+        "formation_footprint": {
+          "length_m": 10,
+          "width_m": 6,
+          "pattern": "ELLIPSE",
+          "density_model": "UNIFORM"
+        },
+        "formation_echelon_scale": 1.0,
+        "dispersion_posture": "NORMAL"
+      },
+      "orders": [
+        {
+          "id": "B-SEC-A-INITIAL-HOLD",
+          "kind": "HOLD",
+          "params": {
+            "duration_s": -1
+          }
+        }
+      ],
+      "parent_id": "B-HQ"
+    },
+    {
+      "id": "B-SEC-B",
+      "name": "Charlie / B Security / radio lost",
+      "side": "BLUE",
+      "type": "TDG3_SECURITY_SAW_PAIR",
+      "echelon": "SQD",
+      "pos": [
+        1436,
+        144
+      ],
+      "heading_deg": 270,
+      "watch_heading_deg": 270,
+      "metadata": {
+        "formation_footprint": {
+          "length_m": 10,
+          "width_m": 6,
+          "pattern": "ELLIPSE",
+          "density_model": "UNIFORM"
+        },
+        "formation_echelon_scale": 1.0,
+        "dispersion_posture": "NORMAL",
+        "scenario_notes": [
+          "Two survivors are a baseline ground-truth assumption, not confirmed BLUE knowledge.",
+          "No new radio orders: autonomous standing rally procedure after link loss is stored in scenario orders.",
+          "Radio remains unavailable for this tactical run; physical recovery is not a modeled radio repair event."
+        ],
+        "communications": {
+          "tx_profile": {
+            "name": "RADIO_INOPERATIVE",
+            "reliability": 0.0,
+            "max_range_m": 0.0
+          },
+          "rx_profile": {
+            "name": "RADIO_INOPERATIVE",
+            "reliability": 0.0,
+            "max_range_m": 0.0
+          }
+        }
+      },
+      "orders": [
+        {
+          "id": "B-SEC-B-LOST-COMMS",
+          "kind": "HOLD",
+          "params": {
+            "duration_s": 180
+          },
+          "directives": {
+            "allow_withdrawal": true,
+            "allow_break_contact": true
+          }
+        },
+        {
+          "id": "B-SEC-B-STANDING-RALLY-EAST",
+          "kind": "MOVE",
+          "params": {
+            "destination": [
+              1580,
+              480
+            ]
+          },
+          "directives": {
+            "allow_withdrawal": true,
+            "allow_break_contact": true
+          }
+        },
+        {
+          "id": "B-SEC-B-STANDING-RALLY-RP",
+          "kind": "MOVE",
+          "params": {
+            "destination": [
+              1648.0,
+              756.0
+            ]
+          },
+          "directives": {
+            "allow_withdrawal": true,
+            "allow_break_contact": true
+          }
+        },
+        {
+          "id": "B-SEC-B-STANDING-RALLY-ORV",
+          "kind": "MOVE",
+          "params": {
+            "destination": [
+              1748.0,
+              1252.0
+            ]
+          },
+          "directives": {
+            "allow_withdrawal": true,
+            "allow_break_contact": true
+          }
+        },
+        {
+          "id": "B-SEC-B-AWAIT-LINKUP",
+          "kind": "HOLD",
+          "params": {
+            "duration_s": -1
+          }
+        }
+      ],
+      "parent_id": "B-HQ"
+    },
+    {
+      "id": "B-SEC-C",
+      "name": "Charlie / C Security / depth",
+      "side": "BLUE",
+      "type": "TDG3_SECURITY_SAW_PAIR",
+      "echelon": "SQD",
+      "pos": [
+        1272,
+        2136
+      ],
+      "heading_deg": 270,
+      "watch_heading_deg": 270,
+      "metadata": {
+        "formation_footprint": {
+          "length_m": 10,
+          "width_m": 6,
+          "pattern": "ELLIPSE",
+          "density_model": "UNIFORM"
+        },
+        "formation_echelon_scale": 1.0,
+        "dispersion_posture": "NORMAL"
+      },
+      "orders": [
+        {
+          "id": "B-SEC-C-INITIAL-HOLD",
+          "kind": "HOLD",
+          "params": {
+            "duration_s": -1
+          }
+        }
+      ],
+      "parent_id": "B-HQ"
+    },
+    {
+      "id": "B-NAV",
+      "name": "Charlie / navigation team / RP",
+      "side": "BLUE",
+      "type": "TDG3_SECURITY_PAIR",
+      "echelon": "SQD",
+      "pos": [
+        1648.0,
+        756.0
+      ],
+      "heading_deg": 270,
+      "watch_heading_deg": 270,
+      "metadata": {
+        "formation_footprint": {
+          "length_m": 10,
+          "width_m": 6,
+          "pattern": "ELLIPSE",
+          "density_model": "UNIFORM"
+        },
+        "formation_echelon_scale": 1.0,
+        "dispersion_posture": "NORMAL"
+      },
+      "orders": [
+        {
+          "id": "B-NAV-INITIAL-HOLD",
+          "kind": "HOLD",
+          "params": {
+            "duration_s": -1
+          }
+        }
+      ],
+      "parent_id": "B-HQ"
+    },
+    {
+      "id": "B-MG-1",
+      "name": "MG-1",
+      "side": "BLUE",
+      "type": "TDG3_GPMG_TEAM",
+      "echelon": "SQD",
+      "pos": [
+        1716,
+        1272
+      ],
+      "heading_deg": 270,
+      "watch_heading_deg": 270,
+      "metadata": {
+        "formation_footprint": {
+          "length_m": 10,
+          "width_m": 6,
+          "pattern": "ELLIPSE",
+          "density_model": "UNIFORM"
+        },
+        "formation_echelon_scale": 1.0,
+        "dispersion_posture": "NORMAL"
+      },
+      "orders": [
+        {
+          "id": "B-MG-1-INITIAL-HOLD",
+          "kind": "HOLD",
+          "params": {
+            "duration_s": -1
+          }
+        }
+      ],
+      "parent_id": "B-HQ"
+    },
+    {
+      "id": "B-MG-2",
+      "name": "MG-2",
+      "side": "BLUE",
+      "type": "TDG3_GPMG_TEAM",
+      "echelon": "SQD",
+      "pos": [
+        1756,
+        1288
+      ],
+      "heading_deg": 270,
+      "watch_heading_deg": 270,
+      "metadata": {
+        "formation_footprint": {
+          "length_m": 10,
+          "width_m": 6,
+          "pattern": "ELLIPSE",
+          "density_model": "UNIFORM"
+        },
+        "formation_echelon_scale": 1.0,
+        "dispersion_posture": "NORMAL"
+      },
+      "orders": [
+        {
+          "id": "B-MG-2-INITIAL-HOLD",
+          "kind": "HOLD",
+          "params": {
+            "duration_s": -1
+          }
+        }
+      ],
+      "parent_id": "B-HQ"
+    },
+    {
+      "id": "B-AT-1",
+      "name": "AT-1",
+      "side": "BLUE",
+      "type": "TDG3_AT_TEAM",
+      "echelon": "SQD",
+      "pos": [
+        1728,
+        1240
+      ],
+      "heading_deg": 270,
+      "watch_heading_deg": 270,
+      "metadata": {
+        "formation_footprint": {
+          "length_m": 10,
+          "width_m": 6,
+          "pattern": "ELLIPSE",
+          "density_model": "UNIFORM"
+        },
+        "formation_echelon_scale": 1.0,
+        "dispersion_posture": "NORMAL"
+      },
+      "orders": [
+        {
+          "id": "B-AT-1-INITIAL-HOLD",
+          "kind": "HOLD",
+          "params": {
+            "duration_s": -1
+          }
+        }
+      ],
+      "parent_id": "B-HQ"
+    },
+    {
+      "id": "B-AT-2",
+      "name": "AT-2",
+      "side": "BLUE",
+      "type": "TDG3_AT_TEAM",
+      "echelon": "SQD",
+      "pos": [
+        1780,
+        1260
+      ],
+      "heading_deg": 270,
+      "watch_heading_deg": 270,
+      "metadata": {
+        "formation_footprint": {
+          "length_m": 10,
+          "width_m": 6,
+          "pattern": "ELLIPSE",
+          "density_model": "UNIFORM"
+        },
+        "formation_echelon_scale": 1.0,
+        "dispersion_posture": "NORMAL"
+      },
+      "orders": [
+        {
+          "id": "B-AT-2-INITIAL-HOLD",
+          "kind": "HOLD",
+          "params": {
+            "duration_s": -1
+          }
+        }
+      ],
+      "parent_id": "B-HQ"
+    },
+    {
+      "id": "R-T55-1",
+      "name": "T-55 1 / original pair",
+      "side": "RED",
+      "type": "TDG3_T55",
+      "echelon": "IND",
+      "pos": [
+        1148,
+        468
+      ],
+      "heading_deg": 90,
+      "watch_heading_deg": 90,
+      "metadata": {
+        "formation_footprint": {
+          "length_m": 10,
+          "width_m": 4,
+          "pattern": "ELLIPSE",
+          "density_model": "UNIFORM"
+        },
+        "formation_echelon_scale": 1.0,
+        "dispersion_posture": "NORMAL"
+      },
+      "orders": [
+        {
+          "id": "R-T55-1-INITIAL-HOLD",
+          "kind": "HOLD",
+          "params": {
+            "duration_s": -1
+          }
+        }
+      ]
+    },
+    {
+      "id": "R-T55-2",
+      "name": "T-55 2 / original pair",
+      "side": "RED",
+      "type": "TDG3_T55",
+      "echelon": "IND",
+      "pos": [
+        1200,
+        432
+      ],
+      "heading_deg": 90,
+      "watch_heading_deg": 90,
+      "metadata": {
+        "formation_footprint": {
+          "length_m": 10,
+          "width_m": 4,
+          "pattern": "ELLIPSE",
+          "density_model": "UNIFORM"
+        },
+        "formation_echelon_scale": 1.0,
+        "dispersion_posture": "NORMAL"
+      },
+      "orders": [
+        {
+          "id": "R-T55-2-INITIAL-HOLD",
+          "kind": "HOLD",
+          "params": {
+            "duration_s": -1
+          }
+        }
+      ]
+    },
+    {
+      "id": "R-T55-3",
+      "name": "T-55 3 / arriving pair",
+      "side": "RED",
+      "type": "TDG3_T55",
+      "echelon": "IND",
+      "pos": [
+        1278.8,
+        340.0
+      ],
+      "heading_deg": 90,
+      "watch_heading_deg": 90,
+      "metadata": {
+        "formation_footprint": {
+          "length_m": 10,
+          "width_m": 4,
+          "pattern": "ELLIPSE",
+          "density_model": "UNIFORM"
+        },
+        "formation_echelon_scale": 1.0,
+        "dispersion_posture": "NORMAL"
+      },
+      "orders": [
+        {
+          "id": "R-T55-3-INITIAL-HOLD",
+          "kind": "HOLD",
+          "params": {
+            "duration_s": -1
+          }
+        }
+      ]
+    },
+    {
+      "id": "R-T55-4",
+      "name": "T-55 4 / arriving pair",
+      "side": "RED",
+      "type": "TDG3_T55",
+      "echelon": "IND",
+      "pos": [
+        1287.1,
+        284.0
+      ],
+      "heading_deg": 90,
+      "watch_heading_deg": 90,
+      "metadata": {
+        "formation_footprint": {
+          "length_m": 10,
+          "width_m": 4,
+          "pattern": "ELLIPSE",
+          "density_model": "UNIFORM"
+        },
+        "formation_echelon_scale": 1.0,
+        "dispersion_posture": "NORMAL"
+      },
+      "orders": [
+        {
+          "id": "R-T55-4-INITIAL-HOLD",
+          "kind": "HOLD",
+          "params": {
+            "duration_s": -1
+          }
+        }
+      ]
+    },
+    {
+      "id": "R-TRUCK-1",
+      "name": "Large truck 1 / passengers already dismounted",
+      "side": "RED",
+      "type": "TDG3_TRUCK",
+      "echelon": "IND",
+      "pos": [
+        1296.7,
+        224.0
+      ],
+      "heading_deg": 90,
+      "watch_heading_deg": 90,
+      "metadata": {
+        "formation_footprint": {
+          "length_m": 10,
+          "width_m": 4,
+          "pattern": "ELLIPSE",
+          "density_model": "UNIFORM"
+        },
+        "formation_echelon_scale": 1.0,
+        "dispersion_posture": "NORMAL",
+        "scenario_notes": [
+          "Infantry are separate dismounted entities at t=0; no duplicate onboard passenger manifest."
+        ]
+      },
+      "orders": [
+        {
+          "id": "R-TRUCK-1-INITIAL-HOLD",
+          "kind": "HOLD",
+          "params": {
+            "duration_s": -1
+          }
+        }
+      ]
+    },
+    {
+      "id": "R-TRUCK-2",
+      "name": "Large truck 2 / passengers already dismounted",
+      "side": "RED",
+      "type": "TDG3_TRUCK",
+      "echelon": "IND",
+      "pos": [
+        1302.8,
+        164.0
+      ],
+      "heading_deg": 90,
+      "watch_heading_deg": 90,
+      "metadata": {
+        "formation_footprint": {
+          "length_m": 10,
+          "width_m": 4,
+          "pattern": "ELLIPSE",
+          "density_model": "UNIFORM"
+        },
+        "formation_echelon_scale": 1.0,
+        "dispersion_posture": "NORMAL",
+        "scenario_notes": [
+          "Infantry are separate dismounted entities at t=0; no duplicate onboard passenger manifest."
+        ]
+      },
+      "orders": [
+        {
+          "id": "R-TRUCK-2-INITIAL-HOLD",
+          "kind": "HOLD",
+          "params": {
+            "duration_s": -1
+          }
+        }
+      ]
+    },
+    {
+      "id": "R-HQ",
+      "name": "Arriving infantry HQ (assumed)",
+      "side": "RED",
+      "type": "TDG3_HQ",
+      "echelon": "SQD",
+      "pos": [
+        1340,
+        404
+      ],
+      "heading_deg": 90,
+      "watch_heading_deg": 90,
+      "metadata": {
+        "formation_footprint": {
+          "length_m": 12,
+          "width_m": 8,
+          "pattern": "ELLIPSE",
+          "density_model": "UNIFORM"
+        },
+        "formation_echelon_scale": 1.0,
+        "dispersion_posture": "NORMAL"
+      },
+      "orders": [
+        {
+          "id": "R-HQ-INITIAL-HOLD",
+          "kind": "HOLD",
+          "params": {
+            "duration_s": -1
+          }
+        }
+      ]
+    },
+    {
+      "id": "R-INF-1",
+      "name": "Arriving rifle section 1 (assumed)",
+      "side": "RED",
+      "type": "TDG3_RIFLE_SECTION",
+      "echelon": "SQD",
+      "pos": [
+        1240,
+        396
+      ],
+      "heading_deg": 90,
+      "watch_heading_deg": 90,
+      "metadata": {
+        "formation_footprint": {
+          "length_m": 24,
+          "width_m": 18,
+          "pattern": "ELLIPSE",
+          "density_model": "UNIFORM"
+        },
+        "formation_echelon_scale": 1.0,
+        "dispersion_posture": "NORMAL"
+      },
+      "orders": [
+        {
+          "id": "R-INF-1-INITIAL-HOLD",
+          "kind": "HOLD",
+          "params": {
+            "duration_s": -1
+          }
+        }
+      ],
+      "parent_id": "R-HQ"
+    },
+    {
+      "id": "R-INF-2",
+      "name": "Arriving rifle section 2 (assumed)",
+      "side": "RED",
+      "type": "TDG3_RIFLE_SECTION",
+      "echelon": "SQD",
+      "pos": [
+        1356,
+        384
+      ],
+      "heading_deg": 90,
+      "watch_heading_deg": 90,
+      "metadata": {
+        "formation_footprint": {
+          "length_m": 24,
+          "width_m": 18,
+          "pattern": "ELLIPSE",
+          "density_model": "UNIFORM"
+        },
+        "formation_echelon_scale": 1.0,
+        "dispersion_posture": "NORMAL"
+      },
+      "orders": [
+        {
+          "id": "R-INF-2-INITIAL-HOLD",
+          "kind": "HOLD",
+          "params": {
+            "duration_s": -1
+          }
+        }
+      ],
+      "parent_id": "R-HQ"
+    },
+    {
+      "id": "R-INF-3",
+      "name": "Arriving rifle section 3 (assumed)",
+      "side": "RED",
+      "type": "TDG3_RIFLE_SECTION",
+      "echelon": "SQD",
+      "pos": [
+        1328,
+        464
+      ],
+      "heading_deg": 90,
+      "watch_heading_deg": 90,
+      "metadata": {
+        "formation_footprint": {
+          "length_m": 24,
+          "width_m": 18,
+          "pattern": "ELLIPSE",
+          "density_model": "UNIFORM"
+        },
+        "formation_echelon_scale": 1.0,
+        "dispersion_posture": "NORMAL"
+      },
+      "orders": [
+        {
+          "id": "R-INF-3-INITIAL-HOLD",
+          "kind": "HOLD",
+          "params": {
+            "duration_s": -1
+          }
+        }
+      ],
+      "parent_id": "R-HQ"
+    }
+  ],
+  "aggregations": [],
+  "metadata": {
+    "title": "TDG3 - Raid Gone Bad - decision point",
+    "sources": [
+      {
+        "file": "TDG3_Scenario_Raid_Gone_Bad_EN.pdf",
+        "pages": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "role": "Initial situation and Figure 1"
+      },
+      {
+        "file": "TDG3_Solution_Raid_Gone_Bad_EN.pdf",
+        "pages": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "role": "Analysis of defence, ambush and enemy possibilities"
+      }
+    ],
+    "start_event": "t=0: commander at ORV receives report of two additional T-55s and two trucks; B Security is not answering.",
+    "source_facts": [
+      "BLUE: three rifle sections, one organic weapons section, one attached section with exactly two modern medium-range anti-armour weapons.",
+      "Charlie section is already divided into A/B/C security elements and a navigation team; it is not an extra full section at ORV.",
+      "Main body and attachments at ORV, A at VP, navigation at RP, C on the southern cut-off; B was at the northern cut-off.",
+      "Four T-55s and two large trucks are confirmed; dismounted infantry numbers and B Security casualties are unknown.",
+      "Clear night with full moon, dense vegetation, stream passable to foot but not vehicles away from the bridge.",
+      "The original briefing estimated first light in 12 hours; over three hours plus recce have elapsed, so remaining time is unspecified.",
+      "No current UAS support, allocated artillery, available CAS or timely reinforcements are established."
+    ],
+    "modeling_assumptions": [
+      "BLUE total 35 personnel: Alpha 8 + Bravo 8 + Charlie 8 (four pairs) + HQ 3 + organic GPMG crews 4 + attached AT crews 4.",
+      "One generic SAW per automatic rifleman proxies the C9 role; two generic GPMGs proxy the unspecified organic weapons section.",
+      "Exactly two generic ATGM launchers, one per 2-person crew, with three rounds each; model and ammunition are assumptions.",
+      "RED baseline assumes one 27-person infantry platoon: three sections of eight and HQ of three, already dismounted between two trucks.",
+      "Truck carrying capacity is not evidence for two full enemy platoons. Infantry strength is deliberately an explicit sensitivity assumption.",
+      "Two B Security survivors with a failed radio and standing rally plan are a possible ground truth, not a confirmed report.",
+      "Reported wounded have no quantified losses applied because the source gives neither identities nor counts.",
+      "T-55s use generic legacy tank gun/protection mechanics; they are not calibrated T-55 models. Tank ammunition 15 AP + 20 HE is an assumption.",
+      "Vehicle crew numbers are descriptive equipment metadata, not extra dismounted formations. Trucks are unarmed logistics entities.",
+      "All initial positions are approximate Figure 1 placements. Unit footprints and full-moon NIGHT sensor multipliers are authoring assumptions.",
+      "Both sides use the same generic rifle-section weapons, sensors and movement; actual RED infantry equipment is unspecified.",
+      "A Security is an actively engaging early-warning screen, not a silent observation-only post; this is the selected engine posture.",
+      "Retains the user-approved widened terrain (32 m stream, 16 m road, 44 x 12 m bridge); these are schematic dimensions, not the PDF bridge dimensions.",
+      "The southern map exit is a local proxy for progress toward off-map M Company, not M Company itself or its main river crossing."
+    ],
+    "evaluation": {
+      "recommended_tactical_window_s": 3600,
+      "blue_measures": [
+        "Time until first operational RED tank reaches SOUTH_EXIT_PROXY within 60 m",
+        "RED armour stopped or delayed",
+        "BLUE personnel and AT systems preserved",
+        "ORV remains available for link-up"
+      ],
+      "red_measures": [
+        "Operational armour reaching SOUTH_EXIT_PROXY",
+        "Time to secure and cross the local bridge",
+        "Armour and infantry losses"
+      ],
+      "limitations": [
+        "These measures are review guidance, not an engine-enforced scoring system.",
+        "No automatic first-light victory or claim of protecting M Company for a known number of hours.",
+        "Do not infer a uniquely optimal COA or calibrated combat outcome from a single random seed."
+      ]
+    },
+    "run_command": "python main.py scenarios/tdg3.json --blue-bml scenarios/tdg3_blue_bml.json --red-bml scenarios/tdg3_red_bml.json"
+  }
+}

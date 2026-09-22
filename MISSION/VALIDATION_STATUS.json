@@ -1,0 +1,202 @@
+{
+  "checked_at_utc": "2026-09-21T07:00:59.343360+00:00",
+  "python": "3.11.9",
+  "seed": 7,
+  "dt_s": 0.25,
+  "meaning": "PASS verifies the declared supported subset and stated limitations, not a battle victory or full operation support.",
+  "cases": [
+    {
+      "case": "ATTACK",
+      "capability": "가능",
+      "verification": "PASS",
+      "checks": {
+        "json_and_recursive_bml_valid": true,
+        "normal_engine_run_without_order_errors": true,
+        "blue_advanced": true,
+        "blue_acquired_track": true,
+        "blue_engaged": true
+      }
+    },
+    {
+      "case": "MOVEMENT_TO_CONTACT",
+      "capability": "가능",
+      "verification": "PASS",
+      "checks": {
+        "json_and_recursive_bml_valid": true,
+        "normal_engine_run_without_order_errors": true,
+        "initial_enemy_beyond_sensor": true,
+        "blue_advanced": true,
+        "contact_acquired": true,
+        "contact_engaged": true
+      }
+    },
+    {
+      "case": "AMBUSH",
+      "capability": "부분 가능",
+      "verification": "PASS",
+      "checks": {
+        "json_and_recursive_bml_valid": true,
+        "normal_engine_run_without_order_errors": true,
+        "red_passage_moved": true,
+        "blue_contact_acquired": true,
+        "timed_transition": true,
+        "displacement_entered": true,
+        "limitation_hold_allows_early_fire": true
+      }
+    },
+    {
+      "case": "RECONNAISSANCE",
+      "capability": "부분 가능",
+      "verification": "PASS",
+      "checks": {
+        "json_and_recursive_bml_valid": true,
+        "normal_engine_run_without_order_errors": true,
+        "scout_moved": true,
+        "scout_acquired_track": true,
+        "report_shared": true,
+        "observation_phase_entered": true,
+        "return_completed": true
+      }
+    },
+    {
+      "case": "AREA_DEFENSE",
+      "capability": "가능",
+      "verification": "PASS",
+      "checks": {
+        "json_and_recursive_bml_valid": true,
+        "normal_engine_run_without_order_errors": true,
+        "red_advanced": true,
+        "blue_engaged": true,
+        "blue_remained_in_area": true
+      }
+    },
+    {
+      "case": "MOBILE_DEFENSE",
+      "capability": "부분 가능",
+      "verification": "PASS",
+      "checks": {
+        "json_and_recursive_bml_valid": true,
+        "normal_engine_run_without_order_errors": true,
+        "fixing_force_engaged": true,
+        "reserve_waited": true,
+        "timed_release": true,
+        "reserve_maneuvered": true,
+        "reserve_engaged": true
+      }
+    },
+    {
+      "case": "DELAYING_OPERATION",
+      "capability": "조건부 가능 (명시적 단계 계획)",
+      "verification": "PASS",
+      "checks": {
+        "json_and_recursive_bml_valid": true,
+        "normal_engine_run_without_order_errors": true,
+        "initial_contact_engaged": true,
+        "first_line_transition": true,
+        "second_line_entered": true,
+        "second_line_transition": true,
+        "final_line_entered": true,
+        "first_withdrawal_completed": true,
+        "second_withdrawal_completed": true
+      }
+    },
+    {
+      "case": "WITHDRAWAL",
+      "capability": "부분 가능 (철수 이동 가능, 접적 단절 판정 미지원)",
+      "verification": "PASS",
+      "checks": {
+        "json_and_recursive_bml_valid": true,
+        "normal_engine_run_without_order_errors": true,
+        "initial_contact_engaged": true,
+        "withdrawal_triggered": true,
+        "retreat_executed": true,
+        "retreat_completed": true,
+        "rally_hold_entered": true
+      }
+    }
+  ],
+  "unsupported_contracts": {
+    "dedicated_ambush_task_absent": true,
+    "dedicated_reconnaissance_task_absent": true,
+    "dedicated_mobile_defense_task_absent": true,
+    "dedicated_delay_task_absent": true,
+    "track_count_condition_absent": true
+  },
+  "sha256": {
+    "config/artillery_doctrine.json": "bd35ded04bdd1eeeae330a015cb855795242c09e7769ea6b6311f560f92030d5",
+    "config/defaults.json": "ca880e2a1b08f550888fcb119a8c58901e734b5876c27e2035cc14f1d6a92fb4",
+    "config/doctrine_profiles.json": "b34d4ddc6feb093826b17e5a418e2e06c3433dbcfc9d68ac1a8af2e56a718201",
+    "config/targeting_doctrine.json": "f620bb67826f8db80a7b8c2ee7390ee8d04198670489ef09fd2ce147f0e5ecb8",
+    "config/terrain_demo.json": "acee5f91dce1cade1125691adfa9b4c13a7945339ecc077b1f491adb44028596",
+    "config/toe_templates.json": "cb7ed8382f53362855ee98b8cf26ebd2854352035ce0d799cdae44ed96dc2e49",
+    "database/loadouts.json": "f089f9e137a92963ff86e062485a967022ea5cb8f405254f214b877459f3dc06",
+    "database/platforms.csv": "cde6ca3675424e14e778ed0ecac9211252a4bf9072872591df9433a680a8c564",
+    "database/weapons.csv": "9804b5e697b8425aed5164a743da1b7d32dc4435c45eabcd863539d082c36e57",
+    "mnsim/__init__.py": "91447944015cec709e8aa7655f7e9d64e1e4508e7023a57fe3746911c0fc6fed",
+    "mnsim/application.py": "ac5ed22632090a6b157793f982c2d1188f05a16f5e9afc35755e63967e4d7fb0",
+    "mnsim/belief.py": "5d91af2a326e46e3f2fe9883f1d7d0571bb68fbd4a5816a228bb696050e03bcc",
+    "mnsim/bml.py": "bf6538e1e9c016d5ed61fdb534578b32e1bab6f69fc5c988fe0994024cf0ae2f",
+    "mnsim/cartography.py": "7ce1115ede314f0f9e1e188bc17c07f2aaea2f1770e9e3bb7b155e88be4db1cf",
+    "mnsim/catalog.py": "08914245ff2c365eef104ee40955da555acfb1855c5d5a00ecca57c74293e611",
+    "mnsim/combat.py": "5cc7f110fff3c02d1aabfb78fd403d598bea93ec32c4ef13c66b83ff3e9d3a42",
+    "mnsim/communications.py": "0df33d337151c75155c4833b738fb51f98397bddaf3796dd8aee6a68175cfc97",
+    "mnsim/config.py": "6627cf9757df6c55d043f0154d6e416cc29b5a57f189848bf91eedfc9f42bfa0",
+    "mnsim/crew.py": "3ac621b0bc8342f0816d0ddf23de9b64addc1e5852e28cb37192c563c28c7e87",
+    "mnsim/damage.py": "04d40afddd91c036d28760f057a628e2c03ec3c8e58e87adc44e2ccb32021628",
+    "mnsim/database.py": "58552fb221b55ade647133dfc7885748f4750deb8e7ea88ddb81b0f68f66dee3",
+    "mnsim/definitions.py": "2f67105d73e02147b0a74d25f9dd6a50bd2eb4dad4adcdbb11980e352f38dd3c",
+    "mnsim/doctrine.py": "eb2d869c72c49131229ef9c78660505bc654aa46a3fa392b91f47c9c22337795",
+    "mnsim/doctrine_profiles.py": "92c80dc25c306dd73d1cd318bd0aaa4272b275f5723429ca2c45aaf8100eb57c",
+    "mnsim/environment.py": "0af5c53a4986f2f1bbb0ba8534343be36d7ad6828194c705610fa195985959ba",
+    "mnsim/events.py": "3aec3e6bfbb458acd96fc4307c90c3b963c3aa19f05fcc34a9602b552da01592",
+    "mnsim/fire_control.py": "a6acef30486ec5549ec778186236abe5b9fbe1c016356d991f4a40df83e091e1",
+    "mnsim/firepower.py": "1bd49d722d3b84b4b0de27f15408846c944c29ffc1d6e6377ffcc69078ee12b3",
+    "mnsim/formation_geometry.py": "f08e657eeed7f13e11bdd5253d658fdc624a8417ed82d7dab19dbb8cf293f436",
+    "mnsim/indirect_fire.py": "277f57cacbac4703365940e6fa71d23964daafb888d25bb971fdcbe9e387969b",
+    "mnsim/mobility.py": "51d46256e623bae1e807985c8a00088d838bdcecc6a640098bc9256bd4244cf7",
+    "mnsim/model.py": "4a08ae6e66dcbec2ce4be748c28d2acba2b63b89ba5a011bbba74bdcf3ee314b",
+    "mnsim/mounted.py": "671b751a360dcef9007e855c56b7ad615815eebbee7c76b55c387542835bda4f",
+    "mnsim/ownership.py": "d0a9784af5efbfb476d91f2758e9a2b064597025884150f0b5bcb447210b1a49",
+    "mnsim/pathfinding.py": "decb32ca72c23c6c7963300f8024cf01292b02a57467c4c96d49379162b368ba",
+    "mnsim/replay.py": "7362a37b8f3540be31b70e5109f831e8fe8420ee4444f2fee2aeec094f620089",
+    "mnsim/scenario.py": "2f2666f88b1148d20b2fa64673440f57bedf526d1c13136ea9c03ec3473b65b6",
+    "mnsim/simulation.py": "ad32a16779b351e43431de07627e43366923aee105f97a38e419c80abf056c0b",
+    "mnsim/symbology.py": "10bc56adf33ee1f447536a930ca1fe293ac480555b9dcf338dab5c27fc199c41",
+    "mnsim/terrain.py": "2f043c674f1b78cfd6749fc25170b080ec1c0e883bfe25f6ee77f6b6dc69be4f",
+    "mnsim/traversal.py": "0033f8d8ff9482af20b1019aa343644da6c862d1cc413cdd9ba091d39e0efdea",
+    "MISSION/AMBUSH/AMBUSH_BLUE_BML.json": "0f2e24a15a8bc1422fd6f7ea2f9450c684afd78ec0502aa66509a355bd5e440e",
+    "MISSION/AMBUSH/AMBUSH_RED_BML.json": "38b7dd8aa70caba2449374503c7c84542a828d015966f610b26b25a7e8455893",
+    "MISSION/AMBUSH/AMBUSH_SCENARIO.json": "0d279d9cd8ce047e008f5db71851a0bfd7e59c51672106f550a47743aad6cbef",
+    "MISSION/AMBUSH/AMBUSH_TERRAIN.json": "7746ba0f6b8e30639d6d81ae2848406553fe1395431e8e3b02d9d5aeb831d06c",
+    "MISSION/AREA_DEFENSE/AREA_DEFENSE_BLUE_BML.json": "5553d538b428218dec39fe40dfb56b88cf40d437d06db9257fe1691e19f7e8a5",
+    "MISSION/AREA_DEFENSE/AREA_DEFENSE_RED_BML.json": "d6ddf290b95f59dcd4b75e3e82cce387ac8ac34e642fd9de390b338730c88f99",
+    "MISSION/AREA_DEFENSE/AREA_DEFENSE_SCENARIO.json": "63dec6e1635534ce090faed162b8e41f8578f64f83d4cf3194800cd2c3f36be7",
+    "MISSION/AREA_DEFENSE/AREA_DEFENSE_TERRAIN.json": "72a7587ceb229e88fe4bad539452add51417b81b8e5eb8ab44dfe874581b9939",
+    "MISSION/ATTACK/ATTACK_BLUE_BML.json": "3cae7cbe2c337708874d1d88d7f345d01ca87b4eac6c1fff560e4bcffd4ff547",
+    "MISSION/ATTACK/ATTACK_RED_BML.json": "ec59bdbfb0bd164cdfebe45feaf91b75a252f8c04ca72bf4a19ad639060a3e71",
+    "MISSION/ATTACK/ATTACK_SCENARIO.json": "69b4b36d9e0b3300f42786be1f2e8fb9aa3b4d39466bb65bc1d8d74d88b82ce7",
+    "MISSION/ATTACK/ATTACK_TERRAIN.json": "72a7587ceb229e88fe4bad539452add51417b81b8e5eb8ab44dfe874581b9939",
+    "MISSION/DELAYING_OPERATION/DELAYING_OPERATION_BLUE_BML.json": "3c0af480914098c9936057c2520ec83c872a23d5952dd633128e23786aa5275d",
+    "MISSION/DELAYING_OPERATION/DELAYING_OPERATION_RED_BML.json": "236de45069b671dd1d6402ff57d12460d00a693c410fb703f89d6a653b0284d9",
+    "MISSION/DELAYING_OPERATION/DELAYING_OPERATION_SCENARIO.json": "7334a805e4b8ce8672cfe956dbef5862ba7c7848578b63a5c0de56a87d18ac01",
+    "MISSION/DELAYING_OPERATION/DELAYING_OPERATION_TERRAIN.json": "72a7587ceb229e88fe4bad539452add51417b81b8e5eb8ab44dfe874581b9939",
+    "MISSION/MISSION_MANIFEST.json": "28f12b2a3112aecf79a2d90740e0cfd4a0c60ba23266de4b286fed065fca1f1e",
+    "MISSION/MOBILE_DEFENSE/MOBILE_DEFENSE_BLUE_BML.json": "dbd12364a8a2f84c52f31c1b39d440bd54e4ae1a50f74f857807d48f5b9b9292",
+    "MISSION/MOBILE_DEFENSE/MOBILE_DEFENSE_RED_BML.json": "e7671bad438ce98452046e74c2327680fd7d0d1b9d2645683b656bfd6c61c902",
+    "MISSION/MOBILE_DEFENSE/MOBILE_DEFENSE_SCENARIO.json": "8a2c16b72e55db91b54890f75f7f18cfa378fb7bc8976c8001cd45ed1fb326bf",
+    "MISSION/MOBILE_DEFENSE/MOBILE_DEFENSE_TERRAIN.json": "72a7587ceb229e88fe4bad539452add51417b81b8e5eb8ab44dfe874581b9939",
+    "MISSION/MOVEMENT_TO_CONTACT/MOVEMENT_TO_CONTACT_BLUE_BML.json": "14e79156c8a27d6bb5bf6fd8d5ecda55eac5e4802e817609725800498b7f0a10",
+    "MISSION/MOVEMENT_TO_CONTACT/MOVEMENT_TO_CONTACT_RED_BML.json": "29bb384070ba3f1ab9182651f71e70d6c3556469f3e38267089afe7d47b31014",
+    "MISSION/MOVEMENT_TO_CONTACT/MOVEMENT_TO_CONTACT_SCENARIO.json": "4c43a27c421c9524387a06d86f70b2608300c7c03ca55c14f980cf1724ebc28b",
+    "MISSION/MOVEMENT_TO_CONTACT/MOVEMENT_TO_CONTACT_TERRAIN.json": "72a7587ceb229e88fe4bad539452add51417b81b8e5eb8ab44dfe874581b9939",
+    "MISSION/RECONNAISSANCE/RECONNAISSANCE_BLUE_BML.json": "37cccd40dc9979e92f3270b8a4139d17ee406fa53b2b47c3e611dac07c93beca",
+    "MISSION/RECONNAISSANCE/RECONNAISSANCE_RED_BML.json": "cc3538a66ddac11fa5fa4a26f9127c87b80d8f0df1363430e6333866dd8d33e8",
+    "MISSION/RECONNAISSANCE/RECONNAISSANCE_SCENARIO.json": "2b29fe5afc07e8644f8e75242630dd306cf5e153f382c9f0fe17c84639b2b113",
+    "MISSION/RECONNAISSANCE/RECONNAISSANCE_TERRAIN.json": "72a7587ceb229e88fe4bad539452add51417b81b8e5eb8ab44dfe874581b9939",
+    "MISSION/WITHDRAWAL/WITHDRAWAL_BLUE_BML.json": "15cb5fe5a7259865db9a5566875c9a906a0dbcbfc374fb998b4f2e07a2badda7",
+    "MISSION/WITHDRAWAL/WITHDRAWAL_RED_BML.json": "1996d29e8d8217e0dfec7bec4f7b6f358b0b50dfddb272ce0e496144ce974394",
+    "MISSION/WITHDRAWAL/WITHDRAWAL_SCENARIO.json": "f570b60b6fbadf15d8ed99729bedad7b4b7beba3e7c494ebdd024026793c0802",
+    "MISSION/WITHDRAWAL/WITHDRAWAL_TERRAIN.json": "72a7587ceb229e88fe4bad539452add51417b81b8e5eb8ab44dfe874581b9939",
+    "MISSION/validate_missions.py": "d75bb0b0035b87d4d832d9f15fd1120bac0062d69619c04addfc192aa83b7b87"
+  }
+}

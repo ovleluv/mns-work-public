@@ -1,0 +1,56 @@
+{
+  "active_profile": "DEFAULT_ARMY",
+  "profiles": {
+    "DEFAULT_ARMY": {
+      "direct_fire_priority": {
+        "INFANTRY": {
+          "INFANTRY": 1.0,
+          "ARMOR": 1.35,
+          "ARTILLERY": 1.15,
+          "UNKNOWN": 0.7
+        },
+        "ARMOR": {
+          "INFANTRY": 0.9,
+          "ARMOR": 1.45,
+          "ARTILLERY": 1.15,
+          "UNKNOWN": 0.7
+        },
+        "ARTILLERY": {
+          "INFANTRY": 1.0,
+          "ARMOR": 1.15,
+          "ARTILLERY": 1.5,
+          "UNKNOWN": 0.65
+        }
+      },
+      "indirect_fire_priority": {
+        "ARTILLERY": 3.0,
+        "ARMOR": 2.0,
+        "INFANTRY": 1.2,
+        "UNKNOWN": 0.55,
+        "C2": 2.6,
+        "RADAR": 2.8,
+        "AIR_DEFENSE": 2.4
+      },
+      "track_source_weight": {
+        "COUNTER_BATTERY": 1.35,
+        "LOCAL": 1.1,
+        "PROXIMITY": 1.05,
+        "SHARED": 1.0
+      },
+      "counter_battery": {
+        "stale_after_s": 60.0,
+        "lost_after_s": 180.0,
+        "min_confidence": 0.18,
+        "min_belief_confidence": 0.28,
+        "max_position_error_m": 300.0,
+        "prefer_over_other_fire_support": true,
+        "belief_fire_max_age_s": 900.0,
+        "belief_fire_max_position_error_m": 650.0,
+        "belief_position_error_growth_m_per_min": 28.0,
+        "belief_fire_confidence_half_life_s": 420.0
+      },
+      "indirect_target_switch_score_ratio": 1.25,
+      "indirect_target_lock_min_s": 12.0
+    }
+  }
+}

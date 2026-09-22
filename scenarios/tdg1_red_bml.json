@@ -1,0 +1,42 @@
+{
+  "side": "RED",
+  "replace_existing_orders": true,
+  "missions": [
+    {
+      "id": "RED-PLT5-DEFEND",
+      "unit": "R-INF_PLT-5",
+      "task": "DEFEND_AREA",
+      "center": [
+        962.2,
+        1133.3
+      ],
+      "radius_m": 90
+    },
+    {
+      "id": "RED-PLT1-DEFEND",
+      "unit": "R-INF_PLT-1",
+      "task": "DEFEND_AREA",
+      "center": [
+        2507.4,
+        797.8
+      ],
+      "radius_m": 90
+    },
+    {
+      "id": "RED-PLT6-DEFEND",
+      "unit": "R-INF_PLT-6",
+      "task": "DEFEND_AREA",
+      "center": [
+        2470.4,
+        1990.4
+      ],
+      "radius_m": 90
+    },
+    {
+      "id": "RED-PLT2-HUNT-BN",
+      "unit": "R-INF_PLT-2",
+      "task": "DESTROY_UNIT",
+      "target": "B-INF_BN-1"
+    }
+  ]
+}

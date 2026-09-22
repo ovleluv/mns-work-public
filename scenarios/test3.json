@@ -1,0 +1,180 @@
+{
+  "seed": 7,
+  "world": {
+    "width_m": 3000.0,
+    "height_m": 4000.0
+  },
+  "objectives": {},
+  "units": [
+    {
+      "id": "B-INF_BN-1",
+      "name": "B-INF_BN-1",
+      "side": "BLUE",
+      "echelon": "BN",
+      "type": "INF_BN",
+      "pos": [
+        2210.6,
+        2311.9
+      ],
+      "heading_deg": 0.0,
+      "metadata": {
+        "barricade_limit": 0
+      },
+      "orders": [
+        {
+          "id": "B-INF_BN-1-HOLD",
+          "kind": "HOLD",
+          "params": {
+            "duration_s": 9999
+          }
+        }
+      ]
+    },
+    {
+      "id": "B-INF_PLT-1",
+      "name": "B-INF_PLT-1",
+      "side": "BLUE",
+      "echelon": "PLT",
+      "type": "INF_PLT",
+      "pos": [
+        1329.6,
+        1774.9
+      ],
+      "heading_deg": 0.0,
+      "metadata": {
+        "barricade_limit": 0
+      },
+      "orders": [
+        {
+          "id": "B-INF_PLT-1-HOLD",
+          "kind": "HOLD",
+          "params": {
+            "duration_s": 9999
+          }
+        }
+      ]
+    },
+    {
+      "id": "R-MG_SQD-1",
+      "name": "R-MG_SQD-1",
+      "side": "RED",
+      "echelon": "SQD",
+      "type": "MG_SQD",
+      "pos": [
+        1570.7,
+        614.1
+      ],
+      "heading_deg": 0.0,
+      "metadata": {
+        "barricade_limit": 0
+      },
+      "orders": [
+        {
+          "id": "R-MG_SQD-1-HOLD",
+          "kind": "HOLD",
+          "params": {
+            "duration_s": 9999
+          }
+        }
+      ]
+    },
+    {
+      "id": "R-MG_SQD-2",
+      "name": "R-MG_SQD-2",
+      "side": "RED",
+      "echelon": "SQD",
+      "type": "MG_SQD",
+      "pos": [
+        2329.6,
+        594.9
+      ],
+      "heading_deg": 0.0,
+      "metadata": {
+        "barricade_limit": 0
+      },
+      "orders": [
+        {
+          "id": "R-MG_SQD-2-HOLD",
+          "kind": "HOLD",
+          "params": {
+            "duration_s": 9999
+          }
+        }
+      ]
+    },
+    {
+      "id": "R-INF_PLT-1",
+      "name": "R-INF_PLT-1",
+      "side": "RED",
+      "echelon": "PLT",
+      "type": "INF_PLT",
+      "pos": [
+        2461.4,
+        1652.7
+      ],
+      "heading_deg": 0.0,
+      "metadata": {
+        "barricade_limit": 0
+      },
+      "orders": [
+        {
+          "id": "R-INF_PLT-1-HOLD",
+          "kind": "HOLD",
+          "params": {
+            "duration_s": 9999
+          }
+        }
+      ]
+    },
+    {
+      "id": "R-INF_PLT-2",
+      "name": "R-INF_PLT-2",
+      "side": "RED",
+      "echelon": "PLT",
+      "type": "INF_PLT",
+      "pos": [
+        2181.7,
+        1646.3
+      ],
+      "heading_deg": 0.0,
+      "metadata": {
+        "barricade_limit": 0
+      },
+      "orders": [
+        {
+          "id": "R-INF_PLT-2-HOLD",
+          "kind": "HOLD",
+          "params": {
+            "duration_s": 9999
+          }
+        }
+      ]
+    },
+    {
+      "id": "R-RIFLE_SQD-1",
+      "name": "R-RIFLE_SQD-1",
+      "side": "RED",
+      "echelon": "SQD",
+      "type": "RIFLE_SQD",
+      "pos": [
+        821.5,
+        1167.2
+      ],
+      "heading_deg": 0.0,
+      "metadata": {
+        "barricade_limit": 0
+      },
+      "orders": [
+        {
+          "id": "R-RIFLE_SQD-1-HOLD",
+          "kind": "HOLD",
+          "params": {
+            "duration_s": 9999
+          }
+        }
+      ]
+    }
+  ],
+  "aggregations": [],
+  "terrain_file": "test3_terrain.json"
+}

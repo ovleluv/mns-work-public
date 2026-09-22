@@ -1,0 +1,56 @@
+{
+  "side": "BLUE",
+  "replace_existing_orders": true,
+  "missions": [
+    {
+      "id": "MOBILE-FIX",
+      "unit": "B-FIX",
+      "task": "DEFEND_AREA",
+      "center": [
+        650,
+        600
+      ],
+      "radius_m": 100,
+      "pursue_within_area": false,
+      "return_to_center": true,
+      "directives": {
+        "hold_at_all_costs": true,
+        "allow_withdrawal": false,
+        "allow_break_contact": false
+      }
+    },
+    {
+      "id": "MOBILE-RESERVE-WAIT",
+      "unit": "B-RESERVE",
+      "task": "HOLD",
+      "directives": {
+        "hold_at_all_costs": true,
+        "allow_withdrawal": false,
+        "allow_break_contact": false
+      },
+      "conditions": [
+        {
+          "lhs": "sim.time",
+          "op": ">=",
+          "rhs": 90
+        }
+      ],
+      "on_true": {
+        "id": "MOBILE-COUNTERATTACK",
+        "task": "ATTACK_POSITION",
+        "destination": [
+          850,
+          650
+        ],
+        "persistent": true,
+        "directives": {
+          "engagement_range_policy": "COMBINED_ARMS",
+          "engagement_range_fraction": 0.9
+        }
+      }
+    }
+  ],
+  "notes": [
+    "Timed reserve commitment only; no Track-based penetration trigger or team phase barrier."
+  ]
+}

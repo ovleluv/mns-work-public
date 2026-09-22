@@ -1,0 +1,61 @@
+{
+  "seed": 7,
+  "world": {
+    "width_m": 1600,
+    "height_m": 1200
+  },
+  "objectives": {
+    "OBSERVATION_POINT": [
+      500,
+      500
+    ]
+  },
+  "units": [
+    {
+      "id": "B-SCOUT",
+      "name": "B-SCOUT",
+      "side": "BLUE",
+      "type": "RIFLE_SQD",
+      "echelon": "SQD",
+      "pos": [
+        150,
+        500
+      ],
+      "heading_deg": 0,
+      "watch_heading_deg": 0
+    },
+    {
+      "id": "B-REPORT-RECIPIENT",
+      "name": "B-REPORT-RECIPIENT",
+      "side": "BLUE",
+      "type": "RIFLE_SQD",
+      "echelon": "SQD",
+      "pos": [
+        120,
+        950
+      ],
+      "heading_deg": 0,
+      "watch_heading_deg": 0
+    },
+    {
+      "id": "R-OBSERVED",
+      "name": "R-OBSERVED",
+      "side": "RED",
+      "type": "RIFLE_SQD",
+      "echelon": "SQD",
+      "pos": [
+        950,
+        500
+      ],
+      "heading_deg": 180,
+      "watch_heading_deg": 180
+    }
+  ],
+  "config_file": "../../config/defaults.json",
+  "unit_types_file": "../../config/toe_templates.json",
+  "terrain_file": "RECONNAISSANCE_TERRAIN.json",
+  "bml_files": {
+    "BLUE": "RECONNAISSANCE_BLUE_BML.json",
+    "RED": "RECONNAISSANCE_RED_BML.json"
+  }
+}

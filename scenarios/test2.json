@@ -1,0 +1,121 @@
+{
+  "seed": 7,
+  "world": {
+    "width_m": 500.0,
+    "height_m": 500.0
+  },
+  "objectives": {},
+  "units": [
+    {
+      "id": "R-RIFLE_SQD-1",
+      "name": "R-RIFLE_SQD-1",
+      "side": "RED",
+      "echelon": "SQD",
+      "type": "RIFLE_SQD",
+      "pos": [
+        212.8,
+        399.4
+      ],
+      "heading_deg": 0.0,
+      "orders": [
+        {
+          "id": "R-RIFLE_SQD-1-HOLD",
+          "kind": "HOLD",
+          "params": {
+            "duration_s": 9999
+          }
+        }
+      ]
+    },
+    {
+      "id": "B-INF_PLT-1",
+      "name": "B-INF_PLT-1",
+      "side": "BLUE",
+      "echelon": "PLT",
+      "type": "INF_PLT",
+      "pos": [
+        146.7,
+        297.8
+      ],
+      "heading_deg": 0.0,
+      "orders": [
+        {
+          "id": "B-INF_PLT-1-HOLD",
+          "kind": "HOLD",
+          "params": {
+            "duration_s": 9999
+          }
+        }
+      ]
+    },
+    {
+      "id": "R-RIFLE_SQD-2",
+      "name": "R-RIFLE_SQD-2",
+      "side": "RED",
+      "echelon": "SQD",
+      "type": "RIFLE_SQD",
+      "pos": [
+        285.0,
+        198.3
+      ],
+      "heading_deg": 0.0,
+      "orders": [
+        {
+          "id": "R-RIFLE_SQD-2-HOLD",
+          "kind": "HOLD",
+          "params": {
+            "duration_s": 9999
+          }
+        }
+      ]
+    },
+    {
+      "id": "R-RIFLE_SQD-3",
+      "name": "R-RIFLE_SQD-3",
+      "side": "RED",
+      "echelon": "SQD",
+      "type": "RIFLE_SQD",
+      "pos": [
+        86.7,
+        149.4
+      ],
+      "heading_deg": 0.0,
+      "orders": [
+        {
+          "id": "R-RIFLE_SQD-3-HOLD",
+          "kind": "HOLD",
+          "params": {
+            "duration_s": 9999
+          }
+        }
+      ]
+    },
+    {
+      "id": "R-RIFLE_SQD-4",
+      "name": "R-RIFLE_SQD-4",
+      "side": "RED",
+      "echelon": "SQD",
+      "type": "RIFLE_SQD",
+      "pos": [
+        22.8,
+        336.1
+      ],
+      "heading_deg": 0.0,
+      "orders": [
+        {
+          "id": "R-RIFLE_SQD-4-HOLD",
+          "kind": "HOLD",
+          "params": {
+            "duration_s": 9999
+          }
+        }
+      ]
+    }
+  ],
+  "aggregations": [],
+  "config_file": "../config/defaults.json",
+  "unit_types_file": "../config/toe_templates.json",
+  "artillery_doctrine_file": "../config/artillery_doctrine.json",
+  "targeting_doctrine_file": "../config/targeting_doctrine.json",
+  "terrain_file": "test2_terrain.json"
+}

@@ -1,0 +1,41 @@
+{
+  "side": "BLUE",
+  "replace_existing_orders": true,
+  "phases": [
+    {
+      "id": "PHASE_I_ASSEMBLY",
+      "start_at_s": 0,
+      "deadline_s": 240,
+      "missions": [
+        {
+          "id": "PLT1-ASSEMBLE",
+          "unit": "B-INF_PLT-1",
+          "task": "MOVE_TO",
+          "destination": [1200, 1200],
+          "on_deadline": {"id": "PLT1-HOLD-LATE", "task": "HOLD"}
+        }
+      ]
+    },
+    {
+      "id": "PHASE_II_HOLD",
+      "start_at_s": 240,
+      "directives": {"hold_at_all_costs": true, "allow_withdrawal": false},
+      "missions": [
+        {
+          "id": "PLT1-HOLD-UNTIL-50PCT-LOSS",
+          "unit": "B-INF_PLT-1",
+          "task": "DEFEND_AREA",
+          "center": [1200, 1200],
+          "radius_m": 100,
+          "conditions": [{"lhs": "self.loss_ratio", "op": ">=", "rhs": 0.50}],
+          "on_true": {
+            "id": "PLT1-RALLY-ALPHA",
+            "task": "WITHDRAW",
+            "destination": [700, 1000],
+            "directives": {"allow_withdrawal": true, "hold_at_all_costs": false}
+          }
+        }
+      ]
+    }
+  ]
+}

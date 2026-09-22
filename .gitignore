@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+.coverage
+htmlcov/
+
+# 실행 결과 및 임시 자료 — 하위 폴더에도 적용
+logs/
+results/
+tmp/
+
+# 로컬 작업 환경
+.agents/
+.codex/
+.vscode/
+.env
+.env.*
+!.env.example
+
+# 구버전 백업
+/main_v07_backup.py

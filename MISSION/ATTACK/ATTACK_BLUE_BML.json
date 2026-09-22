@@ -1,0 +1,37 @@
+{
+  "side": "BLUE",
+  "replace_existing_orders": true,
+  "missions": [
+    {
+      "id": "ATTACK-MAIN",
+      "unit": "B-MAIN",
+      "task": "ATTACK_POSITION",
+      "destination": [
+        650,
+        600
+      ],
+      "persistent": true,
+      "directives": {
+        "engagement_range_policy": "COMBINED_ARMS",
+        "engagement_range_fraction": 0.9
+      }
+    },
+    {
+      "id": "ATTACK-SUPPORT",
+      "unit": "B-SUPPORT",
+      "task": "ATTACK_POSITION",
+      "destination": [
+        650,
+        650
+      ],
+      "persistent": true,
+      "directives": {
+        "engagement_range_policy": "COMBINED_ARMS",
+        "engagement_range_fraction": 0.9
+      }
+    }
+  ],
+  "notes": [
+    "Known defensive position; BLUE uses coordinate missions, not omniscient entity pursuit."
+  ]
+}

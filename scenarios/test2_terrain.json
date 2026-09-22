@@ -1,0 +1,105 @@
+{
+  "roads": [],
+  "rivers": [],
+  "bridges": [],
+  "areas": [
+    {
+      "id": "F1",
+      "type": "FOREST",
+      "polygon": [
+        [
+          150.9,
+          204.2
+        ],
+        [
+          121.8,
+          221.7
+        ],
+        [
+          101.9,
+          250.4
+        ],
+        [
+          80.1,
+          283.0
+        ],
+        [
+          73.2,
+          319.7
+        ],
+        [
+          78.6,
+          353.1
+        ],
+        [
+          104.0,
+          385.4
+        ],
+        [
+          148.0,
+          398.5
+        ],
+        [
+          195.9,
+          386.5
+        ],
+        [
+          224.6,
+          362.2
+        ],
+        [
+          231.8,
+          327.0
+        ],
+        [
+          214.8,
+          289.9
+        ],
+        [
+          226.0,
+          256.2
+        ],
+        [
+          245.3,
+          214.8
+        ],
+        [
+          240.6,
+          181.4
+        ],
+        [
+          208.6,
+          167.9
+        ],
+        [
+          168.3,
+          170.1
+        ]
+      ],
+      "movement_factor": 0.45,
+      "mobility_overrides": {
+        "FOOT": 0.45,
+        "TRACKED": 0.0,
+        "WHEELED": 0.0,
+        "WHEELED_TOWED": 0.0
+      },
+      "impassable_mobility_classes": [
+        "TRACKED",
+        "WHEELED",
+        "WHEELED_TOWED"
+      ],
+      "observation_modifier": {
+        "range_factor": 0.88,
+        "fov_factor": 0.78,
+        "awareness_factor": 0.72,
+        "detection_factor": 0.45
+      },
+      "target_concealment_factor": 0.34,
+      "max_visual_penetration_m": 75.0,
+      "sensor_penetration_m": {
+        "VISUAL": 75.0,
+        "THERMAL": 105.0
+      }
+    }
+  ]
+}

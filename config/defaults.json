@@ -1,0 +1,335 @@
+{
+  "combat": {
+    "engagement_link_m": 420.0,
+    "artillery_support_radius_m": 900.0,
+    "sensor_update_s": 1.0,
+    "track_action_confidence": 0.35,
+    "track_stale_s": 18.0,
+    "track_lost_s": 45.0,
+    "proximity_contact_m": 60.0,
+    "proximity_contact_error_m": 12.0,
+    "report_probability_per_observation": 0.42,
+    "observer_report_delay_min_s": 8.0,
+    "observer_report_delay_max_s": 20.0,
+    "c2_dissemination_delay_min_s": 8.0,
+    "c2_dissemination_delay_max_s": 18.0,
+    "counter_battery_share_probability": 0.9,
+    "fire_support_request_delay_min_s": 5.0,
+    "fire_support_request_delay_max_s": 12.0,
+    "fire_direction_compute_delay_min_s": 10.0,
+    "fire_direction_compute_delay_max_s": 24.0,
+    "gun_prepare_delay_min_s": 14.0,
+    "gun_prepare_delay_max_s": 30.0,
+    "artillery_reload_delay_min_s": 20.0,
+    "artillery_reload_delay_max_s": 35.0,
+    "artillery_time_of_flight_min_s": 8.0,
+    "artillery_time_of_flight_max_s": 15.0,
+    "fire_mission_retarget_min_interval_s": 20.0,
+    "attack_track_memory_s": 90.0,
+    "attack_search_arrival_m": 25.0,
+    "attack_search_hold_s": 12.0,
+    "infantry_break_contact_m": 260.0,
+    "artillery_displace_contact_m": 350.0,
+    "artillery_displace_m": 400.0,
+    "indirect_friendly_fire": true,
+    "belief_grace_s": 90.0,
+    "belief_half_life_s": 900.0,
+    "belief_floor_confidence": 0.28,
+    "belief_display_threshold": 0.25,
+    "observer_report_min_interval_s": 12.0,
+    "target_lock_min_s": 18.0,
+    "target_switch_score_ratio": 1.55,
+    "target_lock_grace_s": 8.0,
+    "counter_battery_preempts_fire_support": true,
+    "fire_mission_priority": {
+      "COUNTER_BATTERY": 30,
+      "FIRE_SUPPORT": 20,
+      "INDIRECT_FIRE": 10
+    },
+    "visual_detection_edge_p_per_scan": 0.01,
+    "visual_detection_max_p_per_scan": 0.55,
+    "visual_detection_range_exponent": 2.0,
+    "visibility_range_m": 1800.0,
+    "direct_fire_acquisition_delay_min_s": 2.0,
+    "direct_fire_acquisition_delay_max_s": 5.0,
+    "repeat_fire_mission_window_s": 180.0,
+    "repeat_fire_support_request_delay_min_s": 1.0,
+    "repeat_fire_support_request_delay_max_s": 3.0,
+    "repeat_fire_direction_compute_delay_min_s": 3.0,
+    "repeat_fire_direction_compute_delay_max_s": 8.0,
+    "repeat_gun_prepare_delay_min_s": 3.0,
+    "repeat_gun_prepare_delay_max_s": 8.0,
+    "combat_ineffective_withdraw_m": 350.0,
+    "visual_forward_fov_deg": 80.0,
+    "visual_all_round_awareness_m": 180.0,
+    "visual_watch_slew_deg_per_s": 30.0,
+    "visual_all_round_detection_factor": 0.72,
+    "visual_sensor_profiles": {
+      "DEFAULT": {
+        "forward_fov_deg": 80.0,
+        "all_round_awareness_m": 180.0,
+        "watch_slew_deg_per_s": 30.0,
+        "sensor_mode": "VISUAL"
+      },
+      "INFANTRY": {
+        "forward_fov_deg": 90.0,
+        "all_round_awareness_m": 220.0,
+        "watch_slew_deg_per_s": 45.0,
+        "sensor_mode": "VISUAL"
+      },
+      "ARMOR": {
+        "forward_fov_deg": 60.0,
+        "all_round_awareness_m": 160.0,
+        "watch_slew_deg_per_s": 20.0,
+        "sensor_mode": "VISUAL"
+      },
+      "ARTILLERY": {
+        "forward_fov_deg": 75.0,
+        "all_round_awareness_m": 180.0,
+        "watch_slew_deg_per_s": 30.0,
+        "sensor_mode": "VISUAL"
+      }
+    },
+    "environment": {
+      "weather": "CLEAR",
+      "illumination": "DAY",
+      "weather_observation_modifiers": {
+        "CLEAR": {
+          "range_factor": 1.0,
+          "fov_factor": 1.0,
+          "awareness_factor": 1.0,
+          "detection_factor": 1.0
+        },
+        "RAIN": {
+          "range_factor": 0.78,
+          "fov_factor": 0.95,
+          "awareness_factor": 0.9,
+          "detection_factor": 0.82,
+          "sensor_overrides": {
+            "THERMAL": {
+              "range_factor": 0.88,
+              "detection_factor": 0.9
+            }
+          }
+        },
+        "HEAVY_RAIN": {
+          "range_factor": 0.58,
+          "fov_factor": 0.9,
+          "awareness_factor": 0.82,
+          "detection_factor": 0.65,
+          "sensor_overrides": {
+            "THERMAL": {
+              "range_factor": 0.72,
+              "detection_factor": 0.78
+            }
+          }
+        },
+        "FOG": {
+          "range_factor": 0.35,
+          "fov_factor": 0.82,
+          "awareness_factor": 0.78,
+          "detection_factor": 0.48,
+          "sensor_overrides": {
+            "THERMAL": {
+              "range_factor": 0.62,
+              "detection_factor": 0.7
+            }
+          }
+        }
+      },
+      "illumination_observation_modifiers": {
+        "DAY": {
+          "range_factor": 1.0,
+          "fov_factor": 1.0,
+          "awareness_factor": 1.0,
+          "detection_factor": 1.0
+        },
+        "DUSK": {
+          "range_factor": 0.72,
+          "fov_factor": 0.95,
+          "awareness_factor": 0.9,
+          "detection_factor": 0.78,
+          "sensor_overrides": {
+            "THERMAL": {
+              "range_factor": 1.0,
+              "detection_factor": 1.0
+            }
+          }
+        },
+        "NIGHT": {
+          "range_factor": 0.42,
+          "fov_factor": 0.88,
+          "awareness_factor": 0.78,
+          "detection_factor": 0.55,
+          "sensor_overrides": {
+            "THERMAL": {
+              "range_factor": 0.95,
+              "fov_factor": 0.95,
+              "awareness_factor": 0.95,
+              "detection_factor": 0.96
+            }
+          }
+        }
+      }
+    },
+    "threat_cue_profiles": {
+      "DEFAULT": {
+        "direct_memory_s": 10.0,
+        "direct_bearing_error_deg": 12.0,
+        "indirect_memory_s": 7.0,
+        "indirect_bearing_error_deg": 40.0
+      },
+      "INFANTRY": {
+        "direct_memory_s": 12.0,
+        "direct_bearing_error_deg": 10.0,
+        "indirect_memory_s": 8.0,
+        "indirect_bearing_error_deg": 38.0
+      },
+      "ARMOR": {
+        "direct_memory_s": 10.0,
+        "direct_bearing_error_deg": 8.0,
+        "indirect_memory_s": 6.0,
+        "indirect_bearing_error_deg": 32.0
+      },
+      "ARTILLERY": {
+        "direct_memory_s": 10.0,
+        "direct_bearing_error_deg": 12.0,
+        "indirect_memory_s": 8.0,
+        "indirect_bearing_error_deg": 35.0
+      }
+    },
+    "communications": {
+      "routing_mode": "SIDE_WIDE",
+      "default_link": {
+        "name": "TACTICAL_RADIO",
+        "medium": "RADIO",
+        "min_delay_s": 1.0,
+        "max_delay_s": 4.0,
+        "reliability": 0.995,
+        "max_range_m": null,
+        "jam_resistance": 0.5
+      },
+      "global_jamming_strength": 0.0,
+      "engagement_reports_enabled": true,
+      "engagement_report_probability": 0.88,
+      "engagement_report_min_interval_s": 15.0
+    },
+    "shared_situational_cue": {
+      "min_confidence": 0.28,
+      "memory_s": 18.0,
+      "engaged_memory_s": 24.0,
+      "replace_score_ratio": 1.1,
+      "kind_weight": {
+        "CONTACT": 1.0,
+        "CONTACT_ENGAGED": 1.25
+      }
+    },
+    "formation_footprints": {
+      "DEFAULT": {
+        "length_m": 80.0,
+        "width_m": 55.0,
+        "pattern": "ELLIPSE",
+        "density_model": "CENTER_WEIGHTED",
+        "default_posture": "NORMAL"
+      },
+      "INFANTRY": {
+        "length_m": 110.0,
+        "width_m": 75.0,
+        "pattern": "ELLIPSE",
+        "density_model": "CENTER_WEIGHTED",
+        "default_posture": "NORMAL"
+      },
+      "ARMOR": {
+        "length_m": 180.0,
+        "width_m": 120.0,
+        "pattern": "ELLIPSE",
+        "density_model": "UNIFORM",
+        "default_posture": "NORMAL"
+      },
+      "ARTILLERY": {
+        "length_m": 260.0,
+        "width_m": 170.0,
+        "pattern": "ELLIPSE",
+        "density_model": "UNIFORM",
+        "default_posture": "NORMAL"
+      }
+    },
+    "formation_posture_modifiers": {
+      "COMPACT": {
+        "length_factor": 0.65,
+        "width_factor": 0.65,
+        "indirect_casualty_factor": 1.15
+      },
+      "NORMAL": {
+        "length_factor": 1.0,
+        "width_factor": 1.0,
+        "indirect_casualty_factor": 1.0
+      },
+      "DISPERSED": {
+        "length_factor": 1.55,
+        "width_factor": 1.55,
+        "indirect_casualty_factor": 0.88
+      },
+      "COLUMN": {
+        "length_factor": 1.45,
+        "width_factor": 0.55,
+        "indirect_casualty_factor": 1.0
+      },
+      "LINE": {
+        "length_factor": 0.65,
+        "width_factor": 1.65,
+        "indirect_casualty_factor": 0.95
+      }
+    },
+    "indirect_fire_vulnerability_profiles": {
+      "DEFAULT_SOFT": {
+        "p_destroy_direct": 0.88,
+        "p_disable_direct_survivor": 0.7,
+        "p_disable_near": 0.15,
+        "p_disable_fragment": 0.03
+      },
+      "UNARMORED_GUN": {
+        "p_destroy_direct": 0.84,
+        "p_disable_direct_survivor": 0.65,
+        "p_disable_near": 0.06,
+        "p_disable_fragment": 0.008
+      },
+      "RADAR_SENSOR": {
+        "p_destroy_direct": 0.9,
+        "p_disable_direct_survivor": 0.8,
+        "p_disable_near": 0.18,
+        "p_disable_fragment": 0.04
+      }
+    },
+    "navigation": {
+      "mode": "SPARSE_ASTAR",
+      "sample_spacing_m": 20.0,
+      "waypoint_arrival_m": 10.0,
+      "bridge_portal_margin_m": 8.0,
+      "replan_deviation_m": 80.0,
+      "replan_destination_shift_m": 75.0,
+      "local_direct_route_m": 1200.0
+    },
+    "formation_echelon_footprint_scale": {
+      "PLT": 1.0,
+      "COY": 1.8,
+      "BN": 3.1
+    },
+    "indirect_fire_auto_disperse": true,
+    "indirect_fire_auto_disperse_duration_s": 120.0,
+    "indirect_fire_auto_disperse_min_echelon": "PLT",
+    "unreachable_high_loss_ratio": 0.35,
+    "unreachable_withdraw_m": 250.0,
+    "local_target_lock_min_s": 12.0,
+    "local_target_switch_score_ratio": 1.2,
+    "local_fire_mission_target_bonus": 1.35,
+    "local_fire_saturation_penalty": 0.65,
+    "close_multi_target_fire_enabled": true,
+    "close_contacts_preserve_watch_sector": true,
+    "engagement_range_policy": "STANDOFF",
+    "engagement_range_fraction": 1.0,
+    "direct_fire_requires_watch_alignment": true,
+    "direct_fire_watch_edge_margin_deg": 5.0
+  },
+  "direct_fire_requires_local_track": true
+}

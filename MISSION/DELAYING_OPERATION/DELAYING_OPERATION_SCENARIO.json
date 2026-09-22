@@ -1,0 +1,69 @@
+{
+  "seed": 7,
+  "world": {
+    "width_m": 1600,
+    "height_m": 1200
+  },
+  "objectives": {
+    "LINE_1": [
+      650,
+      600
+    ],
+    "LINE_2": [
+      570,
+      600
+    ],
+    "LINE_3": [
+      450,
+      600
+    ]
+  },
+  "units": [
+    {
+      "id": "B-DELAY",
+      "name": "B-DELAY",
+      "side": "BLUE",
+      "type": "RIFLE_SQD",
+      "echelon": "SQD",
+      "pos": [
+        650,
+        600
+      ],
+      "heading_deg": 0,
+      "watch_heading_deg": 0
+    },
+    {
+      "id": "B-COVER",
+      "name": "B-COVER",
+      "side": "BLUE",
+      "type": "RIFLE_SQD",
+      "echelon": "SQD",
+      "pos": [
+        640,
+        680
+      ],
+      "heading_deg": 0,
+      "watch_heading_deg": 0
+    },
+    {
+      "id": "R-PRESSURE",
+      "name": "R-PRESSURE",
+      "side": "RED",
+      "type": "RIFLE_SQD",
+      "echelon": "SQD",
+      "pos": [
+        950,
+        600
+      ],
+      "heading_deg": 180,
+      "watch_heading_deg": 180
+    }
+  ],
+  "config_file": "../../config/defaults.json",
+  "unit_types_file": "../../config/toe_templates.json",
+  "terrain_file": "DELAYING_OPERATION_TERRAIN.json",
+  "bml_files": {
+    "BLUE": "DELAYING_OPERATION_BLUE_BML.json",
+    "RED": "DELAYING_OPERATION_RED_BML.json"
+  }
+}

@@ -1,0 +1,695 @@
+{
+  "side": "RED",
+  "replace_existing_orders": true,
+  "phases": [
+    {
+      "id": "RED_LOCAL_SECURITY",
+      "start_at_s": 0,
+      "missions": [
+        {
+          "id": "R-INF-1-CLEAR-ASSEMBLY",
+          "unit": "R-INF-1",
+          "task": "ATTACK_POSITION",
+          "destination": [
+            1112,
+            520
+          ],
+          "persistent": false,
+          "directives": {
+            "allow_withdrawal": false,
+            "allow_break_contact": false
+          }
+        },
+        {
+          "id": "R-INF-1-ASSEMBLY-WATCH",
+          "unit": "R-INF-1",
+          "task": "DEFEND_AREA",
+          "center": [
+            1112,
+            520
+          ],
+          "radius_m": 25,
+          "pursue_within_area": false,
+          "engagement_radius_m": 700,
+          "params": {
+            "watch_heading_deg": 90
+          },
+          "directives": {
+            "allow_withdrawal": false,
+            "allow_break_contact": false,
+            "engagement_range_policy": "STANDOFF"
+          },
+          "conditions": [
+            {
+              "lhs": "sim.time",
+              "op": ">=",
+              "rhs": 300
+            }
+          ],
+          "on_true": {
+            "task": "MOVE_TO",
+            "destination": [
+              1112,
+              520
+            ],
+            "directives": {
+              "allow_withdrawal": false,
+              "allow_break_contact": false
+            }
+          }
+        },
+        {
+          "id": "R-INF-2-CLEAR-ASSEMBLY",
+          "unit": "R-INF-2",
+          "task": "ATTACK_POSITION",
+          "destination": [
+            1432,
+            480
+          ],
+          "persistent": false,
+          "directives": {
+            "allow_withdrawal": false,
+            "allow_break_contact": false
+          }
+        },
+        {
+          "id": "R-INF-2-ASSEMBLY-WATCH",
+          "unit": "R-INF-2",
+          "task": "DEFEND_AREA",
+          "center": [
+            1432,
+            480
+          ],
+          "radius_m": 25,
+          "pursue_within_area": false,
+          "engagement_radius_m": 700,
+          "params": {
+            "watch_heading_deg": 90
+          },
+          "directives": {
+            "allow_withdrawal": false,
+            "allow_break_contact": false,
+            "engagement_range_policy": "STANDOFF"
+          },
+          "conditions": [
+            {
+              "lhs": "sim.time",
+              "op": ">=",
+              "rhs": 300
+            }
+          ],
+          "on_true": {
+            "task": "MOVE_TO",
+            "destination": [
+              1432,
+              480
+            ],
+            "directives": {
+              "allow_withdrawal": false,
+              "allow_break_contact": false
+            }
+          }
+        },
+        {
+          "id": "R-INF-3-CLEAR-ASSEMBLY",
+          "unit": "R-INF-3",
+          "task": "ATTACK_POSITION",
+          "destination": [
+            1368,
+            648
+          ],
+          "persistent": false,
+          "directives": {
+            "allow_withdrawal": false,
+            "allow_break_contact": false
+          }
+        },
+        {
+          "id": "R-INF-3-ASSEMBLY-WATCH",
+          "unit": "R-INF-3",
+          "task": "DEFEND_AREA",
+          "center": [
+            1368,
+            648
+          ],
+          "radius_m": 25,
+          "pursue_within_area": false,
+          "engagement_radius_m": 700,
+          "params": {
+            "watch_heading_deg": 90
+          },
+          "directives": {
+            "allow_withdrawal": false,
+            "allow_break_contact": false,
+            "engagement_range_policy": "STANDOFF"
+          },
+          "conditions": [
+            {
+              "lhs": "sim.time",
+              "op": ">=",
+              "rhs": 300
+            }
+          ],
+          "on_true": {
+            "task": "MOVE_TO",
+            "destination": [
+              1368,
+              648
+            ],
+            "directives": {
+              "allow_withdrawal": false,
+              "allow_break_contact": false
+            }
+          }
+        },
+        {
+          "id": "R-HQ-ASSEMBLY-CONTROL",
+          "unit": "R-HQ",
+          "task": "DEFEND_AREA",
+          "center": [
+            1340,
+            404
+          ],
+          "radius_m": 20,
+          "pursue_within_area": false,
+          "engagement_radius_m": 700,
+          "params": {
+            "watch_heading_deg": 90
+          },
+          "directives": {
+            "allow_withdrawal": false,
+            "allow_break_contact": false,
+            "engagement_range_policy": "STANDOFF"
+          }
+        },
+        {
+          "id": "R-TRUCK-1-PARK",
+          "unit": "R-TRUCK-1",
+          "task": "HOLD",
+          "duration_s": -1
+        },
+        {
+          "id": "R-TRUCK-2-PARK",
+          "unit": "R-TRUCK-2",
+          "task": "HOLD",
+          "duration_s": -1
+        },
+        {
+          "id": "R-T55-1-ROAD-STAGING",
+          "unit": "R-T55-1",
+          "task": "MOVE_TO",
+          "destination": [
+            1286.7,
+            560.0
+          ],
+          "directives": {
+            "allow_withdrawal": false,
+            "allow_break_contact": false
+          }
+        },
+        {
+          "id": "R-T55-2-ROAD-STAGING",
+          "unit": "R-T55-2",
+          "task": "MOVE_TO",
+          "destination": [
+            1276.7,
+            516.0
+          ],
+          "directives": {
+            "allow_withdrawal": false,
+            "allow_break_contact": false
+          }
+        },
+        {
+          "id": "R-T55-3-ROAD-STAGING",
+          "unit": "R-T55-3",
+          "task": "MOVE_TO",
+          "destination": [
+            1271.8,
+            472.0
+          ],
+          "directives": {
+            "allow_withdrawal": false,
+            "allow_break_contact": false
+          }
+        },
+        {
+          "id": "R-T55-4-ROAD-STAGING",
+          "unit": "R-T55-4",
+          "task": "MOVE_TO",
+          "destination": [
+            1270.9,
+            428.0
+          ],
+          "directives": {
+            "allow_withdrawal": false,
+            "allow_break_contact": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "RED_SECURE_CROSSING_AND_DEPART",
+      "missions": [
+        {
+          "id": "R-INF-1-NORTH-BANK",
+          "unit": "R-INF-1",
+          "task": "ATTACK_POSITION",
+          "destination": [
+            1200,
+            760
+          ],
+          "persistent": false,
+          "directives": {
+            "allow_withdrawal": false,
+            "allow_break_contact": false
+          }
+        },
+        {
+          "id": "R-INF-1-SOUTH-BANK",
+          "unit": "R-INF-1",
+          "task": "ATTACK_POSITION",
+          "destination": [
+            1216,
+            916
+          ],
+          "persistent": false,
+          "directives": {
+            "allow_withdrawal": false,
+            "allow_break_contact": false
+          }
+        },
+        {
+          "id": "R-INF-1-BRIDGEHEAD",
+          "unit": "R-INF-1",
+          "task": "SECURE_AREA",
+          "center": [
+            1216,
+            916
+          ],
+          "radius_m": 100,
+          "pursuit_radius_m": 100,
+          "engagement_radius_m": 500,
+          "return_to_center": true,
+          "directives": {
+            "allow_withdrawal": false,
+            "allow_break_contact": false,
+            "engagement_range_policy": "STANDOFF"
+          }
+        },
+        {
+          "id": "R-INF-2-NORTH-BANK",
+          "unit": "R-INF-2",
+          "task": "ATTACK_POSITION",
+          "destination": [
+            1456,
+            736
+          ],
+          "persistent": false,
+          "directives": {
+            "allow_withdrawal": false,
+            "allow_break_contact": false
+          }
+        },
+        {
+          "id": "R-INF-2-SOUTH-BANK",
+          "unit": "R-INF-2",
+          "task": "ATTACK_POSITION",
+          "destination": [
+            1432,
+            932
+          ],
+          "persistent": false,
+          "directives": {
+            "allow_withdrawal": false,
+            "allow_break_contact": false
+          }
+        },
+        {
+          "id": "R-INF-2-BRIDGEHEAD",
+          "unit": "R-INF-2",
+          "task": "SECURE_AREA",
+          "center": [
+            1432,
+            932
+          ],
+          "radius_m": 100,
+          "pursuit_radius_m": 100,
+          "engagement_radius_m": 500,
+          "return_to_center": true,
+          "directives": {
+            "allow_withdrawal": false,
+            "allow_break_contact": false,
+            "engagement_range_policy": "STANDOFF"
+          }
+        },
+        {
+          "id": "R-INF-3-NORTH-BANK",
+          "unit": "R-INF-3",
+          "task": "ATTACK_POSITION",
+          "destination": [
+            1340,
+            760
+          ],
+          "persistent": false,
+          "directives": {
+            "allow_withdrawal": false,
+            "allow_break_contact": false
+          }
+        },
+        {
+          "id": "R-INF-3-SOUTH-BANK",
+          "unit": "R-INF-3",
+          "task": "ATTACK_POSITION",
+          "destination": [
+            1340,
+            956
+          ],
+          "persistent": false,
+          "directives": {
+            "allow_withdrawal": false,
+            "allow_break_contact": false
+          }
+        },
+        {
+          "id": "R-INF-3-BRIDGEHEAD",
+          "unit": "R-INF-3",
+          "task": "SECURE_AREA",
+          "center": [
+            1340,
+            956
+          ],
+          "radius_m": 100,
+          "pursuit_radius_m": 100,
+          "engagement_radius_m": 500,
+          "return_to_center": true,
+          "directives": {
+            "allow_withdrawal": false,
+            "allow_break_contact": false,
+            "engagement_range_policy": "STANDOFF"
+          }
+        },
+        {
+          "id": "R-T55-1-CROSSING-APPROACH",
+          "unit": "R-T55-1",
+          "task": "MOVE_TO",
+          "destination": [
+            1315.9,
+            772.0
+          ],
+          "directives": {
+            "allow_withdrawal": false,
+            "allow_break_contact": false
+          },
+          "start_at_s": 480
+        },
+        {
+          "id": "R-T55-1-CROSS-BRIDGE",
+          "unit": "R-T55-1",
+          "task": "MOVE_TO",
+          "destination": [
+            1315.6,
+            856.0
+          ],
+          "directives": {
+            "allow_withdrawal": false,
+            "allow_break_contact": false
+          }
+        },
+        {
+          "id": "R-T55-1-CLEAR-BRIDGE",
+          "unit": "R-T55-1",
+          "task": "MOVE_TO",
+          "destination": [
+            1298.5,
+            1016.0
+          ],
+          "directives": {
+            "allow_withdrawal": false,
+            "allow_break_contact": false
+          }
+        },
+        {
+          "id": "R-T55-1-SOUTH-ROAD",
+          "unit": "R-T55-1",
+          "task": "MOVE_TO",
+          "destination": [
+            1132.0,
+            2560.0
+          ],
+          "directives": {
+            "allow_withdrawal": false,
+            "allow_break_contact": false
+          }
+        },
+        {
+          "id": "R-T55-1-EXIT-PROXY",
+          "unit": "R-T55-1",
+          "task": "DEFEND_AREA",
+          "center": [
+            1132.0,
+            2560.0
+          ],
+          "radius_m": 30,
+          "pursue_within_area": false,
+          "engagement_radius_m": 700,
+          "params": {
+            "watch_heading_deg": 90
+          },
+          "directives": {
+            "allow_withdrawal": false,
+            "allow_break_contact": false,
+            "engagement_range_policy": "STANDOFF"
+          }
+        },
+        {
+          "id": "R-T55-2-CROSSING-APPROACH",
+          "unit": "R-T55-2",
+          "task": "MOVE_TO",
+          "destination": [
+            1315.9,
+            772.0
+          ],
+          "directives": {
+            "allow_withdrawal": false,
+            "allow_break_contact": false
+          },
+          "start_at_s": 550
+        },
+        {
+          "id": "R-T55-2-CROSS-BRIDGE",
+          "unit": "R-T55-2",
+          "task": "MOVE_TO",
+          "destination": [
+            1315.6,
+            856.0
+          ],
+          "directives": {
+            "allow_withdrawal": false,
+            "allow_break_contact": false
+          }
+        },
+        {
+          "id": "R-T55-2-CLEAR-BRIDGE",
+          "unit": "R-T55-2",
+          "task": "MOVE_TO",
+          "destination": [
+            1298.5,
+            1016.0
+          ],
+          "directives": {
+            "allow_withdrawal": false,
+            "allow_break_contact": false
+          }
+        },
+        {
+          "id": "R-T55-2-SOUTH-ROAD",
+          "unit": "R-T55-2",
+          "task": "MOVE_TO",
+          "destination": [
+            1132.0,
+            2560.0
+          ],
+          "directives": {
+            "allow_withdrawal": false,
+            "allow_break_contact": false
+          }
+        },
+        {
+          "id": "R-T55-2-EXIT-PROXY",
+          "unit": "R-T55-2",
+          "task": "DEFEND_AREA",
+          "center": [
+            1132.0,
+            2560.0
+          ],
+          "radius_m": 30,
+          "pursue_within_area": false,
+          "engagement_radius_m": 700,
+          "params": {
+            "watch_heading_deg": 90
+          },
+          "directives": {
+            "allow_withdrawal": false,
+            "allow_break_contact": false,
+            "engagement_range_policy": "STANDOFF"
+          }
+        },
+        {
+          "id": "R-T55-3-CROSSING-APPROACH",
+          "unit": "R-T55-3",
+          "task": "MOVE_TO",
+          "destination": [
+            1315.9,
+            772.0
+          ],
+          "directives": {
+            "allow_withdrawal": false,
+            "allow_break_contact": false
+          },
+          "start_at_s": 620
+        },
+        {
+          "id": "R-T55-3-CROSS-BRIDGE",
+          "unit": "R-T55-3",
+          "task": "MOVE_TO",
+          "destination": [
+            1315.6,
+            856.0
+          ],
+          "directives": {
+            "allow_withdrawal": false,
+            "allow_break_contact": false
+          }
+        },
+        {
+          "id": "R-T55-3-CLEAR-BRIDGE",
+          "unit": "R-T55-3",
+          "task": "MOVE_TO",
+          "destination": [
+            1298.5,
+            1016.0
+          ],
+          "directives": {
+            "allow_withdrawal": false,
+            "allow_break_contact": false
+          }
+        },
+        {
+          "id": "R-T55-3-SOUTH-ROAD",
+          "unit": "R-T55-3",
+          "task": "MOVE_TO",
+          "destination": [
+            1132.0,
+            2560.0
+          ],
+          "directives": {
+            "allow_withdrawal": false,
+            "allow_break_contact": false
+          }
+        },
+        {
+          "id": "R-T55-3-EXIT-PROXY",
+          "unit": "R-T55-3",
+          "task": "DEFEND_AREA",
+          "center": [
+            1132.0,
+            2560.0
+          ],
+          "radius_m": 30,
+          "pursue_within_area": false,
+          "engagement_radius_m": 700,
+          "params": {
+            "watch_heading_deg": 90
+          },
+          "directives": {
+            "allow_withdrawal": false,
+            "allow_break_contact": false,
+            "engagement_range_policy": "STANDOFF"
+          }
+        },
+        {
+          "id": "R-T55-4-CROSSING-APPROACH",
+          "unit": "R-T55-4",
+          "task": "MOVE_TO",
+          "destination": [
+            1315.9,
+            772.0
+          ],
+          "directives": {
+            "allow_withdrawal": false,
+            "allow_break_contact": false
+          },
+          "start_at_s": 690
+        },
+        {
+          "id": "R-T55-4-CROSS-BRIDGE",
+          "unit": "R-T55-4",
+          "task": "MOVE_TO",
+          "destination": [
+            1315.6,
+            856.0
+          ],
+          "directives": {
+            "allow_withdrawal": false,
+            "allow_break_contact": false
+          }
+        },
+        {
+          "id": "R-T55-4-CLEAR-BRIDGE",
+          "unit": "R-T55-4",
+          "task": "MOVE_TO",
+          "destination": [
+            1298.5,
+            1016.0
+          ],
+          "directives": {
+            "allow_withdrawal": false,
+            "allow_break_contact": false
+          }
+        },
+        {
+          "id": "R-T55-4-SOUTH-ROAD",
+          "unit": "R-T55-4",
+          "task": "MOVE_TO",
+          "destination": [
+            1132.0,
+            2560.0
+          ],
+          "directives": {
+            "allow_withdrawal": false,
+            "allow_break_contact": false
+          }
+        },
+        {
+          "id": "R-T55-4-EXIT-PROXY",
+          "unit": "R-T55-4",
+          "task": "DEFEND_AREA",
+          "center": [
+            1132.0,
+            2560.0
+          ],
+          "radius_m": 30,
+          "pursue_within_area": false,
+          "engagement_radius_m": 700,
+          "params": {
+            "watch_heading_deg": 90
+          },
+          "directives": {
+            "allow_withdrawal": false,
+            "allow_break_contact": false,
+            "engagement_range_policy": "STANDOFF"
+          }
+        }
+      ]
+    }
+  ],
+  "notes": [
+    "Opposing COA inferred from solution pp. 1-2: secure the assembly area with dismounted infantry while expediting departure.",
+    "The PDF does not supply an authoritative RED plan. This is a terrain-informed baseline with no knowledge of BLUE current coordinates or IDs.",
+    "Dismounted infantry screen the clearing and bridge approaches; tanks advance in staggered road movements; unarmed empty trucks remain at the assembly area.",
+    "Departure offsets are planning assumptions; per-unit queues do not prove the infantry has cleared a sector or reserve exclusive bridge occupancy.",
+    "Vehicle routes use the native terrain planner and the intact bridge. A destroyed bridge may stop this road-bound force.",
+    "Southern exit is an off-map continuation proxy, not permission to attack a known on-map M Company location."
+  ]
+}

@@ -1,0 +1,352 @@
+{
+  "roads": [
+    {
+      "id": "R1",
+      "width_m": 40,
+      "points": [
+        [
+          200,
+          1800
+        ],
+        [
+          1100,
+          1900
+        ],
+        [
+          2050,
+          2050
+        ],
+        [
+          3000,
+          2150
+        ],
+        [
+          3850,
+          2200
+        ]
+      ]
+    },
+    {
+      "id": "R2",
+      "width_m": 36,
+      "points": [
+        [
+          550,
+          3350
+        ],
+        [
+          1200,
+          3000
+        ],
+        [
+          1900,
+          2850
+        ],
+        [
+          2550,
+          3000
+        ],
+        [
+          3300,
+          2835
+        ],
+        [
+          3450,
+          3350
+        ]
+      ]
+    },
+    {
+      "id": "R3",
+      "width_m": 34,
+      "points": [
+        [
+          1950,
+          200
+        ],
+        [
+          2000,
+          1200
+        ],
+        [
+          2050,
+          2050
+        ],
+        [
+          2050,
+          2850
+        ],
+        [
+          2100,
+          3850
+        ]
+      ]
+    }
+  ],
+  "rivers": [
+    {
+      "id": "RV1",
+      "width_m": 150,
+      "points": [
+        [
+          0,
+          2810
+        ],
+        [
+          450,
+          2765
+        ],
+        [
+          900,
+          2805
+        ],
+        [
+          1350,
+          2775
+        ],
+        [
+          1700,
+          2800
+        ],
+        [
+          2050,
+          2835
+        ],
+        [
+          2450,
+          2885
+        ],
+        [
+          2850,
+          2860
+        ],
+        [
+          3300,
+          2835
+        ],
+        [
+          3650,
+          2890
+        ],
+        [
+          4000,
+          2860
+        ]
+      ]
+    }
+  ],
+  "bridges": [
+    {
+      "id": "BR1",
+      "center": [
+        2050,
+        2835
+      ],
+      "width_m": 90,
+      "length_m": 190,
+      "road_id": "R3",
+      "structural_integrity": 140.0,
+      "heading_deg": 90.0
+    },
+    {
+      "id": "BR2",
+      "center": [
+        3300,
+        2835
+      ],
+      "width_m": 80,
+      "length_m": 190,
+      "road_id": "R2",
+      "structural_integrity": 140.0,
+      "heading_deg": 90.0
+    }
+  ],
+  "areas": [
+    {
+      "id": "W1",
+      "type": "WOODS",
+      "polygon": [
+        [
+          120,
+          450
+        ],
+        [
+          760,
+          280
+        ],
+        [
+          1180,
+          640
+        ],
+        [
+          1040,
+          1240
+        ],
+        [
+          420,
+          1370
+        ],
+        [
+          100,
+          980
+        ]
+      ],
+      "movement_factor": 0.82,
+      "mobility_overrides": {
+        "WHEELED": 0.68,
+        "TRACKED": 0.78,
+        "FOOT": 0.88
+      },
+      "observation_modifier": {
+        "range_factor": 0.72,
+        "fov_factor": 0.92,
+        "awareness_factor": 0.9,
+        "detection_factor": 0.68
+      },
+      "max_visual_penetration_m": 180.0,
+      "sensor_penetration_m": {
+        "VISUAL": 180.0,
+        "THERMAL": 240.0
+      },
+      "target_concealment_factor": 0.52
+    },
+    {
+      "id": "B1",
+      "type": "BRUSH",
+      "polygon": [
+        [
+          2700,
+          520
+        ],
+        [
+          3480,
+          380
+        ],
+        [
+          3900,
+          760
+        ],
+        [
+          3720,
+          1290
+        ],
+        [
+          3050,
+          1380
+        ],
+        [
+          2620,
+          1010
+        ]
+      ],
+      "movement_factor": 0.9,
+      "mobility_overrides": {
+        "WHEELED": 0.82,
+        "TRACKED": 0.9,
+        "FOOT": 0.93
+      },
+      "observation_modifier": {
+        "range_factor": 0.82,
+        "fov_factor": 0.95,
+        "awareness_factor": 0.94,
+        "detection_factor": 0.8
+      }
+    },
+    {
+      "id": "U1",
+      "type": "URBAN",
+      "polygon": [
+        [
+          2750,
+          1700
+        ],
+        [
+          3380,
+          1660
+        ],
+        [
+          3620,
+          2040
+        ],
+        [
+          3450,
+          2450
+        ],
+        [
+          2870,
+          2380
+        ],
+        [
+          2640,
+          2050
+        ]
+      ],
+      "movement_factor": 0.7,
+      "mobility_overrides": {
+        "WHEELED": 0.78,
+        "TRACKED": 0.64,
+        "FOOT": 0.82
+      },
+      "observation_modifier": {
+        "range_factor": 0.55,
+        "fov_factor": 0.78,
+        "awareness_factor": 0.88,
+        "detection_factor": 0.62
+      }
+    },
+    {
+      "id": "F1",
+      "type": "FOREST",
+      "polygon": [
+        [
+          1350,
+          300
+        ],
+        [
+          2050,
+          230
+        ],
+        [
+          2380,
+          620
+        ],
+        [
+          2250,
+          1190
+        ],
+        [
+          1690,
+          1370
+        ],
+        [
+          1280,
+          980
+        ]
+      ],
+      "movement_factor": 0.45,
+      "mobility_overrides": {
+        "FOOT": 0.45,
+        "TRACKED": 0.0,
+        "WHEELED": 0.0,
+        "WHEELED_TOWED": 0.0
+      },
+      "impassable_mobility_classes": [
+        "TRACKED",
+        "WHEELED",
+        "WHEELED_TOWED"
+      ],
+      "observation_modifier": {
+        "range_factor": 0.9,
+        "fov_factor": 0.8,
+        "awareness_factor": 0.75,
+        "detection_factor": 0.45
+      },
+      "max_visual_penetration_m": 75.0,
+      "sensor_penetration_m": {
+        "VISUAL": 75.0,
+        "THERMAL": 105.0
+      },
+      "target_concealment_factor": 0.34
+    }
+  ]
+}

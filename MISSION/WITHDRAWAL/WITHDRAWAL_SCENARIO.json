@@ -1,0 +1,48 @@
+{
+  "seed": 7,
+  "world": {
+    "width_m": 1600,
+    "height_m": 1200
+  },
+  "objectives": {
+    "RALLY": [
+      350,
+      600
+    ]
+  },
+  "units": [
+    {
+      "id": "B-WITHDRAW",
+      "name": "B-WITHDRAW",
+      "side": "BLUE",
+      "type": "RIFLE_SQD",
+      "echelon": "SQD",
+      "pos": [
+        650,
+        600
+      ],
+      "heading_deg": 0,
+      "watch_heading_deg": 0
+    },
+    {
+      "id": "R-PURSUER",
+      "name": "R-PURSUER",
+      "side": "RED",
+      "type": "RIFLE_SQD",
+      "echelon": "SQD",
+      "pos": [
+        920,
+        600
+      ],
+      "heading_deg": 180,
+      "watch_heading_deg": 180
+    }
+  ],
+  "config_file": "../../config/defaults.json",
+  "unit_types_file": "../../config/toe_templates.json",
+  "terrain_file": "WITHDRAWAL_TERRAIN.json",
+  "bml_files": {
+    "BLUE": "WITHDRAWAL_BLUE_BML.json",
+    "RED": "WITHDRAWAL_RED_BML.json"
+  }
+}

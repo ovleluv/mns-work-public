@@ -1,0 +1,48 @@
+{
+  "seed": 7,
+  "world": {
+    "width_m": 1600,
+    "height_m": 1200
+  },
+  "objectives": {
+    "PASSAGE": [
+      650,
+      500
+    ]
+  },
+  "units": [
+    {
+      "id": "B-WAIT",
+      "name": "B-WAIT",
+      "side": "BLUE",
+      "type": "RIFLE_SQD",
+      "echelon": "SQD",
+      "pos": [
+        600,
+        650
+      ],
+      "heading_deg": 225,
+      "watch_heading_deg": 225
+    },
+    {
+      "id": "R-PATROL",
+      "name": "R-PATROL",
+      "side": "RED",
+      "type": "RIFLE_SQD",
+      "echelon": "SQD",
+      "pos": [
+        450,
+        500
+      ],
+      "heading_deg": 0,
+      "watch_heading_deg": 0
+    }
+  ],
+  "config_file": "../../config/defaults.json",
+  "unit_types_file": "../../config/toe_templates.json",
+  "terrain_file": "AMBUSH_TERRAIN.json",
+  "bml_files": {
+    "BLUE": "AMBUSH_BLUE_BML.json",
+    "RED": "AMBUSH_RED_BML.json"
+  }
+}

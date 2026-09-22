@@ -1,0 +1,39 @@
+{
+  "side": "BLUE",
+  "replace_existing_orders": true,
+  "missions": [
+    {
+      "id": "BLUE-ATTACK-POS-1",
+      "unit": "B-INF_PLT-1",
+      "task": "ATTACK_POSITION",
+      "destination": [212.8, 399.4],
+      "persistent": false
+    },
+    {
+      "id": "BLUE-ATTACK-POS-2",
+      "unit": "B-INF_PLT-1",
+      "task": "ATTACK_POSITION",
+      "destination": [285.0, 198.3],
+      "persistent": false
+    },
+    {
+      "id": "BLUE-ATTACK-POS-3",
+      "unit": "B-INF_PLT-1",
+      "task": "ATTACK_POSITION",
+      "destination": [86.7, 149.4],
+      "persistent": false
+    },
+    {
+      "id": "BLUE-ATTACK-POS-4",
+      "unit": "B-INF_PLT-1",
+      "task": "ATTACK_POSITION",
+      "destination": [22.8, 336.1],
+      "persistent": false
+    }
+  ],
+  "notes": [
+    "Coordinate-only attack example: no RED unit IDs are referenced.",
+    "Coordinates are command/intelligence inputs, not derived from Ground Truth at runtime.",
+    "persistent=false allows the formation to proceed to the next queued attack position after reaching/clearing the current objective."
+  ]
+}

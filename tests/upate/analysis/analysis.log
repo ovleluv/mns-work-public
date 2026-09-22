@@ -1,0 +1,79 @@
+{
+  "footprints": {
+    "INF_PLT": {
+      "length": 110.0,
+      "width": 75.0
+    },
+    "INF_COY": {
+      "length": 198.0,
+      "width": 135.0
+    },
+    "INF_BN": {
+      "length": 341.0,
+      "width": 232.5
+    },
+    "ARTY_PLT": {
+      "length": 260.0,
+      "width": 170.0
+    },
+    "ARTY_BN": {
+      "length": 806.0,
+      "width": 527.0
+    }
+  },
+  "timeout_count": 694,
+  "timeouts_with_zero_participation_side": 233,
+  "runs": 828,
+  "source_hashes_match": true,
+  "majority_by_layout": {
+    "line": {
+      "majority_more": 143,
+      "equal": 1
+    },
+    "column": {
+      "majority_more": 144
+    },
+    "staggered": {
+      "majority_more": 143,
+      "minority_more": 1
+    }
+  },
+  "equal_strength_counts": {
+    "RED_more": 114,
+    "BLUE_more": 96,
+    "equal": 6
+  },
+  "rifle_checks": 23637,
+  "rifle_mismatches": 0,
+  "rifle_participant_histogram": {
+    "8": 12894,
+    "6": 2816,
+    "7": 5338,
+    "5": 1421,
+    "4": 592,
+    "3": 371,
+    "2": 151,
+    "1": 54
+  },
+  "artillery_checks": 932,
+  "artillery_mismatches": 0,
+  "firing_sides": {
+    "both_sides": 827,
+    "one_side": 1
+  },
+  "first_fire_times": {
+    "INDIRECT_FIRE": {
+      "min": 32.0,
+      "median": 41.75,
+      "max": 56.25
+    },
+    "FIRE": {
+      "min": 3.5,
+      "median": 5.0,
+      "max": 10.0
+    }
+  }
+}
+EXCEPTIONS [{"case": "INF_IND__INF_IND__4v2__staggered", "seed": 7, "BLUE": 1.0, "RED": 2.0}]
+LAYOUT TABLE [{"template": "INF_PLT", "layout": "line", "initial_personnel": 96, "blue_survivors": 64.66666666666667, "red_survivors": 66.66666666666667, "direct": 1224.6666666666667, "indirect": 0, "equipment": 0}, {"template": "INF_PLT", "layout": "column", "initial_personnel": 96, "blue_survivors": 72, "red_survivors": 72.66666666666667, "direct": 924, "indirect": 0, "equipment": 0}, {"template": "INF_PLT", "layout": "staggered", "initial_personnel": 96, "blue_survivors": 61.333333333333336, "red_survivors": 62.333333333333336, "direct": 1275, "indirect": 0, "equipment": 0}, {"template": "TANK_PLT", "layout": "line", "initial_personnel": 48, "blue_survivors": 35.666666666666664, "red_survivors": 41.666666666666664, "direct": 201, "indirect": 0, "equipment": 12}, {"template": "TANK_PLT", "layout": "column", "initial_personnel": 48, "blue_survivors": 38, "red_survivors": 33.333333333333336, "direct": 226.66666666666666, "indirect": 0, "equipment": 13.333333333333334}, {"template": "TANK_PLT", "layout": "staggered", "initial_personnel": 48, "blue_survivors": 45, "red_survivors": 38, "direct": 196.66666666666666, "indirect": 0, "equipment": 11.666666666666666}, {"template": "ARTY_PLT", "layout": "line", "initial_personnel": 87, "blue_survivors": 30.666666666666668, "red_survivors": 24.333333333333332, "direct": 0, "indirect": 20.333333333333332, "equipment": 35.666666666666664}, {"template": "ARTY_PLT", "layout": "column", "initial_personnel": 87, "blue_survivors": 19.666666666666668, "red_survivors": 30.666666666666668, "direct": 0, "indirect": 20.333333333333332, "equipment": 34.333333333333336}, {"template": "ARTY_PLT", "layout": "staggered", "initial_personnel": 87, "blue_survivors": 29.666666666666668, "red_survivors": 30.333333333333332, "direct": 0, "indirect": 19.333333333333332, "equipment": 35.333333333333336}, {"template": "US_MECH_INF_PLT_BRADLEY", "layout": "line", "initial_personnel": 108, "blue_survivors": 54, "red_survivors": 48, "direct": 435, "indirect": 0, "equipment": 24}, {"template": "US_MECH_INF_PLT_BRADLEY", "layout": "column", "initial_personnel": 108, "blue_survivors": 50.333333333333336, "red_survivors": 48.666666666666664, "direct": 454.6666666666667, "indirect": 0, "equipment": 23}, {"template": "US_MECH_INF_PLT_BRADLEY", "layout": "staggered", "initial_personnel": 108, "blue_survivors": 61.666666666666664, "red_survivors": 44.333333333333336, "direct": 460.6666666666667, "indirect": 0, "equipment": 22}, {"template": "US_MOT_INF_PLT_HMMWV", "layout": "line", "initial_personnel": 126, "blue_survivors": 64.33333333333333, "red_survivors": 69, "direct": 969.6666666666666, "indirect": 0, "equipment": 24}, {"template": "US_MOT_INF_PLT_HMMWV", "layout": "column", "initial_personnel": 126, "blue_survivors": 67.33333333333333, "red_survivors": 64, "direct": 825.3333333333334, "indirect": 0, "equipment": 24}, {"template": "US_MOT_INF_PLT_HMMWV", "layout": "staggered", "initial_personnel": 126, "blue_survivors": 59, "red_survivors": 66, "direct": 1104.3333333333333, "indirect": 0, "equipment": 24}]
+ARTILLERY EXAMPLE [{"t": 39.25, "shooter": "BLUE-1", "crew": 15, "available": 5, "rounds": 3}, {"t": 44.0, "shooter": "BLUE-2", "crew": 19, "available": 5, "rounds": 3}, {"t": 66.25, "shooter": "BLUE-3", "crew": 12, "available": 5, "rounds": 2}, {"t": 93.75, "shooter": "BLUE-1", "crew": 9, "available": 5, "rounds": 1}, {"t": 95.5, "shooter": "BLUE-2", "crew": 12, "available": 5, "rounds": 2}, {"t": 120.75, "shooter": "BLUE-3", "crew": 8, "available": 5, "rounds": 1}, {"t": 150.5, "shooter": "BLUE-2", "crew": 10, "available": 5, "rounds": 2}, {"t": 150.75, "shooter": "BLUE-1", "crew": 5, "available": 5, "rounds": 1}]

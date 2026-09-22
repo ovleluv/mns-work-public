@@ -1,0 +1,65 @@
+{
+  "seed": 7,
+  "world": {
+    "width_m": 1600,
+    "height_m": 1200
+  },
+  "objectives": {
+    "FIXING_AREA": [
+      650,
+      600
+    ],
+    "COUNTERATTACK_REFERENCE": [
+      850,
+      650
+    ]
+  },
+  "units": [
+    {
+      "id": "B-FIX",
+      "name": "B-FIX",
+      "side": "BLUE",
+      "type": "RIFLE_SQD",
+      "echelon": "SQD",
+      "pos": [
+        650,
+        600
+      ],
+      "heading_deg": 0,
+      "watch_heading_deg": 0
+    },
+    {
+      "id": "B-RESERVE",
+      "name": "B-RESERVE",
+      "side": "BLUE",
+      "type": "RIFLE_SQD",
+      "echelon": "SQD",
+      "pos": [
+        500,
+        850
+      ],
+      "heading_deg": 330,
+      "watch_heading_deg": 330
+    },
+    {
+      "id": "R-ATTACKER",
+      "name": "R-ATTACKER",
+      "side": "RED",
+      "type": "RIFLE_SQD",
+      "echelon": "SQD",
+      "pos": [
+        1000,
+        600
+      ],
+      "heading_deg": 180,
+      "watch_heading_deg": 180
+    }
+  ],
+  "config_file": "../../config/defaults.json",
+  "unit_types_file": "../../config/toe_templates.json",
+  "terrain_file": "MOBILE_DEFENSE_TERRAIN.json",
+  "bml_files": {
+    "BLUE": "MOBILE_DEFENSE_BLUE_BML.json",
+    "RED": "MOBILE_DEFENSE_RED_BML.json"
+  }
+}

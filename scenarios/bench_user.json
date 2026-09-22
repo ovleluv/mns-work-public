@@ -1,0 +1,104 @@
+{
+  "seed": 7,
+  "world": {
+    "width_m": 500.0,
+    "height_m": 500.0
+  },
+  "objectives": {},
+  "units": [
+    {
+      "id": "B-INF_PLT-1",
+      "name": "B-INF_PLT-1",
+      "side": "BLUE",
+      "echelon": "PLT",
+      "type": "INF_PLT",
+      "pos": [
+        197.2,
+        251.1
+      ],
+      "heading_deg": 0.0,
+      "orders": [
+        {
+          "id": "B-INF_PLT-1-HOLD",
+          "kind": "HOLD",
+          "params": {
+            "duration_s": 9999
+          }
+        }
+      ],
+      "element_overrides": [
+        {
+          "id": "rifle_1",
+          "count": 7,
+          "initial_count": 7,
+          "weapon_ammo": {
+            "AT4_MULTIROLE_GENERIC": 0
+          }
+        },
+        {
+          "id": "rifle_2",
+          "count": 7,
+          "initial_count": 7,
+          "weapon_ammo": {
+            "AT4_MULTIROLE_GENERIC": 0
+          }
+        },
+        {
+          "id": "rifle_3",
+          "count": 7,
+          "initial_count": 7,
+          "weapon_ammo": {
+            "AT4_MULTIROLE_GENERIC": 0
+          }
+        },
+        {
+          "id": "plt_hq",
+          "count": 3,
+          "initial_count": 3
+        },
+        {
+          "id": "at_specialist",
+          "count": 6,
+          "initial_count": 6
+        },
+        {
+          "id": "designated_marksmen",
+          "count": 3,
+          "initial_count": 3
+        },
+        {
+          "id": "machine_gun_section",
+          "count": 0,
+          "initial_count": 0
+        }
+      ]
+    },
+    {
+      "id": "R-US_M1A2_ABRAMS_IND-1",
+      "name": "R-US_M1A2_ABRAMS_IND-1",
+      "side": "RED",
+      "echelon": "IND",
+      "type": "US_M1A2_ABRAMS_IND",
+      "pos": [
+        339.4,
+        250.0
+      ],
+      "heading_deg": 0.0,
+      "orders": [
+        {
+          "id": "R-US_M1A2_ABRAMS_IND-1-HOLD",
+          "kind": "HOLD",
+          "params": {
+            "duration_s": 9999
+          }
+        }
+      ]
+    }
+  ],
+  "aggregations": [],
+  "config_file": "../config/defaults.json",
+  "unit_types_file": "../config/toe_templates.json",
+  "artillery_doctrine_file": "../config/artillery_doctrine.json",
+  "targeting_doctrine_file": "../config/targeting_doctrine.json",
+  "terrain_file": "bench_2_terrain.json"
+}

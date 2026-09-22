@@ -1,0 +1,306 @@
+{
+  "seed": 23,
+  "world": {
+    "width_m": 4000,
+    "height_m": 4000
+  },
+  "combat": {
+    "engagement_link_m": 420,
+    "counter_battery_share_probability": 0.9,
+    "indirect_friendly_fire": true
+  },
+  "objectives": {
+    "OBJ ALPHA": [
+      2050,
+      2050
+    ]
+  },
+  "units": [
+    {
+      "id": "B-INF-2",
+      "name": "B 2 Inf PLT",
+      "side": "BLUE",
+      "echelon": "PLT",
+      "type": "INF_PLT",
+      "pos": [
+        1450,
+        1850
+      ],
+      "orders": [
+        {
+          "id": "B2-ATK",
+          "kind": "ATTACK",
+          "params": {
+            "destination": [
+              2080,
+              1850
+            ]
+          },
+          "conditions": [
+            {
+              "lhs": "self.loss_ratio",
+              "op": ">=",
+              "rhs": 0.45
+            }
+          ],
+          "on_true": {
+            "id": "B2-RET",
+            "kind": "RETREAT",
+            "params": {
+              "destination": [
+                850,
+                1550
+              ]
+            }
+          }
+        }
+      ],
+      "element_overrides": [
+        {
+          "id": "machine_gun_section",
+          "count": 4,
+          "initial_count": 4
+        }
+      ]
+    },
+    {
+      "id": "B-INF-3",
+      "name": "B 3 Inf PLT",
+      "side": "BLUE",
+      "echelon": "PLT",
+      "type": "INF_PLT",
+      "pos": [
+        1480,
+        2200
+      ],
+      "orders": [
+        {
+          "id": "B3-ATK",
+          "kind": "ATTACK",
+          "params": {
+            "destination": [
+              2100,
+              2200
+            ]
+          },
+          "conditions": [
+            {
+              "lhs": "self.loss_ratio",
+              "op": ">=",
+              "rhs": 0.6
+            }
+          ],
+          "on_true": {
+            "id": "B3-HOLD",
+            "kind": "HOLD",
+            "params": {
+              "duration_s": 600
+            }
+          }
+        }
+      ],
+      "element_overrides": [
+        {
+          "id": "machine_gun_section",
+          "count": 0,
+          "initial_count": 0
+        }
+      ]
+    },
+    {
+      "id": "B-TK-1",
+      "name": "B 1 Tank PLT",
+      "side": "BLUE",
+      "echelon": "PLT",
+      "type": "TANK_PLT",
+      "pos": [
+        1350,
+        2500
+      ],
+      "orders": [
+        {
+          "id": "BT-ATK",
+          "kind": "ATTACK",
+          "params": {
+            "destination": [
+              2130,
+              2450
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "B-ART-1",
+      "name": "B Towed Arty + CBR PLT",
+      "side": "BLUE",
+      "echelon": "PLT",
+      "type": "ARTY_PLT",
+      "pos": [
+        650,
+        3150
+      ],
+      "orders": [
+        {
+          "id": "BA-HOLD",
+          "kind": "HOLD",
+          "params": {
+            "duration_s": 9999
+          }
+        }
+      ],
+      "metadata": {
+        "artillery_fire_profile": "CONCENTRATED"
+      }
+    },
+    {
+      "id": "B-ART-2",
+      "name": "B Bridge Interdiction Arty PLT",
+      "side": "BLUE",
+      "echelon": "PLT",
+      "type": "ARTY_PLT",
+      "pos": [
+        650,
+        3500
+      ],
+      "orders": [
+        {
+          "id": "BA2-BRIDGES",
+          "kind": "STRIKE_INFRASTRUCTURE",
+          "params": {
+            "targets": [
+              "BR1",
+              "BR2"
+            ],
+            "coordinate_error_m": 3.0
+          }
+        }
+      ],
+      "metadata": {
+        "artillery_fire_profile": "CONCENTRATED",
+        "mission_role": "BRIDGE_INTERDICTION"
+      }
+    },
+    {
+      "id": "R-INF-1",
+      "name": "R 1 Inf PLT",
+      "side": "RED",
+      "echelon": "PLT",
+      "type": "INF_PLT",
+      "pos": [
+        2380,
+        1850
+      ],
+      "orders": [
+        {
+          "id": "R1-DEF",
+          "kind": "DEFEND",
+          "params": {
+            "duration_s": 9999
+          },
+          "conditions": [
+            {
+              "lhs": "self.loss_ratio",
+              "op": ">=",
+              "rhs": 0.5
+            }
+          ],
+          "on_true": {
+            "id": "R1-RET",
+            "kind": "RETREAT",
+            "params": {
+              "destination": [
+                3250,
+                1550
+              ]
+            }
+          }
+        }
+      ],
+      "element_overrides": [
+        {
+          "id": "machine_gun_section",
+          "count": 4,
+          "initial_count": 4
+        }
+      ]
+    },
+    {
+      "id": "R-INF-2",
+      "name": "R 2 Inf PLT",
+      "side": "RED",
+      "echelon": "PLT",
+      "type": "INF_PLT",
+      "pos": [
+        2400,
+        2200
+      ],
+      "orders": [
+        {
+          "id": "R2-DEF",
+          "kind": "DEFEND",
+          "params": {
+            "duration_s": 9999
+          }
+        }
+      ],
+      "element_overrides": [
+        {
+          "id": "machine_gun_section",
+          "count": 0,
+          "initial_count": 0
+        }
+      ]
+    },
+    {
+      "id": "R-TK-1",
+      "name": "R 1 Tank PLT",
+      "side": "RED",
+      "echelon": "PLT",
+      "type": "TANK_PLT",
+      "pos": [
+        2470,
+        2480
+      ],
+      "orders": [
+        {
+          "id": "RT-DEF",
+          "kind": "DEFEND",
+          "params": {
+            "duration_s": 9999
+          }
+        }
+      ]
+    },
+    {
+      "id": "R-ART-1",
+      "name": "R Towed Arty + CBR PLT",
+      "side": "RED",
+      "echelon": "PLT",
+      "type": "ARTY_PLT",
+      "pos": [
+        3400,
+        3150
+      ],
+      "orders": [
+        {
+          "id": "RA-HOLD",
+          "kind": "HOLD",
+          "params": {
+            "duration_s": 9999
+          }
+        }
+      ],
+      "metadata": {
+        "artillery_fire_profile": "AREA"
+      }
+    }
+  ],
+  "config_file": "../config/defaults.json",
+  "unit_types_file": "../config/toe_templates.json",
+  "terrain_file": "../config/terrain_demo.json",
+  "artillery_doctrine_file": "../config/artillery_doctrine.json",
+  "targeting_doctrine_file": "../config/targeting_doctrine.json",
+  "weapon_database_file": "../database/weapons.csv",
+  "loadouts_file": "../database/loadouts.json"
+}

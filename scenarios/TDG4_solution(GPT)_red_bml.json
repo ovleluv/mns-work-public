@@ -1,0 +1,59 @@
+{
+  "side": "RED",
+  "replace_existing_orders": true,
+  "missions": [
+    {
+      "id": "RED-MAIN-DEFENCE-NARROW-BRIDGE",
+      "unit": "R-INF_PLT-1",
+      "task": "DEFEND_AREA",
+      "center": [
+        2400.0,
+        2050.0
+      ],
+      "radius_m": 130,
+      "pursue_within_area": false
+    },
+
+    {
+      "id": "RED-RIDGE-SUPPORT",
+      "unit": "R-INF_PLT-2",
+      "task": "DEFEND_AREA",
+      "center": [
+        2100.0,
+        2850.0
+      ],
+      "radius_m": 120,
+      "pursue_within_area": false
+    },
+
+    {
+      "id": "RED-WESTERN-PASS-SCREEN",
+      "unit": "R-RIFLE_SQD-1",
+      "task": "SECURE_AREA",
+      "center": [
+        650.0,
+        3000.0
+      ],
+      "radius_m": 180,
+      "engagement_radius_m": 300,
+      "pursuit_radius_m": 180,
+      "return_to_center": true
+    },
+
+    {
+      "id": "RED-ARMOURED-RESERVE-COUNTERATTACK",
+      "unit": "R-TANK_PLT-1",
+      "task": "DESTROY_UNIT",
+      "target": "B-INF_BN-1"
+    }
+  ],
+
+  "notes": [
+    "R-INF_PLT-1 represents the main deliberate defensive position near Narrow Bridge and attempts to delay or block the BLUE battalion.",
+    "R-INF_PLT-2 represents positions in depth on Sanctuary Ridge, including machine-gun support for the main defensive position.",
+    "R-RIFLE_SQD-1 represents the economy-of-force screen or guard protecting Western Narrow Pass.",
+    "R-TANK_PLT-1 represents the enemy armoured reserve assessed to be north of Sanctuary Ridge.",
+    "The armoured reserve receives the identity of B-INF_BN-1 as its counterattack objective but receives no target_position and therefore must rely on perceived or shared Tracks rather than BLUE Ground Truth.",
+    "Exact RED force composition and locations are inferred from the TDG solution and are not explicitly specified by the source."
+  ]
+}

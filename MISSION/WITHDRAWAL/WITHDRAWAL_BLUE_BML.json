@@ -1,0 +1,51 @@
+{
+  "side": "BLUE",
+  "replace_existing_orders": true,
+  "missions": [
+    {
+      "id": "WITHDRAW-CONTACT",
+      "unit": "B-WITHDRAW",
+      "task": "DEFEND_AREA",
+      "center": [
+        650,
+        600
+      ],
+      "radius_m": 100,
+      "pursue_within_area": false,
+      "return_to_center": true,
+      "directives": {
+        "hold_at_all_costs": true,
+        "allow_withdrawal": false,
+        "allow_break_contact": false
+      },
+      "conditions": [
+        {
+          "lhs": "sim.time",
+          "op": ">=",
+          "rhs": 25
+        }
+      ],
+      "on_true": {
+        "id": "WITHDRAW-BREAK",
+        "task": "WITHDRAW",
+        "destination": [
+          350,
+          600
+        ]
+      }
+    },
+    {
+      "id": "WITHDRAW-RALLY",
+      "unit": "B-WITHDRAW",
+      "task": "HOLD",
+      "directives": {
+        "hold_at_all_costs": true,
+        "allow_withdrawal": false,
+        "allow_break_contact": false
+      }
+    }
+  ],
+  "notes": [
+    "WITHDRAW compiles to RETREAT movement; no cease-fire or verified contact-broken completion predicate."
+  ]
+}

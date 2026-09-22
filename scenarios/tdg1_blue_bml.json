@@ -1,0 +1,16 @@
+{
+  "side": "BLUE",
+  "replace_existing_orders": true,
+  "missions": [
+    {
+      "id": "BLUE-BN-DESTROY-ARTY1",
+      "unit": "B-INF_BN-1",
+      "task": "DESTROY_UNIT",
+      "target": "R-INF_PLT-1"
+    }
+  ],
+  "notes": [
+    "B-INF_PLT-1 intentionally omitted for user-authored BML/order experiments.",
+    "B-INF_BN-1 prioritizes its mission target when tracked, but may engage intervening actionable contacts."
+  ]
+}

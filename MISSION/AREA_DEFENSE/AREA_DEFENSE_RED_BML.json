@@ -1,0 +1,20 @@
+{
+  "side": "RED",
+  "replace_existing_orders": true,
+  "missions": [
+    {
+      "id": "AREA-RED-ATTACK",
+      "unit": "R-ATTACKER",
+      "task": "ATTACK_POSITION",
+      "destination": [
+        650,
+        600
+      ],
+      "persistent": true,
+      "directives": {
+        "engagement_range_policy": "COMBINED_ARMS",
+        "engagement_range_fraction": 0.9
+      }
+    }
+  ]
+}

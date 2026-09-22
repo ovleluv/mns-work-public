@@ -1,0 +1,34 @@
+{
+  "side": "BLUE",
+  "replace_existing_orders": true,
+  "missions": [
+    {
+      "id": "BLUE-SURVIVE_PLT_1",
+      "unit": "B-INF_PLT-1",
+      "task": "DESTROY_UNIT",
+      "target": "R-RIFLE_SQD-1"
+    },
+    {
+      "id": "BLUE-SURVIVE_PLT_2",
+      "unit": "B-INF_PLT-1",
+      "task": "DESTROY_UNIT",
+      "target": "R-RIFLE_SQD-2"
+    },
+    {
+      "id": "BLUE-SURVIVE_PLT_3",
+      "unit": "B-INF_PLT-1",
+      "task": "DESTROY_UNIT",
+      "target": "R-RIFLE_SQD-3"
+    },
+    {
+      "id": "BLUE-SURVIVE_PLT_4",
+      "unit": "B-INF_PLT-1",
+      "task": "DESTROY_UNIT",
+      "target": "R-RIFLE_SQD-4"
+    }
+  ],
+  "notes": [
+    "B-INF_PLT-1 intentionally omitted for user-authored BML/order experiments.",
+    "B-INF_BN-1 prioritizes its mission target when tracked, but may engage intervening actionable contacts."
+  ]
+}

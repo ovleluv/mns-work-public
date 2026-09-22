@@ -1,0 +1,713 @@
+{
+  "side": "BLUE",
+  "replace_existing_orders": true,
+  "phases": [
+    {
+      "id": "BLUE_ESTABLISH_BLOCK",
+      "start_at_s": 0,
+      "missions": [
+        {
+          "id": "B-ALPHA-EAST-APPROACH",
+          "unit": "B-ALPHA",
+          "task": "MOVE_TO",
+          "destination": [
+            1480,
+            1000
+          ],
+          "directives": {
+            "allow_withdrawal": false,
+            "allow_break_contact": false
+          }
+        },
+        {
+          "id": "B-ALPHA-OCCUPY",
+          "unit": "B-ALPHA",
+          "task": "MOVE_TO",
+          "destination": [
+            1456,
+            920
+          ],
+          "directives": {
+            "allow_withdrawal": false,
+            "allow_break_contact": false
+          }
+        },
+        {
+          "id": "B-BRAVO-SOUTH-APPROACH",
+          "unit": "B-BRAVO",
+          "task": "MOVE_TO",
+          "destination": [
+            1400,
+            1036
+          ],
+          "directives": {
+            "allow_withdrawal": false,
+            "allow_break_contact": false
+          }
+        },
+        {
+          "id": "B-BRAVO-WEST-APPROACH",
+          "unit": "B-BRAVO",
+          "task": "MOVE_TO",
+          "destination": [
+            1280,
+            1000
+          ],
+          "directives": {
+            "allow_withdrawal": false,
+            "allow_break_contact": false
+          }
+        },
+        {
+          "id": "B-BRAVO-OCCUPY",
+          "unit": "B-BRAVO",
+          "task": "MOVE_TO",
+          "destination": [
+            1200,
+            956
+          ],
+          "directives": {
+            "allow_withdrawal": false,
+            "allow_break_contact": false
+          }
+        },
+        {
+          "id": "B-MG-1-SOUTH-APPROACH",
+          "unit": "B-MG-1",
+          "task": "MOVE_TO",
+          "destination": [
+            1400,
+            1036
+          ],
+          "directives": {
+            "allow_withdrawal": false,
+            "allow_break_contact": false
+          }
+        },
+        {
+          "id": "B-MG-1-WEST-APPROACH",
+          "unit": "B-MG-1",
+          "task": "MOVE_TO",
+          "destination": [
+            1280,
+            1000
+          ],
+          "directives": {
+            "allow_withdrawal": false,
+            "allow_break_contact": false
+          }
+        },
+        {
+          "id": "B-MG-1-OCCUPY",
+          "unit": "B-MG-1",
+          "task": "MOVE_TO",
+          "destination": [
+            1224,
+            876
+          ],
+          "directives": {
+            "allow_withdrawal": false,
+            "allow_break_contact": false
+          }
+        },
+        {
+          "id": "B-MG-2-EAST-APPROACH",
+          "unit": "B-MG-2",
+          "task": "MOVE_TO",
+          "destination": [
+            1480,
+            1000
+          ],
+          "directives": {
+            "allow_withdrawal": false,
+            "allow_break_contact": false
+          }
+        },
+        {
+          "id": "B-MG-2-OCCUPY",
+          "unit": "B-MG-2",
+          "task": "MOVE_TO",
+          "destination": [
+            1440,
+            880
+          ],
+          "directives": {
+            "allow_withdrawal": false,
+            "allow_break_contact": false
+          }
+        },
+        {
+          "id": "B-AT-1-SOUTH-APPROACH",
+          "unit": "B-AT-1",
+          "task": "MOVE_TO",
+          "destination": [
+            1400,
+            1036
+          ],
+          "directives": {
+            "allow_withdrawal": false,
+            "allow_break_contact": false
+          }
+        },
+        {
+          "id": "B-AT-1-WEST-APPROACH",
+          "unit": "B-AT-1",
+          "task": "MOVE_TO",
+          "destination": [
+            1280,
+            1000
+          ],
+          "directives": {
+            "allow_withdrawal": false,
+            "allow_break_contact": false
+          }
+        },
+        {
+          "id": "B-AT-1-OCCUPY",
+          "unit": "B-AT-1",
+          "task": "MOVE_TO",
+          "destination": [
+            1260,
+            940
+          ],
+          "directives": {
+            "allow_withdrawal": false,
+            "allow_break_contact": false
+          }
+        },
+        {
+          "id": "B-AT-2-EAST-APPROACH",
+          "unit": "B-AT-2",
+          "task": "MOVE_TO",
+          "destination": [
+            1480,
+            1000
+          ],
+          "directives": {
+            "allow_withdrawal": false,
+            "allow_break_contact": false
+          }
+        },
+        {
+          "id": "B-AT-2-OCCUPY",
+          "unit": "B-AT-2",
+          "task": "MOVE_TO",
+          "destination": [
+            1392,
+            916
+          ],
+          "directives": {
+            "allow_withdrawal": false,
+            "allow_break_contact": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "BLUE_HOLD_AND_PRESERVE",
+      "missions": [
+        {
+          "id": "B-ALPHA-BLOCK",
+          "unit": "B-ALPHA",
+          "task": "DEFEND_AREA",
+          "center": [
+            1456,
+            920
+          ],
+          "radius_m": 12,
+          "pursue_within_area": false,
+          "engagement_radius_m": 700,
+          "params": {
+            "watch_heading_deg": 270
+          },
+          "directives": {
+            "allow_withdrawal": false,
+            "allow_break_contact": false,
+            "engagement_range_policy": "STANDOFF"
+          },
+          "conditions": [
+            {
+              "lhs": "self.loss_ratio",
+              "op": ">=",
+              "rhs": 0.5
+            }
+          ],
+          "on_true": {
+            "id": "B-ALPHA-SURVIVORS-ORV",
+            "unit": "B-ALPHA",
+            "task": "WITHDRAW",
+            "destination": [
+              1748.0,
+              1252.0
+            ],
+            "directives": {
+              "allow_withdrawal": true,
+              "allow_break_contact": true
+            },
+            "conditions": [
+              {
+                "lhs": "self.time_in_order",
+                "op": ">=",
+                "rhs": 1800
+              }
+            ],
+            "on_true": {
+              "task": "HOLD",
+              "duration_s": -1
+            }
+          }
+        },
+        {
+          "id": "B-ALPHA-RALLY-HOLD",
+          "unit": "B-ALPHA",
+          "task": "HOLD",
+          "duration_s": -1
+        },
+        {
+          "id": "B-BRAVO-BLOCK",
+          "unit": "B-BRAVO",
+          "task": "DEFEND_AREA",
+          "center": [
+            1200,
+            956
+          ],
+          "radius_m": 12,
+          "pursue_within_area": false,
+          "engagement_radius_m": 700,
+          "params": {
+            "watch_heading_deg": 270
+          },
+          "directives": {
+            "allow_withdrawal": false,
+            "allow_break_contact": false,
+            "engagement_range_policy": "STANDOFF"
+          },
+          "conditions": [
+            {
+              "lhs": "self.loss_ratio",
+              "op": ">=",
+              "rhs": 0.5
+            }
+          ],
+          "on_true": {
+            "id": "B-BRAVO-SURVIVORS-ORV",
+            "unit": "B-BRAVO",
+            "task": "WITHDRAW",
+            "destination": [
+              1748.0,
+              1252.0
+            ],
+            "directives": {
+              "allow_withdrawal": true,
+              "allow_break_contact": true
+            },
+            "conditions": [
+              {
+                "lhs": "self.time_in_order",
+                "op": ">=",
+                "rhs": 1800
+              }
+            ],
+            "on_true": {
+              "task": "HOLD",
+              "duration_s": -1
+            }
+          }
+        },
+        {
+          "id": "B-BRAVO-RALLY-HOLD",
+          "unit": "B-BRAVO",
+          "task": "HOLD",
+          "duration_s": -1
+        },
+        {
+          "id": "B-MG-1-BLOCK",
+          "unit": "B-MG-1",
+          "task": "DEFEND_AREA",
+          "center": [
+            1224,
+            876
+          ],
+          "radius_m": 12,
+          "pursue_within_area": false,
+          "engagement_radius_m": 700,
+          "params": {
+            "watch_heading_deg": 270
+          },
+          "directives": {
+            "allow_withdrawal": false,
+            "allow_break_contact": false,
+            "engagement_range_policy": "STANDOFF"
+          },
+          "conditions": [
+            {
+              "lhs": "self.loss_ratio",
+              "op": ">=",
+              "rhs": 0.5
+            }
+          ],
+          "on_true": {
+            "id": "B-MG-1-SURVIVORS-ORV",
+            "unit": "B-MG-1",
+            "task": "WITHDRAW",
+            "destination": [
+              1748.0,
+              1252.0
+            ],
+            "directives": {
+              "allow_withdrawal": true,
+              "allow_break_contact": true
+            },
+            "conditions": [
+              {
+                "lhs": "self.time_in_order",
+                "op": ">=",
+                "rhs": 1800
+              }
+            ],
+            "on_true": {
+              "task": "HOLD",
+              "duration_s": -1
+            }
+          }
+        },
+        {
+          "id": "B-MG-1-RALLY-HOLD",
+          "unit": "B-MG-1",
+          "task": "HOLD",
+          "duration_s": -1
+        },
+        {
+          "id": "B-MG-2-BLOCK",
+          "unit": "B-MG-2",
+          "task": "DEFEND_AREA",
+          "center": [
+            1440,
+            880
+          ],
+          "radius_m": 12,
+          "pursue_within_area": false,
+          "engagement_radius_m": 700,
+          "params": {
+            "watch_heading_deg": 270
+          },
+          "directives": {
+            "allow_withdrawal": false,
+            "allow_break_contact": false,
+            "engagement_range_policy": "STANDOFF"
+          },
+          "conditions": [
+            {
+              "lhs": "self.loss_ratio",
+              "op": ">=",
+              "rhs": 0.5
+            }
+          ],
+          "on_true": {
+            "id": "B-MG-2-SURVIVORS-ORV",
+            "unit": "B-MG-2",
+            "task": "WITHDRAW",
+            "destination": [
+              1748.0,
+              1252.0
+            ],
+            "directives": {
+              "allow_withdrawal": true,
+              "allow_break_contact": true
+            },
+            "conditions": [
+              {
+                "lhs": "self.time_in_order",
+                "op": ">=",
+                "rhs": 1800
+              }
+            ],
+            "on_true": {
+              "task": "HOLD",
+              "duration_s": -1
+            }
+          }
+        },
+        {
+          "id": "B-MG-2-RALLY-HOLD",
+          "unit": "B-MG-2",
+          "task": "HOLD",
+          "duration_s": -1
+        },
+        {
+          "id": "B-AT-1-BLOCK",
+          "unit": "B-AT-1",
+          "task": "DEFEND_AREA",
+          "center": [
+            1260,
+            940
+          ],
+          "radius_m": 12,
+          "pursue_within_area": false,
+          "engagement_radius_m": 700,
+          "params": {
+            "watch_heading_deg": 270
+          },
+          "directives": {
+            "allow_withdrawal": false,
+            "allow_break_contact": false,
+            "engagement_range_policy": "STANDOFF"
+          },
+          "conditions": [
+            {
+              "lhs": "self.loss_ratio",
+              "op": ">=",
+              "rhs": 0.5
+            }
+          ],
+          "on_true": {
+            "id": "B-AT-1-SURVIVORS-ORV",
+            "unit": "B-AT-1",
+            "task": "WITHDRAW",
+            "destination": [
+              1748.0,
+              1252.0
+            ],
+            "directives": {
+              "allow_withdrawal": true,
+              "allow_break_contact": true
+            },
+            "conditions": [
+              {
+                "lhs": "self.time_in_order",
+                "op": ">=",
+                "rhs": 1800
+              }
+            ],
+            "on_true": {
+              "task": "HOLD",
+              "duration_s": -1
+            }
+          }
+        },
+        {
+          "id": "B-AT-1-RALLY-HOLD",
+          "unit": "B-AT-1",
+          "task": "HOLD",
+          "duration_s": -1
+        },
+        {
+          "id": "B-AT-2-BLOCK",
+          "unit": "B-AT-2",
+          "task": "DEFEND_AREA",
+          "center": [
+            1392,
+            916
+          ],
+          "radius_m": 12,
+          "pursue_within_area": false,
+          "engagement_radius_m": 700,
+          "params": {
+            "watch_heading_deg": 270
+          },
+          "directives": {
+            "allow_withdrawal": false,
+            "allow_break_contact": false,
+            "engagement_range_policy": "STANDOFF"
+          },
+          "conditions": [
+            {
+              "lhs": "self.loss_ratio",
+              "op": ">=",
+              "rhs": 0.5
+            }
+          ],
+          "on_true": {
+            "id": "B-AT-2-SURVIVORS-ORV",
+            "unit": "B-AT-2",
+            "task": "WITHDRAW",
+            "destination": [
+              1748.0,
+              1252.0
+            ],
+            "directives": {
+              "allow_withdrawal": true,
+              "allow_break_contact": true
+            },
+            "conditions": [
+              {
+                "lhs": "self.time_in_order",
+                "op": ">=",
+                "rhs": 1800
+              }
+            ],
+            "on_true": {
+              "task": "HOLD",
+              "duration_s": -1
+            }
+          }
+        },
+        {
+          "id": "B-AT-2-RALLY-HOLD",
+          "unit": "B-AT-2",
+          "task": "HOLD",
+          "duration_s": -1
+        }
+      ]
+    }
+  ],
+  "notes": [
+    "Recommended defence/block baseline derived from solution pp. 1-4, not a proven unique optimum.",
+    "Purpose is to buy time for off-map M Company, with the bridge and infantry crossing approaches covered by mutually supporting positions.",
+    "Main body starts at ORV and must move into position; it is not pre-deployed or teleported to prepared defences.",
+    "B Security receives no new BML mission because communications are lost; scenario standing orders represent one possible survivor response.",
+    "No enemy unit IDs, exact enemy positions, ground-truth conditions, mines, barricades, artillery or air support are provided.",
+    "Time gates are scenario-relative authoring assumptions. Phases are per-unit queues, not automatic synchronized formation barriers.",
+    "Preserve the ORV as the link-up point. C Security provides depth; its anti-personnel weapons cannot guarantee stopping tanks."
+  ],
+  "missions": [
+    {
+      "id": "B-HQ-ORV-LINKUP",
+      "unit": "B-HQ",
+      "task": "DEFEND_AREA",
+      "center": [
+        1748.0,
+        1252.0
+      ],
+      "radius_m": 20,
+      "pursue_within_area": false,
+      "engagement_radius_m": 700,
+      "params": {
+        "watch_heading_deg": 270
+      },
+      "directives": {
+        "allow_withdrawal": false,
+        "allow_break_contact": false,
+        "engagement_range_policy": "STANDOFF"
+      }
+    },
+    {
+      "id": "B-SEC-A-EARLY-WARNING",
+      "unit": "B-SEC-A",
+      "task": "DEFEND_AREA",
+      "center": [
+        1400.0,
+        632.0
+      ],
+      "radius_m": 8,
+      "pursue_within_area": false,
+      "engagement_radius_m": 700,
+      "params": {
+        "watch_heading_deg": 220
+      },
+      "directives": {
+        "allow_withdrawal": false,
+        "allow_break_contact": false,
+        "engagement_range_policy": "STANDOFF"
+      },
+      "conditions": [
+        {
+          "lhs": "self.loss_ratio",
+          "op": ">=",
+          "rhs": 0.5
+        }
+      ],
+      "on_true": {
+        "task": "MOVE_TO",
+        "destination": [
+          1748.0,
+          1252.0
+        ],
+        "directives": {
+          "allow_withdrawal": true,
+          "allow_break_contact": true
+        }
+      },
+      "deadline_s": 1200,
+      "on_deadline": {
+        "task": "MOVE_TO",
+        "destination": [
+          1748.0,
+          1252.0
+        ],
+        "directives": {
+          "allow_withdrawal": true,
+          "allow_break_contact": true
+        }
+      }
+    },
+    {
+      "id": "B-SEC-A-ORV-WATCH",
+      "unit": "B-SEC-A",
+      "task": "HOLD",
+      "duration_s": -1
+    },
+    {
+      "id": "B-NAV-RP-SECURITY",
+      "unit": "B-NAV",
+      "task": "DEFEND_AREA",
+      "center": [
+        1648.0,
+        756.0
+      ],
+      "radius_m": 8,
+      "pursue_within_area": false,
+      "engagement_radius_m": 700,
+      "params": {
+        "watch_heading_deg": 240
+      },
+      "directives": {
+        "allow_withdrawal": false,
+        "allow_break_contact": false,
+        "engagement_range_policy": "STANDOFF"
+      },
+      "deadline_s": 900,
+      "on_deadline": {
+        "task": "MOVE_TO",
+        "destination": [
+          1496,
+          900
+        ],
+        "directives": {
+          "allow_withdrawal": false,
+          "allow_break_contact": false
+        }
+      }
+    },
+    {
+      "id": "B-NAV-EAST-FLANK",
+      "unit": "B-NAV",
+      "task": "DEFEND_AREA",
+      "center": [
+        1496,
+        900
+      ],
+      "radius_m": 12,
+      "pursue_within_area": false,
+      "engagement_radius_m": 700,
+      "params": {
+        "watch_heading_deg": 270
+      },
+      "directives": {
+        "allow_withdrawal": false,
+        "allow_break_contact": false,
+        "engagement_range_policy": "STANDOFF"
+      }
+    },
+    {
+      "id": "B-SEC-C-SOUTHERN-DEPTH",
+      "unit": "B-SEC-C",
+      "task": "DEFEND_AREA",
+      "center": [
+        1272,
+        2136
+      ],
+      "radius_m": 15,
+      "pursue_within_area": false,
+      "engagement_radius_m": 700,
+      "params": {
+        "watch_heading_deg": 250
+      },
+      "directives": {
+        "allow_withdrawal": false,
+        "allow_break_contact": false,
+        "engagement_range_policy": "STANDOFF"
+      }
+    }
+  ]
+}

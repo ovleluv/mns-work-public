@@ -1,0 +1,142 @@
+{
+  "side": "BLUE",
+  "replace_existing_orders": true,
+  "missions": [
+    {
+      "id": "DELAY-LINE-1",
+      "unit": "B-DELAY",
+      "task": "DEFEND_AREA",
+      "center": [
+        650,
+        600
+      ],
+      "radius_m": 100,
+      "pursue_within_area": false,
+      "return_to_center": true,
+      "directives": {
+        "hold_at_all_costs": true,
+        "allow_withdrawal": false,
+        "allow_break_contact": false
+      },
+      "conditions": [
+        {
+          "lhs": "self.loss_ratio",
+          "op": ">=",
+          "rhs": 0.25
+        }
+      ],
+      "on_true": {
+        "id": "DELAY-EARLY-RETREAT-1",
+        "task": "WITHDRAW",
+        "destination": [
+          570,
+          600
+        ]
+      },
+      "deadline_s": 20,
+      "on_deadline": {
+        "id": "DELAY-RETREAT-1",
+        "task": "WITHDRAW",
+        "destination": [
+          570,
+          600
+        ]
+      }
+    },
+    {
+      "id": "DELAY-LINE-2",
+      "unit": "B-DELAY",
+      "task": "DEFEND_AREA",
+      "center": [
+        570,
+        600
+      ],
+      "radius_m": 100,
+      "pursue_within_area": false,
+      "return_to_center": true,
+      "directives": {
+        "hold_at_all_costs": true,
+        "allow_withdrawal": false,
+        "allow_break_contact": false
+      },
+      "conditions": [
+        {
+          "lhs": "self.time_in_order",
+          "op": ">=",
+          "rhs": 20
+        }
+      ],
+      "on_true": {
+        "id": "DELAY-RETREAT-2",
+        "task": "WITHDRAW",
+        "destination": [
+          450,
+          600
+        ]
+      }
+    },
+    {
+      "id": "DELAY-LINE-3",
+      "unit": "B-DELAY",
+      "task": "DEFEND_AREA",
+      "center": [
+        450,
+        600
+      ],
+      "radius_m": 100,
+      "pursue_within_area": false,
+      "return_to_center": true,
+      "directives": {
+        "hold_at_all_costs": true,
+        "allow_withdrawal": false,
+        "allow_break_contact": false
+      }
+    },
+    {
+      "id": "DELAY-COVER",
+      "unit": "B-COVER",
+      "task": "DEFEND_AREA",
+      "center": [
+        640,
+        680
+      ],
+      "radius_m": 100,
+      "pursue_within_area": false,
+      "return_to_center": true,
+      "directives": {
+        "hold_at_all_costs": true,
+        "allow_withdrawal": false,
+        "allow_break_contact": false
+      },
+      "deadline_s": 35,
+      "on_deadline": {
+        "id": "DELAY-COVER-RETREAT",
+        "task": "WITHDRAW",
+        "destination": [
+          450,
+          680
+        ]
+      }
+    },
+    {
+      "id": "DELAY-COVER-END",
+      "unit": "B-COVER",
+      "task": "DEFEND_AREA",
+      "center": [
+        450,
+        680
+      ],
+      "radius_m": 100,
+      "pursue_within_area": false,
+      "return_to_center": true,
+      "directives": {
+        "hold_at_all_costs": true,
+        "allow_withdrawal": false,
+        "allow_break_contact": false
+      }
+    }
+  ],
+  "notes": [
+    "Loss condition and deadline implement OR via separate branches; conditions lists themselves are AND. Stages are explicit, without automatic leapfrog coordination or loss-minimization objective."
+  ]
+}

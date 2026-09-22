@@ -1,0 +1,20 @@
+[
+  {
+    "group": "one_vs_one",
+    "runs": 132,
+    "cases": 44,
+    "no_fire_runs": 0,
+    "state_violations": 0,
+    "zero_participant_direct_fire": 0,
+    "source_hashes_match": true
+  },
+  {
+    "group": "many_vs_many",
+    "runs": 828,
+    "cases": 276,
+    "no_fire_runs": 0,
+    "state_violations": 0,
+    "zero_participant_direct_fire": 0,
+    "source_hashes_match": true
+  }
+]

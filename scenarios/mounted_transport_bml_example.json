@@ -1,0 +1,10 @@
+{
+  "side": "BLUE",
+  "replace_existing_orders": true,
+  "missions": [
+    {"id":"MECH-DISMOUNT","unit":"B-MECH-1","task":"DISMOUNT","destination":[420,310]},
+    {"id":"MECH-REMOUNT","unit":"B-MECH-1","task":"MOUNT"},
+    {"id":"SQUAD-BOARD","unit":"B-RIFLE-SQD-2","task":"BOARD","carrier":"B-BRADLEY-EMPTY-1"},
+    {"id":"CARRIER-DISEMBARK","unit":"B-BRADLEY-EMPTY-1","task":"DISEMBARK","passengers":"ALL"}
+  ]
+}

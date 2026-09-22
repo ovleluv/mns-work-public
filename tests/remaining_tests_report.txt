@@ -1,0 +1,311 @@
+기존 tests/ 테스트 정리 보고서
+작성일: 2026-09-07
+
+범위
+- 아래 5개 파일은 tests/passed_test_report.txt에 이미 정리되어 있어 이 보고서에서 제외했다.
+  tests/test_simulation_combat_reality.py
+  tests/test_simulation_movement_paths.py
+  tests/test_simulation_infrastructure_events.py
+  tests/test_scenario_suite_contracts.py
+  tests/test_mobility_kill_calibration.py
+- 이 보고서는 제외 파일 밖의 tests/ 전체 항목 166개를 정리한다.
+
+실행 명령
+python -m pytest tests --ignore=tests/test_simulation_combat_reality.py --ignore=tests/test_simulation_movement_paths.py --ignore=tests/test_simulation_infrastructure_events.py --ignore=tests/test_scenario_suite_contracts.py --ignore=tests/test_mobility_kill_calibration.py -q
+
+실행 결과
+160 passed, 6 failed in 112.90s
+
+1. tests/test_application_controller.py
+- [PASS] test_controller_controls_do_not_change_engine_semantics: 애플리케이션 컨트롤러 조작이 시뮬레이션 엔진 의미를 바꾸지 않는지 확인한다.
+- [PASS] test_controller_selection_is_id_based_and_safe_across_frontends: UI 선택 상태가 객체 참조가 아니라 ID 기반으로 안전하게 유지되는지 확인한다.
+- [PASS] test_view_mode_change_preserves_existing_ui_behavior_of_clearing_selection: 뷰 모드 변경 시 기존 선택 해제 동작이 유지되는지 확인한다.
+- [PASS] test_speed_stepping_matches_v41_adjacent_speed_behavior: 속도 단계 변경이 v4.1 계열의 인접 단계 이동 규칙과 맞는지 확인한다.
+
+2. tests/test_artillery_counterfire_survivability.py
+- [PASS] test_unarmored_gun_uses_conservative_counterfire_profile: 비장갑 견인포가 counterfire에서 보수적 생존성 프로파일을 쓰는지 확인한다.
+- [PASS] test_near_and_fragment_counterfire_do_not_frequently_disable_towed_gun: 근접/파편 counterfire가 견인포를 과도하게 자주 disable하지 않는지 확인한다.
+
+3. tests/test_barricade_and_contour_labels_v497.py
+- [PASS] test_contour_label_uses_tangent_and_avoids_prior_label: 등고선 라벨이 접선 방향을 사용하고 이전 라벨과 겹치지 않는지 확인한다.
+- [PASS] test_mil1_geometry_and_directional_cover: MIL1 바리케이드 형상과 방향성 엄폐 효과가 맞는지 확인한다.
+- [PASS] test_barricade_blocks_direct_path_but_has_endpoint_route: 바리케이드가 직선 이동은 막지만 끝점 우회 경로는 허용하는지 확인한다.
+- [PASS] test_build_barricade_requires_allocated_capacity_and_constructs: 배정된 구축 용량이 있을 때만 바리케이드를 건설하는지 확인한다.
+- [PASS] test_build_barricade_default_capacity_zero_rejects: 기본 구축 용량 0 상태에서는 바리케이드 건설이 거부되는지 확인한다.
+
+4. tests/test_building_attack_bml.py
+- [PASS] test_attack_structure_bml_compiles: 건물 공격 BML이 엔진 명령으로 컴파일되는지 확인한다.
+- [PASS] test_elevated_direct_fire_clears_intervening_building: 고지대 직접사격이 낮은 중간 건물 너머의 표적을 사격 가능하게 처리하는지 확인한다.
+
+5. tests/test_building_corner_navigation_v4910.py
+- [PASS] test_attack_position_does_not_stall_on_building_corner: 공격 위치 이동이 건물 모서리에서 멈추지 않고 경로를 진행하는지 확인한다.
+
+6. tests/test_building_entry_exit_v498.py
+- [PASS] test_move_route_avoids_building: 일반 이동 경로가 건물 내부를 피하는지 확인한다.
+- [PASS] test_enter_and_exit_building_are_explicit_bml_tasks: 건물 진입/이탈이 명시적 BML task로만 처리되는지 확인한다.
+- [PASS] test_plain_move_cannot_cross_building_footprint: 일반 MOVE 명령이 건물 footprint를 통과하지 못하는지 확인한다.
+
+7. tests/test_close_vs_forward_fire_allocation.py
+- [PASS] test_close_all_round_contacts_receive_multi_target_local_allocation: 근접 360도 접촉에 대해 복수 표적 지역 사격 할당이 가능한지 확인한다.
+- [PASS] test_forward_sector_contacts_preserve_single_formation_primary_target: 전방 섹터 접촉에서는 편대 주표적이 단일하게 유지되는지 확인한다.
+- [PASS] test_close_contact_does_not_reorient_principal_watch_sector: 근접 접촉이 주 감시 방향을 즉시 돌리지 않는지 확인한다.
+- [PASS] test_forward_contact_can_reorient_principal_watch_sector: 전방 접촉은 주 감시 방향을 재지향할 수 있는지 확인한다.
+
+8. tests/test_combat_ineffective_doctrine.py
+- [PASS] test_firepower_killed_tank_does_not_continue_attack_without_contact: 화력 kill 상태 전차가 접촉 없이 공격을 계속하지 않는지 확인한다.
+- [PASS] test_firepower_killed_tank_makes_one_bounded_withdrawal_not_ping_pong: 화력 kill 전차의 철수가 왕복 반복 없이 1회 제한 철수로 처리되는지 확인한다.
+
+9. tests/test_communications_sa.py
+- [PASS] test_cross_platoon_track_report_traverses_comm_and_reorients_receiver: 소대 간 표적 보고가 통신망을 통해 전달되고 수신부대 감시 방향을 바꾸는지 확인한다.
+- [PASS] test_jamming_can_block_delivery_without_changing_tactical_consumer: 재밍이 전송을 차단하더라도 전술 소비자 로직 자체는 바꾸지 않는지 확인한다.
+- [PASS] test_engaged_shared_cue_has_hysteresis_and_does_not_create_order: 교전 중 공유 cue가 히스테리시스를 가지며 새 명령을 만들지 않는지 확인한다.
+
+10. tests/test_counter_battery.py
+- [PASS] test_radar_disable_stops_detection: 레이더 disable 이후 counter-battery 탐지가 중지되는지 확인한다.
+- [PASS] test_demo_generates_counter_battery_track: demo 시나리오에서 counter-battery track이 생성되는지 확인한다.
+
+11. tests/test_counter_battery_salvo.py
+- [PASS] test_salvo_provides_multiple_capped_detection_opportunities: salvo 규모가 제한된 복수 탐지 기회를 제공하는지 확인한다.
+- [PASS] test_point_of_origin_solution_survives_shooter_disable_during_processing: 처리 중 사격 부대가 disable되어도 발사 원점 추정 결과가 유지되는지 확인한다.
+- [PASS] test_indirect_fire_passes_actual_salvo_size_to_radar: 간접사격 로직이 실제 salvo 크기를 레이더 탐지 로직에 전달하는지 확인한다.
+
+12. tests/test_definition_architecture.py
+- [PASS] test_default_definition_registry_preserves_legacy_defaults: 기본 definition registry가 legacy 기본값을 유지하는지 확인한다.
+- [PASS] test_registry_extension_is_opt_in_and_does_not_change_default_path: registry 확장이 opt-in이며 기본 경로 동작을 바꾸지 않는지 확인한다.
+- [PASS] test_unit_type_catalog_retains_legacy_echelon_resolution: unit type catalog가 legacy echelon 해석 규칙을 유지하는지 확인한다.
+
+13. tests/test_dense_forest.py
+- [PASS] test_dense_forest_blocks_vehicle_offroad_and_slows_foot: 조밀한 숲이 차량 비도로 이동을 막고 보병 속도를 낮추는지 확인한다.
+- [PASS] test_dense_forest_visual_penetration_limit: 조밀한 숲의 시야 침투 한계가 적용되는지 확인한다.
+- [PASS] test_road_is_vehicle_corridor_through_dense_forest: 숲을 관통하는 도로가 차량 통행 corridor로 작동하는지 확인한다.
+
+14. tests/test_destructible_bridges.py
+- [PASS] test_destroyed_bridge_is_no_longer_crossing_or_route_candidate: 파괴된 교량이 도하/경로 후보에서 제거되는지 확인한다.
+- [PASS] test_bridge_damage_accumulates_and_can_destroy: 교량 피해가 누적되고 파괴 상태로 전환될 수 있는지 확인한다.
+- [PASS] test_demo_bridge_artillery_has_sequential_infrastructure_order: demo의 교량 타격 포병 명령이 순차 기반시설 타격으로 구성되는지 확인한다.
+
+15. tests/test_direct_fire_track_and_vegetation_gate.py
+- [PASS] test_dense_forest_direct_fire_penetration_is_ray_based: 조밀한 숲에서 직접사격 투과 판정이 ray 기반으로 이뤄지는지 확인한다.
+- [PASS] test_woods_has_longer_direct_fire_penetration_than_forest: woods가 forest보다 더 긴 직접사격 투과 거리를 허용하는지 확인한다.
+
+16. tests/test_directional_visual_detection.py
+- [PASS] test_infantry_visual_geometry_combines_forward_sector_and_close_360_awareness: 보병 시야가 전방 섹터와 근접 360도 인지를 결합하는지 확인한다.
+- [PASS] test_tank_has_narrower_long_range_sector_and_more_constrained_close_awareness_than_infantry: 전차가 보병보다 좁은 장거리 섹터와 제한된 근접 인지를 갖는지 확인한다.
+- [PASS] test_watch_direction_follows_axis_of_movement_and_slews_instead_of_teleporting: 감시 방향이 이동 축을 따라 점진 회전하며 순간 전환되지 않는지 확인한다.
+- [PASS] test_counter_battery_radar_geometry_remains_omnidirectional: counter-battery 레이더 탐지가 전방 FOV가 아니라 전방위로 유지되는지 확인한다.
+- [PASS] test_default_directional_fov_calibration_is_configurable_and_narrow: 기본 방향성 FOV 보정값이 설정 가능하고 좁은 시야를 유지하는지 확인한다.
+
+17. tests/test_echelon_artillery_scaling.py
+- [PASS] test_battalion_footprint_scales_with_echelon: 대대급 footprint가 echelon에 맞게 확장되는지 확인한다.
+- [FAIL] test_shell_personnel_cap_is_per_formation_not_per_element: 포탄 인원 피해 cap이 element별이 아니라 formation별인지 확인하려 하지만, tdg1.json에 R-ARTY_PLT-1이 없어 KeyError가 발생한다.
+- [PASS] test_indirect_cue_temporarily_dispenses_formation: 간접사격 cue가 formation posture를 일시 분산 상태로 바꾸는지 확인한다.
+
+18. tests/test_echelon_toe_consistency.py
+- [PASS] test_default_higher_echelon_templates_have_real_scaled_composition: 상위 echelon 기본 템플릿이 실제 확장된 편성을 가지는지 확인한다.
+- [PASS] test_loader_repairs_legacy_bn_plus_platoon_template: loader가 legacy BN+platoon 템플릿을 현재 편성 구조로 보정하는지 확인한다.
+
+19. tests/test_editable_composition.py
+- [PASS] test_individual_squad_and_mech_templates_exist: 개별 분대와 기계화 템플릿이 편집 가능한 형태로 존재하는지 확인한다.
+- [PASS] test_explicit_machine_gun_count_and_crew_limit_runtime: 명시적 기관총 수량과 승무원 제한이 런타임에 반영되는지 확인한다.
+
+20. tests/test_editor_camera_rectangular.py
+- [PASS] test_editor_has_independent_width_height_and_camera_zoom_pan: editor가 독립 width/height와 카메라 zoom/pan을 지원하는지 확인한다.
+- [PASS] test_main_camera_uses_independent_world_dimensions: main 카메라가 정사각 가정 없이 독립 월드 크기를 쓰는지 확인한다.
+
+21. tests/test_editor_polygon_autoclose.py
+- [PASS] test_editor_polygon_autoclose_contract: editor polygon 자동 닫힘 계약이 유지되는지 확인한다.
+
+22. tests/test_editor_responsive_layout.py
+- [PASS] test_editor_uses_resizable_window_and_dynamic_panel_geometry: editor가 resizable window와 동적 panel geometry를 사용하는지 확인한다.
+
+23. tests/test_editor_roundtrip_contract.py
+- [PASS] test_editor_contract_files_and_demo_load: editor 관련 계약 파일이 존재하고 demo 시나리오가 로드되는지 확인한다.
+
+24. tests/test_editor_vehicle_templates.py
+- [PASS] test_vehicle_templates_exist_for_editor_echelons: editor echelon에서 사용할 차량 템플릿들이 존재하는지 확인한다.
+
+25. tests/test_engagement_range_doctrine.py
+- [PASS] test_standoff_uses_longest_relevant_weapon: standoff doctrine이 관련 무기 중 가장 긴 사거리를 기준으로 삼는지 확인한다.
+- [PASS] test_aggressive_closes_until_shortest_relevant_weapon_can_join: aggressive doctrine이 짧은 사거리 무기도 참여 가능한 거리까지 접근하는지 확인한다.
+
+26. tests/test_engagement_timing_realism.py
+- [PASS] test_direct_fire_requires_acquisition_delay: 직접사격이 표적 획득 지연 없이 즉시 발생하지 않는지 확인한다.
+- [PASS] test_artillery_respects_weapon_cycle_floor: 포병 사격이 무기 cycle 최소 시간을 존중하는지 확인한다.
+- [PASS] test_movement_planning_speeds_are_tactical_not_sprint_speed: 이동 계획 속도가 sprint가 아니라 전술 이동 속도 범위인지 확인한다.
+
+27. tests/test_environmental_observation.py
+- [FAIL] test_clear_day_open_terrain_is_neutral: 맑은 주간 개활지 기본 시야를 900.0으로 기대하지만 현재 INF_PLT 시야 프로파일은 750.0이라 실패한다.
+- [PASS] test_weather_dynamically_degrades_same_baseline_profile: 날씨가 같은 baseline sensor profile을 동적으로 저하시키는지 확인한다.
+- [PASS] test_sensor_mode_override_can_reduce_environmental_penalty: sensor mode override가 환경 페널티를 줄일 수 있는지 확인한다.
+- [PASS] test_terrain_observation_zone_contract_degrades_crossed_sightline: 지형 observation zone 계약이 sightline 통과 조건에 따라 탐지를 저하시키는지 확인한다.
+
+28. tests/test_external_bml_missions.py
+- [PASS] test_external_bml_replaces_only_commanded_units: 외부 BML이 명령받은 유닛의 기존 명령만 교체하는지 확인한다.
+- [PASS] test_entity_attack_without_track_or_explicit_reference_does_not_move: track 또는 명시 위치가 없는 entity attack이 ground truth로 이동하지 않는지 확인한다.
+- [PASS] test_entity_attack_uses_only_explicit_bml_target_position_when_untracked: untracked 표적 공격이 BML에 명시된 target position만 사용하는지 확인한다.
+- [PASS] test_four_sequential_entity_missions_use_each_orders_own_reference: 4개 순차 entity mission이 각 명령의 독립 reference를 사용하는지 확인한다.
+- [PASS] test_attack_position_is_coordinate_based_and_requires_no_enemy_identity: attack position이 적 ID 없이 좌표 기반으로 작동하는지 확인한다.
+
+29. tests/test_external_definition_database.py
+- [FAIL] test_weapon_catalog_resolves_csv_definition: ATGM_GENERIC 무기명이 예전 기대값인 abstract guided AT weapon으로 고정되어 있으나 현재 CSV 이름은 modern guided ATGM (generic)이다.
+- [PASS] test_same_unit_type_can_use_different_per_unit_loadouts: 같은 unit type이라도 per-unit loadout에 따라 서로 다른 무장을 가질 수 있는지 확인한다.
+
+30. tests/test_formation_footprint_damage.py
+- [PASS] test_equipment_positions_are_spatially_distinct_inside_armor_footprint: 장갑 footprint 내부 장비 위치가 공간적으로 분리되어 있는지 확인한다.
+- [PASS] test_artillery_effect_is_applied_to_spatially_exposed_tank_item: 포병 효과가 공간적으로 노출된 전차 개별 item에 적용되는지 확인한다.
+- [PASS] test_disperse_posture_expands_footprint_and_reduces_exposure: 분산 posture가 footprint를 넓히고 노출을 줄이는지 확인한다.
+
+31. tests/test_lake_building_elevation.py
+- [PASS] test_river_mobility_overrides_allow_foot_and_block_tracked: 강의 mobility override가 보병은 허용하고 궤도 차량은 차단하는지 확인한다.
+- [PASS] test_river_without_override_keeps_default_water_crossing_rule: override 없는 강이 기본 수역 도하 규칙을 유지하는지 확인한다.
+- [PASS] test_lake_foot_passable_vehicle_blocked: 호수에서 보병 통과와 차량 차단 규칙이 적용되는지 확인한다.
+- [PASS] test_building_occupancy_is_unlimited_at_engine_level: engine level에서 건물 수용 인원 제한을 강제하지 않는지 확인한다.
+- [PASS] test_operational_building_blocks_ordinary_movement_but_explicit_access_allows_foot: 정상 건물이 일반 이동은 막고 명시 접근 명령은 보병에게 허용하는지 확인한다.
+- [PASS] test_elevation_can_clear_low_building: 고도가 낮은 건물 너머 시야/사격을 가능하게 하는지 확인한다.
+- [PASS] test_elevation_can_see_over_intervening_forest_but_not_target_inside_it: 고지대가 중간 숲 너머는 볼 수 있지만 숲 내부 표적은 제한하는지 확인한다.
+- [PASS] test_building_damage_destroyed: 건물 피해 누적 후 파괴 상태가 반영되는지 확인한다.
+
+32. tests/test_light_at_and_timed_orders.py
+- [PASS] test_at4_is_editor_runtime_inventory_and_multirole: AT4가 editor/runtime inventory에서 다목적 disposable 무장으로 표현되는지 확인한다.
+- [PASS] test_guided_at_requires_classified_lockable_armor_track: 유도 대전차 무장이 classified/lockable armor track을 요구하는지 확인한다.
+- [PASS] test_absolute_start_time_gates_new_dismount_order: 절대 start time이 새 dismount 명령 실행을 gate하는지 확인한다.
+
+33. tests/test_local_fire_allocation.py
+- [PASS] test_bn_direct_fire_is_distributed_across_multiple_actionable_enemy_formations: 대대 직접사격이 여러 actionable 적 formation에 분산되는지 확인한다.
+- [PASS] test_entity_mission_target_is_priority_not_exclusive_fire_target: entity mission target이 우선순위 표적이지 독점 표적은 아님을 확인한다.
+- [PASS] test_local_target_lock_is_scoped_to_element_weapon_not_whole_formation: local target lock이 formation 전체가 아니라 element/weapon 범위에 묶이는지 확인한다.
+
+34. tests/test_machine_gun_and_direct_fire_timing_v495.py
+- [PASS] test_abrams_has_coax_hmg_and_loader_mg: Abrams 편성에 coax HMG와 loader MG가 포함되는지 확인한다.
+- [PASS] test_machine_gun_model_is_lethality_not_suppression: 기관총 모델이 suppression이 아니라 lethality 모델로 동작하는지 확인한다.
+- [PASS] test_direct_fire_cycle_and_reload_are_explicit: 직접사격 cycle과 reload 시간이 명시적으로 적용되는지 확인한다.
+
+35. tests/test_maneuver_to_fire.py
+- [PASS] test_direct_fire_requires_current_terrain_lane: 직접사격이 현재 지형 사격 lane을 요구하는지 확인한다.
+
+36. tests/test_map_size_scale_contract.py
+- [PASS] test_loader_preserves_non_square_custom_world_size: loader가 비정사각 custom world size를 보존하는지 확인한다.
+- [PASS] test_metric_grid_and_scale_ui_contract: 미터 단위 grid와 scale UI 계약이 유지되는지 확인한다.
+
+37. tests/test_mounted_transport.py
+- [PASS] test_bradley_default_capacity_and_crew: Bradley 기본 탑승 용량과 승무원 구성이 맞는지 확인한다.
+- [PASS] test_independent_bradley_has_minimum_crew_and_empty_seats: 독립 Bradley가 최소 승무원과 빈 좌석 정보를 갖는지 확인한다.
+- [PASS] test_organic_dismount_and_remount_conserve_personnel: organic dismount/remount 과정에서 인원이 보존되는지 확인한다.
+- [PASS] test_external_squad_boards_empty_bradley_and_returns: 외부 분대가 빈 Bradley에 탑승하고 다시 복귀하는지 확인한다.
+- [PASS] test_editor_override_metadata_reaches_runtime: editor override metadata가 runtime까지 전달되는지 확인한다.
+
+38. tests/test_nato_echelon_symbology.py
+- [PASS] test_nato_echelon_amplifiers: NATO echelon amplifier 표기 규칙이 맞는지 확인한다.
+
+39. tests/test_optional_machine_gun.py
+- [PASS] test_inf_template_has_optional_machine_gun_section_off_by_default: 보병 템플릿의 optional machine gun section이 기본 off인지 확인한다.
+- [PASS] test_same_inf_type_can_have_or_not_have_machine_gun_section: 같은 보병 type에서도 기관총 section 포함 여부를 다르게 설정할 수 있는지 확인한다.
+- [PASS] test_editor_optional_attachment_is_metadata_driven: editor optional attachment가 metadata 기반으로 작동하는지 확인한다.
+
+40. tests/test_persistent_counterfire.py
+- [PASS] test_artillery_can_re_attack_old_cb_belief_after_radar_is_disabled: 레이더 disable 이후에도 기존 counter-battery belief를 바탕으로 재공격할 수 있는지 확인한다.
+
+41. tests/test_phase_doctrine_bml.py
+- [PASS] test_phase_start_time_gates_movement_and_phase_metadata: phase start time이 이동 시작과 phase metadata를 gate하는지 확인한다.
+- [PASS] test_time_condition_branches_without_damage_event: 시간 조건 branch가 피해 이벤트 없이도 평가되는지 확인한다.
+- [PASS] test_deadline_can_branch_without_speed_cheat: deadline branch가 이동 속도 조작 없이 처리되는지 확인한다.
+- [PASS] test_same_branch_can_use_different_doctrine_profile: 같은 branch라도 서로 다른 doctrine profile을 사용할 수 있는지 확인한다.
+- [PASS] test_mission_hold_at_all_costs_overrides_generic_break_contact: hold-at-all-costs mission이 일반 break contact doctrine을 override하는지 확인한다.
+- [PASS] test_loss_condition_can_redirect_to_rally_point: 손실 조건이 rally point로 명령을 전환할 수 있는지 확인한다.
+
+42. tests/test_polyline_bridge.py
+- [PASS] test_polyline_bridge_geometry_and_center: polyline bridge의 geometry와 center 계산이 맞는지 확인한다.
+- [PASS] test_legacy_bridge_geometry_still_supported: legacy bridge geometry가 계속 지원되는지 확인한다.
+
+43. tests/test_portable_legacy_scenario_resources.py
+- [PASS] test_legacy_stale_standard_resource_paths_fall_back_to_current_project: 오래된 standard resource path가 현재 프로젝트 리소스로 fallback되는지 확인한다.
+- [PASS] test_portable_scenario_can_omit_standard_resource_paths: portable scenario가 standard resource path를 생략해도 로드되는지 확인한다.
+
+44. tests/test_real_detached_vehicle.py
+- [PASS] test_mobility_kill_transfers_vehicle_to_real_stationary_combat_entity: mobility kill 차량이 실제 정지 전투 entity로 분리되는지 확인한다.
+- [PASS] test_two_mobility_kills_leave_two_vehicle_residual_platoon_and_two_stationary_children: 두 번의 mobility kill 후 parent/child 차량 수량이 정확히 분리되는지 확인한다.
+- [PASS] test_disabled_detached_vehicle_is_stationary_and_cannot_fire: disabled detached vehicle이 정지 상태이며 사격 불능인지 확인한다.
+- [PASS] test_detached_vehicle_can_be_damaged_without_splitting_again: 이미 분리된 차량이 다시 분리되지 않고 피해를 받을 수 있는지 확인한다.
+- [PASS] test_mobility_killed_detached_vehicle_can_continue_direct_fire_from_damage_location: mobility kill된 분리 차량이 피해 위치에서 직접사격을 계속할 수 있는지 확인한다.
+- [PASS] test_detaching_last_vehicle_leaves_no_ghost_parent_equipment: 마지막 차량 분리 후 parent에 ghost equipment가 남지 않는지 확인한다.
+
+45. tests/test_runtime_bml_selection.py
+- [PASS] test_explicit_empty_runtime_selection_disables_embedded_bml: 명시적 빈 runtime BML 선택이 scenario 내장 BML을 비활성화하는지 확인한다.
+- [PASS] test_runtime_bml_selection_overrides_embedded_reference: runtime BML 선택이 scenario 내장 참조를 override하는지 확인한다.
+- [PASS] test_legacy_loader_still_honors_embedded_bml_when_no_override_given: override가 없을 때 legacy loader가 내장 BML을 계속 반영하는지 확인한다.
+- [PASS] test_runtime_relative_bml_path_is_cwd_relative: runtime 상대 BML 경로가 cwd 기준으로 해석되는지 확인한다.
+
+46. tests/test_secure_area_and_at_calibration.py
+- [PASS] test_secure_area_compiles_as_bounded_reactive_defense: secure area가 제한된 반응 방어 명령으로 컴파일되는지 확인한다.
+- [PASS] test_secure_area_does_not_authorize_pursuit_beyond_boundary: secure area가 경계 밖 추격을 허가하지 않는지 확인한다.
+- [PASS] test_modern_at_hit_and_effect_parameters_are_not_legacy_low: 현대 AT hit/effect 파라미터가 legacy 저수치에 묶여 있지 않은지 확인한다.
+
+47. tests/test_shared_branch_symbology.py
+- [PASS] test_new_branch_symbol_kinds_are_shared_and_explicit: 새 branch symbol 종류가 공유되고 명시적으로 정의되는지 확인한다.
+
+48. tests/test_simulation_acceleration.py
+- [PASS] test_advance_realtime_reaches_32x_elapsed_time: realtime advance가 32x 경과 시간을 달성하는지 확인한다.
+- [PASS] test_high_speed_realtime_uses_bounded_substeps: 고속 realtime 진행이 bounded substep을 사용해 이벤트/물리 안정성을 유지하는지 확인한다.
+- [PASS] test_advance_realtime_respects_pause: pause 상태에서 realtime advance가 진행되지 않는지 확인한다.
+
+49. tests/test_sparse_astar_navigation.py
+- [PASS] test_astar_routes_non_amphibious_unit_through_operational_bridge: 비상륙 유닛이 정상 교량을 통해 A* 경로를 찾는지 확인한다.
+- [PASS] test_destroyed_bridge_is_removed_from_future_routes: 파괴된 교량이 이후 경로 후보에서 제거되는지 확인한다.
+- [PASS] test_wheeled_formation_can_choose_longer_road_route_by_travel_time: 차륜 편성이 거리보다 이동 시간 기준으로 더 긴 도로 경로를 선택할 수 있는지 확인한다.
+
+50. tests/test_startup_workflow_contract.py
+- [PASS] test_editor_defaults_to_blank_not_demo: editor 시작 기본값이 demo 자동 로드가 아니라 빈 상태인지 확인한다.
+- [PASS] test_main_has_no_implicit_demo_start: main 실행 흐름에 암묵적 demo 시작이 없는지 확인한다.
+
+51. tests/test_strong_vegetation_concealment.py
+- [PASS] test_forest_visual_path_blocks_after_75m: forest 시야 경로가 75m 이후 차단되는지 확인한다.
+- [PASS] test_woods_visual_path_allows_150_but_blocks_200m: woods 시야가 150m는 허용하고 200m는 차단하는지 확인한다.
+- [PASS] test_defending_infantry_gets_more_forest_concealment_than_moving: 방어 중 보병이 이동 중보다 숲 은폐 이점을 더 받는지 확인한다.
+
+52. tests/test_targeting_doctrine.py
+- [PASS] test_counterbattery_track_survives_generic_visual_lost_window: counter-battery track이 일반 visual lost window보다 오래 유지되는지 확인한다.
+- [PASS] test_counterbattery_track_degrades_to_belief_guided_counterfire: counter-battery track이 belief 기반 counterfire로 저하되어 이어지는지 확인한다.
+- [PASS] test_indirect_target_priority_prefers_artillery_when_tracks_are_comparable: 유사한 track 조건에서 간접화력이 포병 표적을 우선하는지 확인한다.
+- [FAIL] test_target_score_uses_perceived_classification_not_ground_truth_branch: perceived classification에 따라 점수가 달라져야 한다고 기대하지만 SHARED direct-fire track은 현재 actionability가 없어 두 점수가 모두 0.0이 된다.
+
+53. tests/test_threat_cue_orientation.py
+- [PASS] test_incoming_fire_cue_turns_watch_without_creating_track: incoming fire cue가 track 생성 없이 감시 방향만 돌리는지 확인한다.
+- [PASS] test_threat_cue_expires: threat cue가 일정 시간 뒤 만료되는지 확인한다.
+
+54. tests/test_unreachable_order_fallback.py
+- [FAIL] test_destroyed_bridge_causes_unreachable_move_to_be_abandoned_instead_of_retried_forever: 교량 파괴 후 no-route를 기대하지만 현재 tdg1 지형에서는 FOOT river mobility override로 보병 도하 경로가 남아 실패한다.
+- [FAIL] test_destroyed_bridge_invalidates_cached_route_and_reports_no_path: 교량 파괴 후 waypoint가 현재 위치로 고정되길 기대하지만 현재 보병 도하 가능 정책 때문에 다음 waypoint가 계속 생성되어 실패한다.
+
+55. tests/test_vector_terrain.py
+- [PASS] test_meandering_polyline_river_is_water_and_banks_are_not: 곡선 polyline river가 수역과 강둑을 올바르게 구분하는지 확인한다.
+- [PASS] test_authored_area_modifier_is_available_for_future_environment_use: 작성된 area modifier가 향후 환경 모델에서 사용할 수 있게 노출되는지 확인한다.
+- [PASS] test_rotated_bridge_geometry_supported: 회전된 bridge geometry가 지원되는지 확인한다.
+
+56. tests/test_vegetation_observation.py
+- [PASS] test_forest_path_blocking_is_reciprocal: forest 시야 차단이 양방향으로 동일하게 작동하는지 확인한다.
+- [PASS] test_forest_edge_can_look_far_into_open_ground: 숲 가장자리에서 개활지를 멀리 볼 수 있는지 확인한다.
+- [PASS] test_target_in_forest_is_harder_to_detect_than_open_target: 숲 내부 표적이 개활지 표적보다 탐지하기 어려운지 확인한다.
+- [PASS] test_thermal_has_slightly_more_forest_penetration_than_visual: thermal sensor가 visual보다 숲 침투성이 조금 높은지 확인한다.
+- [PASS] test_close_geometry_is_still_blocked_by_deep_forest_attenuation: 근접 geometry라도 깊은 숲 감쇠에는 차단될 수 있는지 확인한다.
+
+57. tests/test_watch_orientation_v499.py
+- [PASS] test_watch_slew_uses_shortest_clockwise_path: watch slew가 최단 회전 경로를 사용하는지 확인한다.
+- [PASS] test_infantry_slews_faster_than_armor: 보병 감시 방향 전환 속도가 장갑보다 빠른지 확인한다.
+- [PASS] test_180_degree_turn_takes_multiple_seconds: 180도 전환이 즉시 끝나지 않고 여러 초에 걸쳐 진행되는지 확인한다.
+
+58. tests/test_weapon_inventory_editor_semantics.py
+- [PASS] test_editor_distinguishes_disposable_crew_served_and_platform_mounts: editor가 disposable, crew-served, platform-mounted 무장을 구분하는지 확인한다.
+- [PASS] test_template_weapon_staffing_and_mount_counts_are_internally_possible: 템플릿 무기 staffing과 mount 수량이 내부적으로 가능한 조합인지 확인한다.
+- [PASS] test_disposable_rounds_need_no_system_or_operator_override: disposable rounds가 system/operator override 없이도 표현되는지 확인한다.
+
+남은 실패 요약 (기존 기대값/정책 불일치)
+- tests/test_echelon_artillery_scaling.py::test_shell_personnel_cap_is_per_formation_not_per_element
+  tdg1.json에 없는 R-ARTY_PLT-1을 참조한다. 포병이 있는 시나리오나 별도 fixture로 바꾸는 개선이 필요하다.
+- tests/test_environmental_observation.py::test_clear_day_open_terrain_is_neutral
+  현재 시야 기본값은 750.0인데 테스트는 900.0을 기대한다. 기대값을 현재 config/TOE 기준으로 갱신하거나, 설계상 900.0이 맞다면 데이터 쪽을 되돌려야 한다.
+- tests/test_external_definition_database.py::test_weapon_catalog_resolves_csv_definition
+  ATGM_GENERIC의 현재 이름은 modern guided ATGM (generic)이다. 테스트 기대 이름을 현재 CSV 기준으로 바꾸는 것이 자연스럽다.
+- tests/test_targeting_doctrine.py::test_target_score_uses_perceived_classification_not_ground_truth_branch
+  DIRECT 모드에서 SHARED track이 firing-quality track으로 인정되지 않아 점수가 0.0으로 같다. 테스트를 LOCAL track으로 바꾸거나, SHARED direct fire policy를 바꿀지 결정해야 한다.
+- tests/test_unreachable_order_fallback.py 2개
+  현재 tdg1_terrain.json은 FOOT 도하 mobility override를 허용한다. 보병 도하 가능 정책을 인정해 테스트를 궤도/차륜 유닛 기준으로 바꾸거나, 시나리오 지형 정책을 no-ford로 바꿀지 결정해야 한다.

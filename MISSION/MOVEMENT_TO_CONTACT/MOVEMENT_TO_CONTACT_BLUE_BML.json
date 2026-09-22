@@ -1,0 +1,23 @@
+{
+  "side": "BLUE",
+  "replace_existing_orders": true,
+  "missions": [
+    {
+      "id": "MTC-ADVANCE",
+      "unit": "B-SEARCH",
+      "task": "ATTACK_POSITION",
+      "destination": [
+        1300,
+        600
+      ],
+      "persistent": true,
+      "directives": {
+        "engagement_range_policy": "COMBINED_ARMS",
+        "engagement_range_fraction": 0.9
+      }
+    }
+  ],
+  "notes": [
+    "BLUE has no target ID or target_position. Initial opposing separation exceeds BLUE sensor range."
+  ]
+}
