@@ -135,33 +135,50 @@ class Simulation:
 
     def tick(self, dt: float):
         if self.paused: return
-        dt *= self.speed; self.time += dt
-        for ev in self.events.pop_due(self.time): self._handle_event(ev.kind, ev.payload)
+        self.step(dt*self.speed)
+
+    def step(self, sim_dt: float):
+        """Advance simulation time by ``sim_dt`` seconds (not scaled by ``speed``)."""
+        sim_dt=float(sim_dt)
+        if not math.isfinite(sim_dt) or sim_dt<0.0:
+            raise ValueError(f"simulation step must be finite and non-negative: {sim_dt!r}")
+        start=self.time; end=start+sim_dt
+        # Each event is handled at its own timestamp, so follow-on delays (C2 hops, FDC, damage)
+        # accumulate from the true event time instead of being rounded up to the tick boundary.
+        for ev in self.events.pop_due(end):
+            self.time=max(start,float(ev.time))
+            self._handle_event(ev.kind, ev.payload)
+        self.time=end
         for u in list(self.units.values()):
             if u.alive:
-                self._step_unit(u,dt)
+                self._step_unit(u,sim_dt)
+        # Scans stay on a fixed k*interval grid, so the scan count over a run does not depend
+        # on the integration step or the UI speed multiplier.
+        interval=max(1e-3,float(self.combat_config.get("sensor_update_s",1.0)))
         if self.time >= self._next_sensor_update:
             self._sensor_step()
-            self._next_sensor_update = self.time + float(self.combat_config.get("sensor_update_s",1.0))
+            self._next_sensor_update += interval
+            if self._next_sensor_update <= self.time:
+                self._next_sensor_update = self.time + interval
         self._combat_step()
 
     def advance_realtime(self, wall_dt: float, max_sim_step_s: float = 0.25):
-        """Advance from UI wall-clock time while preserving event/sensor fidelity at high speed.
+        """Advance from UI wall-clock time with a fixed simulation step.
 
-        ``tick`` intentionally retains its historical API (dt is wall time and is multiplied by
-        ``self.speed``).  The interactive UI calls this wrapper, which divides a large accelerated
-        interval into bounded simulation-time substeps.  Thus 16x/32x do not turn a 50 ms render
-        frame into a single 0.8/1.6 s physics/event jump.
+        Wall-clock time is converted to simulation time and accumulated; only whole fixed steps
+        of ``max_sim_step_s`` are executed.  Results therefore depend on neither the render frame
+        rate nor the 1x..32x speed setting, only on the fixed step.
         """
         if self.paused or wall_dt <= 0.0:
             return
+        fixed=max(float(max_sim_step_s),0.01)
         speed=max(float(self.speed),1e-9)
-        max_sim_step_s=max(float(max_sim_step_s),0.01)
-        total_sim_dt=float(wall_dt)*speed
-        steps=max(1,int(math.ceil(total_sim_dt/max_sim_step_s)))
-        sub_wall_dt=float(wall_dt)/steps
-        for _ in range(steps):
-            self.tick(sub_wall_dt)
+        # Cap one call's backlog so a stalled frame cannot trigger a long catch-up freeze.
+        budget=min(float(wall_dt)*speed, fixed*int(self.combat_config.get("max_steps_per_frame",256)))
+        self._realtime_accumulator=getattr(self,"_realtime_accumulator",0.0)+budget
+        while self._realtime_accumulator >= fixed-1e-9:
+            self._realtime_accumulator-=fixed
+            self.step(fixed)
 
     def _update_crew_readiness(self, u: Unit) -> bool:
         """Suspend orders on crew loss; retain the physical unit and pending plan.
@@ -384,7 +401,7 @@ class Simulation:
         candidates=[]
         for tid,tr in u.local_tracks.items():
             tgt=self.units.get(tid)
-            if not tgt or tgt.side==u.side:
+            if not tgt or tgt.side==u.side or tr.state=="DESTROYED":
                 continue
             age=self.time-tr.last_seen_time
             if age>memory:
@@ -535,7 +552,7 @@ class Simulation:
     def _specific_target_track(self,u:Unit,target_uid:str,include_lost=True):
         tgt=self.units.get(target_uid)
         tr=u.local_tracks.get(target_uid)
-        if not tgt or not tr:return None
+        if not tgt or not tr or tr.state=="DESTROYED":return None
         age=self.time-tr.last_seen_time
         memory=float(self.combat_config.get("attack_track_memory_s",90.0))
         if age>memory:return None
@@ -550,8 +567,12 @@ class Simulation:
         if tgt is None:
             self.log("BML_TARGET_MISSING",unit=u.uid,target=target_uid,order=o.kind)
             self._complete_order(u); return
-        if not tgt.alive:
-            self.log("BML_TARGET_DESTROYED",unit=u.uid,target=target_uid,order=o.kind)
+        known=u.local_tracks.get(target_uid)
+        if known is not None and known.state=="DESTROYED":
+            # Completion requires battle-damage information (own observation or a report),
+            # never the live ``alive`` flag of the target.
+            self.log("BML_TARGET_DESTROYED",unit=u.uid,target=target_uid,order=o.kind,
+                     bda_source=getattr(known,"source",None))
             self._complete_order(u); return
 
         # Explicit mission target gets priority when it is perceived.
@@ -771,6 +792,7 @@ class Simulation:
                     if el.category.upper()=="EQUIPMENT":el.item_states=["DESTROYED"]*max(el.initial_count,len(el.item_states))
                 u.state=UnitState.DESTROYED;u.active=False
                 self.log("BUILDING_COLLAPSE_UNIT_DESTROYED",building=bid,unit=u.uid,source=source,weapon=weapon)
+                self._on_unit_destroyed(u,source or None)
 
     # ---------- formation composition / aggregation ----------
     def aggregate_units(self,new_uid:str,name:str,child_ids:List[str],echelon="COY",pos=None):
@@ -998,7 +1020,7 @@ class Simulation:
                  "position_error_m":track.position_error_m*1.05,"classification":track.classification,
                  "confidence":max(.20,track.confidence*.96),"state":track.state,
                  "track_source":"SHARED","observation_time":track.last_seen_time,
-                 "cue_kind":"CONTACT_ENGAGED"}
+                 "cue_kind":"CONTACT_ENGAGED","perceived_tags":list(track.perceived_tags or ())}
         n=self.communications.broadcast_side(shooter.uid,"TRACK_REPORT",payload,priority=25)
         self.log("CONTACT_ENGAGED_REPORT",source=shooter.uid,target=track.target_id,recipients=n)
 
@@ -1082,20 +1104,26 @@ class Simulation:
         # longer than visual contacts because the coordinate itself does not vanish when the
         # firing battery stops emitting. Their longer memory is doctrine-configurable.
         cb_cfg=dict(self.targeting_doctrine.get("counter_battery", {}))
+        sensor_dt=max(1e-3,float(self.combat_config.get("sensor_update_s",1.0)))
+        # Decay factors are defined per second of track age, not per scan, so changing the
+        # scan interval does not change how fast an unobserved contact fades.
+        lost_decay=float(self.combat_config.get("track_lost_confidence_decay_per_s",0.92))**sensor_dt
+        stale_decay=float(self.combat_config.get("track_stale_confidence_decay_per_s",0.97))**sensor_dt
         for obs in self.units.values():
             for tr in obs.local_tracks.values():
+                if tr.state=="DESTROYED":
+                    continue
                 age=self.time-tr.last_seen_time
                 tr_stale=stale_s; tr_lost=lost_s
                 if tr.source=="COUNTER_BATTERY":
                     tr_stale=float(cb_cfg.get("stale_after_s",60.0))
                     tr_lost=float(cb_cfg.get("lost_after_s",180.0))
                 if age > tr_lost:
-                    tr.state="LOST"; tr.confidence*=0.92
+                    tr.state="LOST"; tr.confidence*=lost_decay
                 elif age > tr_stale:
-                    tr.state="STALE"; tr.confidence*=0.97
+                    tr.state="STALE"; tr.confidence*=stale_decay
                 self.belief.age(tr)
 
-        sensor_dt=float(self.combat_config.get("sensor_update_s",1.0))
         for obs in [u for u in self.units.values() if u.can_observe]:
             self._update_watch_heading(obs,sensor_dt)
             for tgt in [u for u in self.units.values() if u.alive and u.side != obs.side]:
@@ -1116,7 +1144,8 @@ class Simulation:
                     obs.local_tracks[tgt.uid]=Track(track_id=f"{obs.uid}:{tgt.uid}",target_id=tgt.uid,
                         estimated_pos=est,position_error_m=err,classification=tgt.branch,confidence=conf,
                         last_seen_time=self.time,observations=n,source="PROXIMITY",observation_zone="CLOSE",state="IDENTIFIED",
-                        belief_confidence=max(conf,0.75),existence_confirmed=True,last_confirmed_time=self.time)
+                        belief_confidence=max(conf,0.75),existence_confirmed=True,last_confirmed_time=self.time,
+                        perceived_tags=self.combat.observed_target_tags(tgt))
                     self.belief.on_observation(obs.local_tracks[tgt.uid],tgt.branch)
                     if prev is None or prev.state in ("STALE","LOST"):
                         self.log("PROXIMITY_CONTACT",observer=obs.uid,target=tgt.uid,distance=round(d,1),confidence=round(conf,2))
@@ -1142,7 +1171,8 @@ class Simulation:
                          position_error_m=err,classification=cls,confidence=conf,last_seen_time=self.time,
                          observations=n,source="LOCAL",observation_zone=("CLOSE" if in_all_round else "FORWARD"),state=state,
                          belief_confidence=max(prev.belief_confidence if prev else 0.0,conf),
-                         existence_confirmed=True,last_confirmed_time=self.time)
+                         existence_confirmed=True,last_confirmed_time=self.time,
+                         perceived_tags=self.combat.observed_target_tags(tgt))
                 self.belief.on_observation(tr,cls)
                 obs.local_tracks[tgt.uid]=tr
                 if prev is None or prev.state in ("STALE","LOST"):
@@ -1164,7 +1194,7 @@ class Simulation:
                         source=obs.uid,target=tgt.uid,side=obs.side.value,
                         estimated_pos=est,position_error_m=err,classification=cls,
                         confidence=max(.20,conf*.90),state=state,observation_time=self.time,
-                        track_source="SHARED",
+                        track_source="SHARED",perceived_tags=list(tr.perceived_tags or ()),
                     )
                     self.log("TRACK_REPORT_SENT",source=obs.uid,target=tgt.uid,delay_s=round(delay,1))
 
@@ -1278,6 +1308,8 @@ class Simulation:
         for u in self.units.values():
             if u.side != side or not u.active: continue
             for tid,tr in u.local_tracks.items():
+                if tr.state=="DESTROYED":
+                    continue
                 if tr.state=="LOST" and not self.belief.inferred_visible(tr):
                     continue
                 old=merged.get(tid)
@@ -1292,7 +1324,7 @@ class Simulation:
 
     def _track_for(self, observer: Unit, target: Unit, mode: str = "DIRECT"):
         tr=observer.local_tracks.get(target.uid)
-        if not tr:
+        if not tr or tr.state=="DESTROYED":
             return None
         mode=str(mode).upper()
         # Direct fire requires a locally acquired firing-quality Track. Friendly SHARED reports
@@ -1387,7 +1419,9 @@ class Simulation:
             while stack:
                 cur=stack.pop()
                 if cur in seen: continue
-                seen.add(cur); ids.append(cur); stack.extend(adj[cur]-seen)
+                # Sorted expansion: set iteration order depends on PYTHONHASHSEED, and the member
+                # order decides who fires first and therefore the RNG draw sequence.
+                seen.add(cur); ids.append(cur); stack.extend(sorted(adj[cur]-seen))
             members=[by_id[x] for x in ids]
             if len({m.side for m in members})>=2: groups.append(members)
         return groups
@@ -1524,10 +1558,12 @@ class Simulation:
             new_uid=f"{unit.uid}-DET-{serial}"
 
         prior_count=max(1, element.count)
+        moved_item_id=element.item_id_at(item_index)
         ce=copy.deepcopy(element)
         ce.count=1
         ce.initial_count=1
         ce.item_states=[state]
+        ce.item_ids=[moved_item_id] if moved_item_id else []
 
         # Crew ownership follows the detached platform. Never let an external-crew
         # vehicle silently become an implicitly staffed vehicle in its new unit.
@@ -1576,7 +1612,7 @@ class Simulation:
         # Transfer physical ownership: remove the vehicle from the parent's equipment list.
         # Decrement initial_count as well so strength accounting remains conserved across the
         # residual formation + detached child instead of double-counting the original vehicle.
-        element.item_states.pop(item_index)
+        element.remove_item(item_index)
         element.initial_count=max(0,element.initial_count-1)
         element.sync_count_from_states()
 
@@ -1624,6 +1660,11 @@ class Simulation:
             target=q.get("target")
             if not target: return
             old=recv.local_tracks.get(target)
+            if str(q.get("state","")).upper()=="DESTROYED":
+                self._apply_bda(recv,target,q,source=msg.get("sender_uid"))
+                return
+            if old is not None and old.state=="DESTROYED":
+                return
             incoming_conf=float(q.get("confidence",.3))*0.92
             # A better fresh local observation is never overwritten by weaker shared SA.
             if not (old and old.source=="LOCAL" and old.confidence>=incoming_conf):
@@ -1633,7 +1674,8 @@ class Simulation:
                     last_seen_time=float(q.get("observation_time",self.time)),
                     observations=max(1,old.observations if old else 1),source=q.get("track_source","SHARED"),
                     observation_zone="SHARED",state=q.get("state","DETECTED"),belief_confidence=max(old.belief_confidence if old else 0.0,incoming_conf,0.45),
-                    existence_confirmed=True,last_confirmed_time=float(q.get("observation_time",self.time)))
+                    existence_confirmed=True,last_confirmed_time=float(q.get("observation_time",self.time)),
+                    perceived_tags=tuple(q.get("perceived_tags") or ()) or None)
                 recv.local_tracks[target]=tr
                 self.belief.on_observation(tr,q.get("classification","UNKNOWN"))
             # Shared situational awareness may reorient sensors even if local Track was already better.
@@ -1660,6 +1702,9 @@ class Simulation:
                      observations=int(p.get("observations",1)),source="COUNTER_BATTERY",observation_zone="SENSOR",state=p.get("state","CLASSIFIED"),
                      belief_confidence=max(0.70,float(p["confidence"])),existence_confirmed=True,
                      last_confirmed_time=float(p.get("observation_time",self.time)))
+            prev_tr=radar.local_tracks.get(target.uid)
+            if prev_tr is not None and prev_tr.state=="DESTROYED":
+                return
             self.belief.on_observation(tr,"ARTILLERY")
             radar.local_tracks[target.uid]=tr
             self.log("CB_RADAR_DETECT",radar=radar.uid,source=target.uid,
@@ -1713,15 +1758,28 @@ class Simulation:
             return
         if kind=="EQUIPMENT_EFFECT":
             t=self.units.get(p["target"])
-            if not t or not t.alive:return
+            if not t:return
             el=t.elements.get(p["element"])
+            item_index=p.get("item_index")
+            if p.get("item_id") is not None:
+                # The addressed item may have been detached into a vehicle-level child since the
+                # effect was scheduled; follow the physical item rather than the list position.
+                located=self._locate_equipment_item(t,str(p["element"]),str(p["item_id"]))
+                if located is None:
+                    self.log("EQUIPMENT_EFFECT_TARGET_GONE",target=t.uid,element=p.get("element"),item_id=p.get("item_id"))
+                    return
+                t,el,item_index=located
+            if not t.alive:return
             if not el or not el.alive:return
             reason=str(p.get("reason",""))
             cue_type="INDIRECT_FIRE" if reason.startswith("ARTILLERY_") else "DIRECT_FIRE"
             self._register_threat_cue(t,p.get("source"),cue_type)
             self.damage.apply_equipment_effect(t,el,p.get("effect","DISABLED"),
                                                source=p.get("source",""),weapon=p.get("weapon",""),
-                                               reason=reason,item_index=p.get("item_index"))
+                                               reason=reason,item_index=item_index)
+            if not t.alive:
+                self._on_unit_destroyed(t,p.get("source"))
+                return
             self._check_reactive_branches(t)
             return
         if kind=="ELEMENT_LOSS":
@@ -1735,7 +1793,79 @@ class Simulation:
             if el.count==0:self.log("ELEMENT_DISABLED",unit=t.uid,element=el.eid,role=el.role)
             if t.current_strength<=0:
                 t.state=UnitState.DESTROYED; self.log("DESTROYED",unit=t.uid,source=p.get("source"))
+                self._on_unit_destroyed(t,p.get("source"))
             else:self._check_reactive_branches(t)
+
+    def _locate_equipment_item(self, unit: Unit, element_eid: str, item_id: str, _depth: int = 0):
+        """Find a physical item by id in ``unit`` or in the vehicles detached from it."""
+        el=unit.elements.get(element_eid)
+        if el is not None:
+            idx=el.index_of_item(item_id)
+            if idx is not None:
+                return unit,el,idx
+        if _depth>8:
+            return None
+        for child_uid in unit.children:
+            child=self.units.get(child_uid)
+            if child is None or child.parent_id!=unit.uid:
+                continue
+            found=self._locate_equipment_item(child,element_eid,item_id,_depth+1)
+            if found is not None:
+                return found
+        return None
+
+    # ---------- battle-damage assessment (what friendly forces know about a kill) ----------
+    def _on_unit_destroyed(self, target: Unit, source_uid: str | None = None):
+        """Give BDA only to enemy formations that were actually watching the target.
+
+        The shooter and any observer holding a fresh LOCAL/PROXIMITY Track see the kill. One of
+        them reports it over the communications layer; everybody else keeps a Track that simply
+        ages out.  An unobserved kill (e.g. artillery on an untracked coordinate) stays unknown.
+        """
+        if target.metadata.get("_bda_resolved"):
+            return
+        target.metadata["_bda_resolved"]=True
+        window=float(self.combat_config.get("bda_observation_window_s",6.0))
+        witnesses=[]
+        for obs in self.units.values():
+            if obs.side==target.side or not obs.can_observe:
+                continue
+            tr=obs.local_tracks.get(target.uid)
+            if tr is None or tr.state in ("LOST","DESTROYED"):
+                continue
+            fresh=str(tr.source).upper() in ("LOCAL","PROXIMITY") and self.time-tr.last_seen_time<=window
+            if fresh or obs.uid==source_uid:
+                witnesses.append(obs)
+        for obs in witnesses:
+            self._apply_bda(obs,target.uid,{"estimated_pos":obs.local_tracks[target.uid].estimated_pos},
+                            source=obs.uid,local=True)
+        if witnesses:
+            reporter=next((w for w in witnesses if w.uid==source_uid),witnesses[0])
+            tr=reporter.local_tracks[target.uid]
+            payload={"target":target.uid,"side":reporter.side.value,"estimated_pos":tr.estimated_pos,
+                     "position_error_m":tr.position_error_m,"classification":tr.classification,
+                     "confidence":1.0,"state":"DESTROYED","track_source":"BDA",
+                     "observation_time":self.time}
+            n=self.communications.broadcast_side(reporter.uid,"TRACK_REPORT",payload,priority=28)
+            self.log("BDA_REPORT",source=reporter.uid,target=target.uid,witnesses=len(witnesses),recipients=n)
+        else:
+            self.log("KILL_UNOBSERVED",target=target.uid,source=source_uid)
+
+    def _apply_bda(self, recv: Unit, target_uid: str, q: dict, source=None, local=False):
+        old=recv.local_tracks.get(target_uid)
+        if old is not None and old.state=="DESTROYED":
+            return
+        base=old if old is not None else Track(track_id=f"{recv.uid}:{target_uid}",target_id=target_uid,
+                                                  estimated_pos=tuple(q.get("estimated_pos",(0.0,0.0))),
+                                                  position_error_m=float(q.get("position_error_m",50.0)),
+                                                  classification=q.get("classification","UNKNOWN"))
+        recv.local_tracks[target_uid]=replace(base,state="DESTROYED",confidence=1.0,
+                                              source=base.source if local else "BDA",
+                                              last_confirmed_time=self.time)
+        if recv.target_id==target_uid:
+            recv.target_id=None
+            recv.metadata.pop("target_acquired_t",None)
+        self.log("BDA_CONFIRMED",unit=recv.uid,target=target_uid,source=source,local=bool(local))
 
     def _check_reactive_branches(self,u):
         if self._update_crew_readiness(u):

@@ -4,6 +4,19 @@ import math
 from .model import Unit, UnitState
 
 
+# Fallback composition implied by a perceived classification when a Track carries no observed
+# element tags (e.g. hand-built or legacy shared tracks).  ``None``/missing means "unknown":
+# the shooter cannot rule a weapon out, so the decision layer stays permissive and the physical
+# effect is resolved against the real target only when the round arrives.
+DEFAULT_CLASSIFICATION_TARGET_TAGS = {
+    "ARMOR": ("EQUIPMENT", "ARMOR", "VEHICLE"),
+    "ARTILLERY": ("EQUIPMENT", "ARTILLERY", "PERSONNEL"),
+    "INFANTRY": ("PERSONNEL",),
+    "RECON": ("PERSONNEL",),
+    "SPECIAL_OPERATIONS": ("PERSONNEL",),
+}
+
+
 class CombatResolver:
     """Weapon/target compatibility, target selection, and fire resolution.
 
@@ -19,11 +32,42 @@ class CombatResolver:
 
     @staticmethod
     def weapon_can_affect(weapon, target: Unit) -> bool:
+        """Physical (ground-truth) compatibility.  Use only when resolving an actual effect."""
         tags = {x.upper() for x in weapon.target_tags}
         return any(e.alive and target.element_exposed(e) and bool(e.tags & tags) for e in target.elements.values())
 
     @staticmethod
-    def weapon_has_targeting_solution(weapon, track, target: Unit) -> bool:
+    def observed_target_tags(target: Unit) -> tuple:
+        """Element tags an observer can see at the moment of an observation (snapshot)."""
+        tags=set()
+        for e in target.elements.values():
+            if e.alive and target.element_exposed(e):
+                tags.update(e.tags)
+        return tuple(sorted(tags))
+
+    def perceived_target_tags(self, track):
+        tags=getattr(track,"perceived_tags",None)
+        if tags:
+            return {str(x).upper() for x in tags}
+        cls=str(getattr(track,"classification","UNKNOWN") or "UNKNOWN").upper()
+        table=dict(DEFAULT_CLASSIFICATION_TARGET_TAGS)
+        table.update(dict((getattr(self.sim,"targeting_doctrine",{}) or {}).get("classification_target_tags",{})))
+        implied=table.get(cls)
+        return {str(x).upper() for x in implied} if implied else None
+
+    @staticmethod
+    def track_indicates_armor(track) -> bool:
+        """Perceived armor formation (classification only; never the target's true branch)."""
+        return str(getattr(track,"classification","UNKNOWN") or "").upper()=="ARMOR"
+
+    def weapon_can_affect_perceived(self, weapon, track) -> bool:
+        """Decision-layer compatibility from what the shooter believes the target contains."""
+        tags=self.perceived_target_tags(track)
+        if tags is None:
+            return True
+        return bool(tags & {str(x).upper() for x in weapon.target_tags})
+
+    def weapon_has_targeting_solution(self, weapon, track, target: Unit) -> bool:
         """Weapon-specific terminal targeting gate layered on top of an actionable Track.
 
         Unguided direct-fire weapons only need a usable local firing Track/LOS.  Lock-on weapons
@@ -40,8 +84,11 @@ class CombatResolver:
         if float(getattr(track,"confidence",0.0)) < float(md.get("lock_min_confidence",0.52)):
             return False
         lock_tags={str(x).upper() for x in md.get("lockable_target_tags",[])}
-        if lock_tags and not any(e.alive and bool(e.tags & lock_tags) for e in target.elements.values()):
-            return False
+        if lock_tags:
+            # The seeker locks onto what the shooter perceives, not the live inventory.
+            perceived=self.perceived_target_tags(track)
+            if perceived is not None and not (perceived & lock_tags):
+                return False
         return True
 
     def unit_can_affect(self, shooter: Unit, target: Unit, mode: str = "DIRECT") -> bool:
@@ -65,7 +112,7 @@ class CombatResolver:
             if not bool(lane.get("allowed",True)):
                 return False
         return any(
-            w.capability.upper() != "INDIRECT_FIRE" and perceived_d <= w.range_m and self.weapon_can_affect(w, target)
+            w.capability.upper() != "INDIRECT_FIRE" and perceived_d <= w.range_m and self.weapon_can_affect_perceived(w, tr)
             and self.weapon_has_targeting_solution(w,tr,target)
             for _, w in shooter.operational_weapons()
         )
@@ -186,7 +233,7 @@ class CombatResolver:
             perceived_d=math.dist(shooter.pos,tr.estimated_pos)
             if perceived_d > weapon.range_m:
                 continue
-            if not self.weapon_can_affect(weapon,target):
+            if not self.weapon_can_affect_perceived(weapon,tr):
                 continue
             if not self.weapon_has_targeting_solution(weapon,tr,target):
                 continue
@@ -302,7 +349,7 @@ class CombatResolver:
             if primary_target is not None:
                 tr=self.sim._track_for(shooter,primary_target,"DIRECT")
                 if (tr is not None and math.dist(shooter.pos,tr.estimated_pos)<=weapon.range_m
-                        and self.weapon_can_affect(weapon,primary_target)
+                        and self.weapon_can_affect_perceived(weapon,tr)
                         and self.weapon_has_targeting_solution(weapon,tr,primary_target)):
                     fired.append(primary_target.uid)
                     self.fire_weapon(shooter,primary_target,element,weapon,"DIRECT")
@@ -352,7 +399,7 @@ class CombatResolver:
         if tr is None:
             return
         perceived_d = math.dist(shooter.pos, tr.estimated_pos)
-        if perceived_d > weapon.range_m or not self.weapon_can_affect(weapon, target):
+        if perceived_d > weapon.range_m or not self.weapon_can_affect_perceived(weapon, tr):
             return
         if not self.weapon_has_targeting_solution(weapon,tr,target):
             self.sim.log("DIRECT_FIRE_NO_TARGETING_SOLUTION",shooter=shooter.uid,target=target.uid,
@@ -368,7 +415,9 @@ class CombatResolver:
             close_zone=str(getattr(tr,"observation_zone","UNKNOWN")).upper()=="CLOSE"
             if not close_zone:
                 _,fov,_,_,_=self.sim._visual_sensor_profile(shooter,target)
-                bearing=math.degrees(math.atan2(target.pos[1]-shooter.pos[1],target.pos[0]-shooter.pos[0]))
+                # Orientation is judged against where the shooter believes the target is.
+                aim=tr.estimated_pos
+                bearing=math.degrees(math.atan2(aim[1]-shooter.pos[1],aim[0]-shooter.pos[0]))
                 off=abs(self.sim._angle_delta_deg(bearing,shooter.watch_heading_deg))
                 margin=max(0.0,float(self.sim.combat_config.get("direct_fire_watch_edge_margin_deg",5.0)))
                 if off > max(1.0,fov*0.5-margin):
@@ -459,7 +508,12 @@ class CombatResolver:
 
         tgt_el = self.select_target_element(target, weapon)
         if not tgt_el:
-            return
+            # The round was committed on perceived composition; the target no longer contains
+            # anything this weapon can affect (e.g. its exposed dismounts are already gone).
+            self.sim.log("FIRE_NO_EFFECT", shooter=shooter.uid, target=target.uid,
+                         source_element=source_element.eid, weapon=weapon.name,
+                         reason="NO_COMPATIBLE_ELEMENT", ammo_remaining=weapon.ammo_remaining)
+            return True
 
         # Separate geometrical hit probability from post-hit armor effect.  ``weapon.pk`` remains
         # the legacy/default base hit probability, while modern AT weapons can provide calibrated

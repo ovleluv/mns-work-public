@@ -3,7 +3,11 @@ from mnsim.formation_geometry import footprint_for
 
 
 def _artillery_weapon(sim):
-    shooter=sim.units['R-ARTY_PLT-1']
+    # tdg1 no longer contains artillery; borrow the demo battery as an off-map shooter.
+    import copy
+    demo=load_scenario('scenarios/demo.json')
+    shooter=copy.deepcopy(demo.units['R-ART-1'])
+    sim.add_unit(shooter)
     return shooter, next(w for e in shooter.elements.values() for w in e.weapons if w.capability=='INDIRECT_FIRE')
 
 

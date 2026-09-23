@@ -10,7 +10,7 @@ def test_weapon_catalog_resolves_csv_definition():
     catalog = WeaponCatalog.from_csv('database/weapons.csv')
     reg = default_definition_registry(catalog)
     w = reg.create_weapon({'weapon_id':'ATGM_GENERIC', 'slot':'AT_WEAPON'})
-    assert w.name == 'abstract guided AT weapon'
+    assert w.name == 'modern guided ATGM (generic)'
     assert w.ammo_capacity == 3
     assert w.metadata['weapon_id'] == 'ATGM_GENERIC'
     assert w.metadata['loadout_slot'] == 'AT_WEAPON'

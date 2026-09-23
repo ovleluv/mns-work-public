@@ -14,12 +14,12 @@ def test_controller_controls_do_not_change_engine_semantics():
     ctl = SimulationController(sim)
 
     ctl.set_speed(32)
-    ctl.advance_realtime(0.05)
-    assert abs(sim.time - 1.6) < 1e-9
+    ctl.advance_realtime(0.0625)
+    assert abs(sim.time - 2.0) < 1e-9
 
     ctl.toggle_pause()
     ctl.advance_realtime(1.0)
-    assert abs(sim.time - 1.6) < 1e-9
+    assert abs(sim.time - 2.0) < 1e-9
 
 
 def test_controller_selection_is_id_based_and_safe_across_frontends():

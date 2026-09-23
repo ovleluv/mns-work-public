@@ -199,9 +199,20 @@ def test_legacy_platform_explicit_embedded_crew_loss():
     assert not u.can_observe and u.crew_failure_reason == "NO_CREW"
 
 
-def test_tdg20_real_template_no_crew_does_not_complete_crossing():
-    scenario = Path("MISSION/TDG_DEFENSE/TDG20_SCREEN_DELAY/TDG20_SCREEN_DELAY_SCENARIO.json")
-    sim = load_scenario(str(scenario))
+def test_real_template_no_crew_does_not_complete_crossing(tmp_path):
+    """A real crewed-vehicle template with no crew must not move or complete its order.
+
+    (The original TDG20 mission file is not part of this repository; build the same situation
+    from the shipped US_HMMWV_IND template instead.)
+    """
+    import json
+    scenario = {"seed": 3, "world": {"width_m": 2000, "height_m": 1000}, "objectives": {},
+                "units": [{"id": "R-LEAD", "side": "RED", "echelon": "IND", "type": "US_HMMWV_IND",
+                           "pos": [200, 500], "orders": [{"id": "CROSS", "kind": "MOVE",
+                                                          "params": {"destination": [1800, 500]}}]}]}
+    path = tmp_path / "crossing.json"
+    path.write_text(json.dumps(scenario))
+    sim = load_scenario(str(path))
     lead = sim.units["R-LEAD"]
     lead.elements["vehicle_crew"].count = 0
     start = lead.pos

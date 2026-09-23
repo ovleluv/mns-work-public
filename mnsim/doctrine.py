@@ -50,7 +50,7 @@ class DoctrineEngine:
             return prof[key]
         return self.sim.combat_config.get(key,default)
 
-    def desired_direct_engagement_range(self, unit: Unit, target: Unit) -> float | None:
+    def desired_direct_engagement_range(self, unit: Unit, target: Unit, track: Track | None = None) -> float | None:
         """Return the doctrinal stand-off distance for the perceived target.
 
         This is deliberately derived from the *currently operational weapons that can affect the
@@ -58,11 +58,15 @@ class DoctrineEngine:
         the longest usable envelope.  COMBINED_ARMS closes until even the shortest relevant weapon
         can participate, allowing longer-ranged systems to fire while the formation advances.
         """
+        if track is None:
+            track=unit.local_tracks.get(target.uid)
         ranges=[]
         for _,weapon in unit.operational_weapons():
             if weapon.capability.upper()=="INDIRECT_FIRE":
                 continue
-            if self.sim.combat.weapon_can_affect(weapon,target):
+            # Perceived composition only: the formation plans stand-off against what it believes
+            # the target contains, not against the live element inventory.
+            if track is None or self.sim.combat.weapon_can_affect_perceived(weapon,track):
                 ranges.append(float(weapon.range_m))
         if not ranges:
             return None
@@ -77,7 +81,7 @@ class DoctrineEngine:
         return max(1.0,base*max(0.25,min(1.0,fraction)))
 
     def should_close_for_direct_fire(self, unit: Unit, target: Unit, track: Track) -> bool:
-        desired=self.desired_direct_engagement_range(unit,target)
+        desired=self.desired_direct_engagement_range(unit,target,track)
         if desired is None:
             return True
         perceived=math.dist(unit.pos,track.estimated_pos)
@@ -99,7 +103,9 @@ class DoctrineEngine:
         out = []
         for tid, tr in unit.local_tracks.items():
             tgt = self.sim.units.get(tid)
-            if tgt and tgt.alive and tgt.side != unit.side and self.sim._track_for(unit, tgt):
+            # Liveness is not read from ground truth: a destroyed target disappears from this list
+            # only once the formation has battle-damage information (track state DESTROYED).
+            if tgt and tgt.side != unit.side and tr.state != "DESTROYED" and self.sim._track_for(unit, tgt):
                 out.append((tgt, tr))
         return out
 
@@ -270,7 +276,7 @@ class DoctrineEngine:
         # Infantry: if an armor contact is actionable but all anti-armor capability has
         # disappeared (team killed, weapon lost, or ammunition depleted), break contact.
         if unit.branch == "INFANTRY":
-            armor = [x for x in contacts if x[0].branch == "ARMOR"]
+            armor = [x for x in contacts if self.sim.combat.track_indicates_armor(x[1])]
             break_if_no_at=bool(self.setting(unit,"infantry_break_contact_if_no_at",default=True))
             allow_break=bool(self.directive(unit,"allow_break_contact",True))
             if armor and not unit.capability_available("ANTI_ARMOR") and break_if_no_at and allow_break:

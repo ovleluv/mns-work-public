@@ -76,6 +76,10 @@ class FormationElement:
     # damage (e.g. tanks / artillery pieces). Values: OPERATIONAL, MOBILITY_KILL,
     # FIREPOWER_KILL, DISABLED, DESTROYED.
     item_states: List[str] = field(default_factory=list)
+    # Stable identity per physical item, parallel to ``item_states``.  List positions shift when
+    # a vehicle is detached, so delayed effects (artillery fragments, etc.) address items by id.
+    item_ids: List[str] = field(default_factory=list)
+    item_serial: int = 0
 
     def ensure_item_states(self):
         if self.category.upper() != "EQUIPMENT":
@@ -85,6 +89,31 @@ class FormationElement:
             self.item_states=["OPERATIONAL"]*target
         elif len(self.item_states)<target:
             self.item_states.extend(["OPERATIONAL"]*(target-len(self.item_states)))
+        self.sync_item_ids()
+
+    def sync_item_ids(self):
+        """Keep ``item_ids`` the same length as ``item_states`` (new items get fresh ids)."""
+        if len(self.item_ids) > len(self.item_states):
+            del self.item_ids[len(self.item_states):]
+        while len(self.item_ids) < len(self.item_states):
+            self.item_serial += 1
+            self.item_ids.append(f"{self.eid}#{self.item_serial}")
+
+    def item_id_at(self, index: int) -> Optional[str]:
+        self.sync_item_ids()
+        return self.item_ids[index] if 0 <= index < len(self.item_ids) else None
+
+    def index_of_item(self, item_id: str) -> Optional[int]:
+        self.sync_item_ids()
+        try:
+            return self.item_ids.index(str(item_id))
+        except ValueError:
+            return None
+
+    def remove_item(self, index: int):
+        """Remove one physical item and return ``(state, item_id)``."""
+        self.sync_item_ids()
+        return self.item_states.pop(index), self.item_ids.pop(index)
 
     def sync_count_from_states(self):
         if self.category.upper()=="EQUIPMENT":
@@ -212,15 +241,18 @@ class Track:
     # contact through its short-range all-round awareness zone; FORWARD means the principal
     # directional observation sector. Shared/other sensors intentionally do not inherit CLOSE.
     observation_zone: str = "UNKNOWN"  # CLOSE / FORWARD / SHARED / SENSOR / UNKNOWN
-    state: str = "DETECTED"         # DETECTED / CLASSIFIED / IDENTIFIED / STALE / LOST / INFERRED
+    state: str = "DETECTED"         # DETECTED / CLASSIFIED / IDENTIFIED / STALE / LOST / INFERRED / DESTROYED
     # Belief persistence is deliberately separate from tactical actionability. A commander may
     # still believe an enemy formation exists long after its last firing-quality track is stale.
     belief_confidence: float = 0.0
     existence_confirmed: bool = False
     last_confirmed_time: float = 0.0
+    # Element tags the observer saw at the last observation (a snapshot, not live inventory).
+    # ``None`` means composition unknown; decision logic then falls back to the classification.
+    perceived_tags: Optional[Tuple[str, ...]] = None
 
     def actionable(self, now: float, max_age: float = 45.0, min_confidence: float = 0.35) -> bool:
-        return self.state != "LOST" and (now - self.last_seen_time) <= max_age and self.confidence >= min_confidence
+        return self.state not in ("LOST", "DESTROYED") and (now - self.last_seen_time) <= max_age and self.confidence >= min_confidence
 
 @dataclass
 class Unit:

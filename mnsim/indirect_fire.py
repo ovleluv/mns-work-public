@@ -311,8 +311,8 @@ class IndirectFireResolver:
                             geometry_counts[geom]=geometry_counts.get(geom,0)+1
                             self.sim.events.push(
                                 self.sim.time+0.15,"EQUIPMENT_EFFECT",target=victim.uid,source=shooter.uid,
-                                element=el.eid,item_index=item_i,effect=effect,weapon=weapon.name,
-                                reason=f"ARTILLERY_{geom}"
+                                element=el.eid,item_index=item_i,item_id=el.item_id_at(item_i),
+                                effect=effect,weapon=weapon.name,reason=f"ARTILLERY_{geom}"
                             )
                 else:
                     remaining=max(0,personnel_loss_cap-personnel_losses_this_round)

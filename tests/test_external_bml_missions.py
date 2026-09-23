@@ -93,6 +93,8 @@ def test_four_sequential_entity_missions_use_each_orders_own_reference(tmp_path)
         b.metadata['last_contact_id']='STALE-'+tid
         b.metadata['last_contact_pos']=(999.0,999.0)
         sim.units[tid].state=UnitState.DESTROYED
+        # Completion needs battle-damage information, not the target's live flag.
+        sim._apply_bda(b,tid,{"estimated_pos":refs[tid]},source="TEST")
         sim.tick(0.1)
 
     sim.tick(0.1)
