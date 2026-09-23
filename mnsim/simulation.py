@@ -21,6 +21,7 @@ from .mounted import (initialize_transport_metadata, dismount_organic, mount_org
 class Simulation:
     def __init__(self, seed=7):
         self.time = 0.0
+        self.seed = seed
         self.units: Dict[str, Unit] = {}
         # Ordinary individual-infantry observation fallback for programmatic simulations.
         # Scenario loading replaces this with the local INF_IND template.

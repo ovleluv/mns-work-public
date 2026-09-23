@@ -34,9 +34,9 @@ def _project_resource(scenario_path: str, ref, default_relative: str | None = No
     return None
 
 
-def load_scenario(path: str, bml_files: dict | None = None) -> Simulation:
+def load_scenario(path: str, bml_files: dict | None = None, seed: int | None = None) -> Simulation:
     raw = json.loads(Path(path).read_text(encoding="utf-8"))
-    sim = Simulation(seed=int(raw.get("seed", 7)))
+    sim = Simulation(seed=int(raw.get("seed", 7) if seed is None else seed))
     sim.objectives = raw.get("objectives", {})
     sim.world = dict(raw.get("world", {"width_m": 4000, "height_m": 4000}))
 

@@ -46,6 +46,7 @@ A future developer or LLM should preserve these boundaries unless there is a str
 main.py                 Pygame tactical UI only
 mnsim/model.py          Core data model: Unit, FormationElement, WeaponModel, Track, Order
 mnsim/simulation.py     Orchestrator, time loop, movement, engagements, FoW/C2/event integration
+mnsim/batch.py          Independent scenario/seed runs using worker processes
 mnsim/combat.py         Direct-fire compatibility, target choice, ammunition use, fire resolution
 mnsim/indirect_fire.py  Artillery launch/impact model, CEP/dispersion, spatial area effects
 mnsim/fire_control.py    Delayed fire-request/FDC/gun-preparation/reload pipeline
@@ -92,6 +93,32 @@ python main.py scenarios/demo.json
 ```
 
 Controls: `SPACE` pause/resume; top-right buttons select `1x/2x/4x/8x/16x/32x`; `1/2/4/8` remain direct keyboard shortcuts and `[` / `]` step slower/faster; click a unit to inspect it; `L` writes `logs/replay.jsonl`.
+
+## Multicore batch runs
+
+Independent scenario runs can use multiple CPU cores. One interactive `Simulation.tick()` remains
+single-process so its RNG, event queue, and mutable formation state retain deterministic ordering.
+Run a seed sweep and write compact JSON summaries with:
+
+```bash
+python -m mnsim.batch scenarios/tdg3.json --runs 8 --seed-start 7 --steps 600 --workers 4 > batch.json
+```
+
+`--workers 1` runs the same workload serially; omitting it uses up to four processes. The output
+contains each side's surviving inventory, event counts, simulated time, and a full-log checksum,
+in input order. To ignore a scenario's embedded BML plans, add `--ignore-embedded-bml`.
+
+The Python API supports different scenarios or per-run BML selections:
+
+```python
+from mnsim.batch import BatchRun, run_batch
+
+if __name__ == "__main__":
+    runs = [BatchRun("scenarios/tdg3.json", steps=600, seed=seed) for seed in range(7, 15)]
+    results = run_batch(runs, workers=4)
+```
+
+Use the `__main__` guard in scripts so worker processes start correctly on macOS and Windows.
 
 ## Architecture
 
