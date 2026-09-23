@@ -23,6 +23,30 @@ class CombatResolver:
         return any(e.alive and target.element_exposed(e) and bool(e.tags & tags) for e in target.elements.values())
 
     @staticmethod
+    def perceived_target_tags(track):
+        """Coarse target tags inferred from classification, without reading live composition."""
+        cls=str(getattr(track,"classification","UNKNOWN") or "UNKNOWN").upper()
+        classes={
+            "INFANTRY":{"PERSONNEL"}, "PERSONNEL":{"PERSONNEL"},
+            "ARMOR":{"ARMOR","EQUIPMENT"},
+            "ARTILLERY":{"ARTILLERY","EQUIPMENT","PERSONNEL"},
+            "MECH_INFANTRY":{"PERSONNEL","ARMOR","EQUIPMENT"},
+            "MOTORIZED_INFANTRY":{"PERSONNEL","EQUIPMENT"},
+            "RECON":{"PERSONNEL","EQUIPMENT"},
+            "SPECIAL_OPERATIONS":{"PERSONNEL"},
+            "STRUCTURE":{"STRUCTURE"},
+        }
+        return classes.get(cls)
+
+    @classmethod
+    def weapon_may_affect_track(cls, weapon, track) -> bool:
+        perceived=cls.perceived_target_tags(track)
+        tags={str(x).upper() for x in getattr(weapon,"target_tags",[])}
+        # An unidentified contact may still be worth a shot; physical incompatibility is only
+        # resolved after the round is expended. Never peek at the target's actual elements here.
+        return not tags or perceived is None or bool(tags & perceived)
+
+    @staticmethod
     def weapon_has_targeting_solution(weapon, track, target: Unit) -> bool:
         """Weapon-specific terminal targeting gate layered on top of an actionable Track.
 
@@ -40,7 +64,8 @@ class CombatResolver:
         if float(getattr(track,"confidence",0.0)) < float(md.get("lock_min_confidence",0.52)):
             return False
         lock_tags={str(x).upper() for x in md.get("lockable_target_tags",[])}
-        if lock_tags and not any(e.alive and bool(e.tags & lock_tags) for e in target.elements.values()):
+        perceived=CombatResolver.perceived_target_tags(track)
+        if lock_tags and (perceived is None or not bool(perceived & lock_tags)):
             return False
         return True
 
@@ -65,7 +90,7 @@ class CombatResolver:
             if not bool(lane.get("allowed",True)):
                 return False
         return any(
-            w.capability.upper() != "INDIRECT_FIRE" and perceived_d <= w.range_m and self.weapon_can_affect(w, target)
+            w.capability.upper() != "INDIRECT_FIRE" and perceived_d <= w.range_m and self.weapon_may_affect_track(w,tr)
             and self.weapon_has_targeting_solution(w,tr,target)
             for _, w in shooter.operational_weapons()
         )
@@ -186,7 +211,7 @@ class CombatResolver:
             perceived_d=math.dist(shooter.pos,tr.estimated_pos)
             if perceived_d > weapon.range_m:
                 continue
-            if not self.weapon_can_affect(weapon,target):
+            if not self.weapon_may_affect_track(weapon,tr):
                 continue
             if not self.weapon_has_targeting_solution(weapon,tr,target):
                 continue
@@ -302,7 +327,7 @@ class CombatResolver:
             if primary_target is not None:
                 tr=self.sim._track_for(shooter,primary_target,"DIRECT")
                 if (tr is not None and math.dist(shooter.pos,tr.estimated_pos)<=weapon.range_m
-                        and self.weapon_can_affect(weapon,primary_target)
+                        and self.weapon_may_affect_track(weapon,tr)
                         and self.weapon_has_targeting_solution(weapon,tr,primary_target)):
                     fired.append(primary_target.uid)
                     self.fire_weapon(shooter,primary_target,element,weapon,"DIRECT")
@@ -352,7 +377,7 @@ class CombatResolver:
         if tr is None:
             return
         perceived_d = math.dist(shooter.pos, tr.estimated_pos)
-        if perceived_d > weapon.range_m or not self.weapon_can_affect(weapon, target):
+        if perceived_d > weapon.range_m or not self.weapon_may_affect_track(weapon,tr):
             return
         if not self.weapon_has_targeting_solution(weapon,tr,target):
             self.sim.log("DIRECT_FIRE_NO_TARGETING_SOLUTION",shooter=shooter.uid,target=target.uid,
@@ -368,7 +393,7 @@ class CombatResolver:
             close_zone=str(getattr(tr,"observation_zone","UNKNOWN")).upper()=="CLOSE"
             if not close_zone:
                 _,fov,_,_,_=self.sim._visual_sensor_profile(shooter,target)
-                bearing=math.degrees(math.atan2(target.pos[1]-shooter.pos[1],target.pos[0]-shooter.pos[0]))
+                bearing=math.degrees(math.atan2(tr.estimated_pos[1]-shooter.pos[1],tr.estimated_pos[0]-shooter.pos[0]))
                 off=abs(self.sim._angle_delta_deg(bearing,shooter.watch_heading_deg))
                 margin=max(0.0,float(self.sim.combat_config.get("direct_fire_watch_edge_margin_deg",5.0)))
                 if off > max(1.0,fov*0.5-margin):
@@ -383,7 +408,7 @@ class CombatResolver:
         fire_lane={"allowed":True,"effect_factor":1.0,"vegetation_path_m":0.0}
         terrain=getattr(self.sim,"terrain",None)
         if str(mode).upper()=="DIRECT" and terrain is not None and hasattr(terrain,"direct_fire_modifier"):
-            fire_lane=terrain.direct_fire_modifier(shooter.pos,target.pos)
+            fire_lane=terrain.direct_fire_modifier(shooter.pos,tr.estimated_pos)
             if not bool(fire_lane.get("allowed",True)):
                 self.sim.log("DIRECT_FIRE_BLOCKED_TERRAIN",shooter=shooter.uid,target=target.uid,
                              weapon=weapon.name,vegetation_path_m=round(float(fire_lane.get("vegetation_path_m",0.0)),1))
@@ -458,8 +483,13 @@ class CombatResolver:
             self.sim.log("AMMO_DEPLETED", unit=shooter.uid, source_element=source_element.eid, weapon=weapon.name)
 
         tgt_el = self.select_target_element(target, weapon)
-        if not tgt_el:
-            return
+        # Actual range, cover and component compatibility are resolved only after firing. A
+        # perceived firing solution can expend a round at a target that is physically farther
+        # away, behind cover, or of an incompatible type; it cannot damage that target.
+        physical_d=math.dist(shooter.pos,target.pos)
+        physical_lane=(terrain.direct_fire_modifier(shooter.pos,target.pos)
+                       if terrain is not None and hasattr(terrain,"direct_fire_modifier")
+                       else {"allowed":True,"effect_factor":1.0})
 
         # Separate geometrical hit probability from post-hit armor effect.  ``weapon.pk`` remains
         # the legacy/default base hit probability, while modern AT weapons can provide calibrated
@@ -479,19 +509,20 @@ class CombatResolver:
             track_factor=max(conf_floor,min(1.0,conf_floor+(1.0-conf_floor)*tr.confidence-err_penalty))
         else:
             track_factor=max(.25,min(1.0,tr.confidence*(1.0-min(.75,tr.position_error_m/max(weapon.range_m,1)))))
-        terrain_fire_factor=max(0.0,min(1.0,float(fire_lane.get("effect_factor",1.0))))
+        terrain_fire_factor=max(0.0,min(1.0,float(physical_lane.get("effect_factor",1.0))))
         barricade_factor=1.0
-        if fire_lane.get("barricade_cover"):
+        if physical_lane.get("barricade_cover"):
             # Earth-filled MIL1-class barriers strongly reduce exposed small-arms hit opportunity,
             # but heavy direct weapons retain more effect.  This is directional frontal cover,
             # not an omnidirectional armor multiplier.
             cap=str(weapon.capability).upper(); tags={str(x).upper() for x in weapon.target_tags}
             heavy=(cap in {"ANTI_ARMOR","DIRECT_FIRE_HEAVY"} or "STRUCTURE" in tags
                    or float(weapon.metadata.get("caliber_mm",0.0))>=20.0)
-            barricade_factor=float(fire_lane.get("barricade_heavy_factor" if heavy else "barricade_small_arms_factor",0.70 if heavy else 0.40))
+            barricade_factor=float(physical_lane.get("barricade_heavy_factor" if heavy else "barricade_small_arms_factor",0.70 if heavy else 0.40))
         hit_p=min(float(weapon.metadata.get("max_hit_probability",0.95)),
                   max(0.0,base_hit*range_factor*defense_factor*track_factor*terrain_fire_factor*barricade_factor))
-        hit = self.sim.rng.random() < hit_p
+        hit = (self.sim.rng.random() < hit_p and physical_d <= weapon.range_m
+               and bool(physical_lane.get("allowed",True)) and tgt_el is not None)
         if str(mode).upper() != "DIRECT":
             shooter.target_id = target.uid
 
@@ -499,10 +530,11 @@ class CombatResolver:
             "FIRE", shooter=shooter.uid, target=target.uid, source_element=source_element.eid,
             weapon=weapon.name, capability=weapon.capability, mode=mode,
             distance=round(perceived_d, 1), track_confidence=round(tr.confidence, 2),
-            track_error_m=round(tr.position_error_m, 1), hit=hit, target_element=tgt_el.eid,
-            terrain_fire_factor=round(float(fire_lane.get("effect_factor",1.0)),3),
-            vegetation_path_m=round(float(fire_lane.get("vegetation_path_m",0.0)),1),
-            barricade_cover=fire_lane.get("barricade_cover"), barricade_factor=round(barricade_factor,3),
+            track_error_m=round(tr.position_error_m, 1), hit=hit,
+            target_element=tgt_el.eid if tgt_el else None,
+            terrain_fire_factor=round(terrain_fire_factor,3),
+            vegetation_path_m=round(float(physical_lane.get("vegetation_path_m",0.0)),1),
+            barricade_cover=physical_lane.get("barricade_cover"), barricade_factor=round(barricade_factor,3),
             ammo_remaining=weapon.ammo_remaining,
             firing_participants=power.participants, available_operators=power.operators,
         )

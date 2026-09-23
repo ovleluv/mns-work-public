@@ -17,9 +17,12 @@ When they become true, `on_true` replaces the active order. Supported paths incl
 - `self.time_in_order`
 - `self.capability.<CAPABILITY>`
 - `self.distance_to_objective`, `self.at_objective`
-- legacy `self.enemy_count_near`
+- `self.enemy_count_near`: count of current actionable Tracks inside the configured radius, using estimated positions. The legacy name is retained, but it no longer reads live enemy positions or survival.
 
 Operators: `<`, `<=`, `>`, `>=`, `==`, `!=`.
+`on_false` is evaluated when an order completes, before that order's objective and elapsed-time
+metadata are cleared. Unknown branch tasks, condition paths, directives, and out-of-world
+coordinates are rejected while loading the BML, before existing orders are replaced.
 
 Example: defend until 50% total formation loss, then withdraw to Rally Point Alpha.
 
@@ -117,6 +120,11 @@ synchrony. A future explicit phase-trigger manager can be added if a research sc
 
 Phase-level `start_at_s`, `deadline_s`, and `directives` are inherited by missions unless a mission
 overrides them.
+
+For a scenario with load-time `aggregations`, the parent formation is created before BML is
+loaded. Address the active parent ID in BML; inactive source children cannot be commanded until
+they are deaggregated. Scenario-embedded commands for a load-time aggregate belong in that
+`aggregations[]` entry's `orders`; embedded orders on children that become inactive are rejected.
 
 ## 5. Doctrine profile versus mission directive
 

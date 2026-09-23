@@ -134,6 +134,7 @@ class Simulation:
     def log(self, kind: str, **data): self.logs.append({"t": round(self.time,3), "kind":kind, **data})
 
     def issue_order(self, uid: str, order: Order):
+        order.deadline_reported = False
         self.units[uid].order_queue.append(order); self.log("ORDER_ISSUED",unit=uid,order=order.kind,order_id=order.order_id)
 
     def tick(self, dt: float):
@@ -252,9 +253,8 @@ class Simulation:
         # A deadline is a command constraint, not a physics override. Missing it is logged; an
         # explicit on_deadline branch may change the plan. Otherwise the formation keeps trying.
         if o.deadline_s is not None and self.time >= o.deadline_s:
-            deadline_key=f"_deadline_logged:{o.order_id}"
-            if not u.metadata.get(deadline_key):
-                u.metadata[deadline_key]=True
+            if not o.deadline_reported:
+                o.deadline_reported=True
                 self.log("ORDER_DEADLINE_MISSED",unit=u.uid,order=o.kind,order_id=o.order_id,deadline_s=o.deadline_s,phase=o.phase_id)
             if o.on_deadline:
                 branched=compile_order_fragment(self,u,o.on_deadline)
@@ -569,8 +569,11 @@ class Simulation:
         if tgt is None:
             self.log("BML_TARGET_MISSING",unit=u.uid,target=target_uid,order=o.kind)
             self._complete_order(u); return
-        if not tgt.alive:
-            self.log("BML_TARGET_DESTROYED",unit=u.uid,target=target_uid,order=o.kind)
+        # Target existence is a belief. Physical destruction alone cannot tell the commanded
+        # formation that its mission is complete; only explicit terminal/BDA evidence can.
+        known=u.local_tracks.get(target_uid)
+        if known is not None and not known.existence_confirmed and known.state=="LOST":
+            self.log("BML_TARGET_DESTROYED_CONFIRMED",unit=u.uid,target=target_uid,order=o.kind)
             self._complete_order(u); return
 
         # Explicit mission target gets priority when it is perceived.
@@ -718,10 +721,11 @@ class Simulation:
         o=u.current_order
         self.log("ORDER_COMPLETE",unit=u.uid,order=o.kind,order_id=o.order_id)
         u.current_order=None
+        # Completion-time conditions still need this order's elapsed time and objective.
+        apply_branch(self,u,o)
         for key in ("order_started_t","search_arrived_t","objective","mounted_action_started_t","barricade_build_started_t","_building_access_id"):
             u.metadata.pop(key,None)
         self._clear_navigation_state(u)
-        apply_branch(self,u,o)
 
     def _handle_terrain_transition(self,u,old_pos,new_pos):
         """Apply irreversible composition effects caused by entering special terrain."""
@@ -753,6 +757,11 @@ class Simulation:
             u.metadata.pop("swimming",None)
 
     def _move_toward(self,u,dest,dt):
+        if not (0.0 <= float(dest[0]) <= float(self.world["width_m"])
+                and 0.0 <= float(dest[1]) <= float(self.world["height_m"])):
+            u.metadata["_nav_no_path"]=True
+            u.metadata["_nav_no_path_destination"]=tuple(dest)
+            return False
         # Terrain may redirect a non-amphibious formation to a bridge before the final destination.
         move_dest=self.terrain.movement_target(u,tuple(dest)) if self.terrain else tuple(dest)
         dx,dy=move_dest[0]-u.pos[0],move_dest[1]-u.pos[1]; d=math.hypot(dx,dy)
@@ -827,7 +836,9 @@ class Simulation:
         parent=Unit(uid=new_uid,name=name,side=side,echelon=echelon,unit_type=typ,pos=pos,
                     heading_deg=children[0].heading_deg,watch_heading_deg=children[0].watch_heading_deg,
                     elements=elems,children=list(child_ids),metadata={"aggregated_from":list(child_ids)})
-        for c in children: c.active=False; c.state=UnitState.AGGREGATED; c.parent_id=new_uid
+        for c in children:
+            self.events.remap_formation_damage(c.uid,new_uid,{eid:f"{c.uid}:{eid}" for eid in c.elements})
+            c.active=False; c.state=UnitState.AGGREGATED; c.parent_id=new_uid
         self.add_unit(parent); self.log("AGGREGATE",parent=new_uid,children=child_ids)
         return parent
 
@@ -863,6 +874,7 @@ class Simulation:
             # Restore complete live state, never the stale pre-aggregation inventory.
             c.elements = {ids[eid]: restore_element(e) for eid, e in p.elements.items()
                           if e.metadata.get("source_unit") == cid}
+            self.events.remap_formation_damage(p.uid,cid,ids)
             # Children created while aggregated keep their own inventories. Move only
             # their lineage/references back to the source formation, including nested
             # detached vehicle -> escaped crew families.
@@ -1685,8 +1697,10 @@ class Simulation:
                 self.log("TRACK_REPORT_IGNORED",recipient=recv.uid,target=target,reason="OLDER_OBSERVATION")
                 return
             # A better fresh local observation is never overwritten by weaker shared SA.
-            preserve_local=bool(old and old.source in ("LOCAL","PROXIMITY") and old.state!="LOST"
-                                and (observation_time==old.last_seen_time or old.confidence>=incoming_conf))
+            local_fresh=bool(old and old.source in ("LOCAL","PROXIMITY")
+                             and old.state not in ("STALE","LOST")
+                             and self.time-old.last_seen_time<=float(self.combat_config.get("track_stale_s",18.0)))
+            preserve_local=bool(local_fresh and old.confidence>=incoming_conf)
             if not preserve_local:
                 tr=Track(track_id=f"{recv.uid}:{target}",target_id=target,
                     estimated_pos=tuple(q["estimated_pos"]),position_error_m=float(q.get("position_error_m",100))*1.12,
@@ -1696,7 +1710,11 @@ class Simulation:
                     observation_zone="SHARED",state=q.get("state","DETECTED"),belief_confidence=max(old.belief_confidence if old else 0.0,incoming_conf,0.45),
                     existence_confirmed=True,last_confirmed_time=observation_time)
                 recv.local_tracks[target]=tr
-                self.belief.on_observation(tr,q.get("classification","UNKNOWN"))
+                self.belief.on_observation(tr,q.get("classification","UNKNOWN"),observed_at=observation_time)
+            elif observation_time>old.last_confirmed_time:
+                # Retain the better local firing solution while accepting the newer report as
+                # evidence that the contact still exists.
+                self.belief.on_observation(old,observed_at=observation_time)
             # Shared situational awareness may reorient sensors even if local Track was already better.
             self._register_shared_situational_cue(recv,tuple(q["estimated_pos"]),incoming_conf,report_source,q.get("cue_kind","CONTACT"))
             self.log("TRACK_SHARED",source=report_source,recipient=recv.uid,target=target,
@@ -1721,7 +1739,7 @@ class Simulation:
                      observations=int(p.get("observations",1)),source="COUNTER_BATTERY",observation_zone="SENSOR",state=p.get("state","CLASSIFIED"),
                      belief_confidence=max(0.70,float(p["confidence"])),existence_confirmed=True,
                      last_confirmed_time=float(p.get("observation_time",self.time)))
-            self.belief.on_observation(tr,"ARTILLERY")
+            self.belief.on_observation(tr,"ARTILLERY",observed_at=tr.last_seen_time)
             radar.local_tracks[target.uid]=tr
             self.log("CB_RADAR_DETECT",radar=radar.uid,source=target.uid,
                      estimated_pos=[round(tr.estimated_pos[0],1),round(tr.estimated_pos[1],1)],

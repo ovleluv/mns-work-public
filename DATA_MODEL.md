@@ -217,11 +217,12 @@ squad/individual identity.
 Weapon catalog metadata may define terminal targeting constraints independently of physical effects:
 
 - `requires_target_lock`: whether an actionable Track must also satisfy a weapon lock gate.
-- `lockable_target_tags`: physical/signature abstraction eligible for lock.
+- `lockable_target_tags`: perceived target classifications/signatures eligible for lock; the lock gate does not inspect hidden target components.
 - `lock_required_states`: acceptable Track identification states (e.g. CLASSIFIED/IDENTIFIED).
 - `lock_min_confidence`: minimum Track confidence for lock.
-- `aim_point_capable`: unguided/direct-aim family may later engage a commanded point/structure.
-- `structure_capable`: weapon effect definition is compatible with future STRUCTURE entities.
+- `aim_point_capable`: descriptive metadata reserved for later commanded-point direct fire; it does not currently enable that action.
+- `structure_capable`: permits existing direct-fire attacks against mapped BUILDING structures.
+- `top_attack_capable`: descriptive catalog metadata; the current damage resolver has no separate top-armor or attack-angle calculation.
 
 Physical target effects remain driven by `target_tags`; seeker/terminal targeting is a separate gate.
 Per-unit finite inventory uses `element_overrides[].weapon_system_counts` and `weapon_ammo`.
@@ -241,7 +242,7 @@ Weapon entries now declare an `inventory_model` in `database/weapons.csv` so the
 - `INDIVIDUAL_ASSIGNED`: individually assigned weapons such as SAW/DMR. Edit weapon count; no separate crew field. Count cannot exceed personnel in the owning element.
 - `CREW_SERVED`: reusable team weapons such as GPMG/ATGM abstractions. Edit weapon/launcher count and crew per weapon; runtime active systems are crew-limited.
 - `PLATFORM_MOUNT`: vehicle-mounted guns. Edit mounts where the template explicitly exposes them; weapon operators are not counted separately from `crew / vehicle`. Runtime mount contribution is provider-limited.
-- `PERSONNEL_AGGREGATE` / `EQUIPMENT_PROVIDER`: legacy aggregate calibrated streams; they are not exposed as arbitrary editable system counts unless explicitly configured.
+- `PERSONNEL_AGGREGATE` / `EQUIPMENT_PROVIDER`: legacy aggregate tuned streams; they are not exposed as arbitrary editable system counts unless explicitly configured.
 
 Scenario overrides remain data-driven. For disposable weapons, use `weapon_ammo` only. `weapon_system_counts` and `weapon_operators_per_system` are unnecessary for AT4-style rounds.
 
@@ -250,7 +251,7 @@ Direct-fire weapons may define `engagement_cycle_min_s`, `engagement_cycle_max_s
 
 
 ## v49.6 machine-gun lethality correction
-The transient suppression mechanic introduced in v49.5 was removed. Machine guns now differentiate themselves through calibrated burst casualty probability, multi-effect burst size, weapon-system multiplicity, engagement-cycle cadence, and periodic reload pauses. Small arms and machine guns remain in the same direct-fire pipeline; no machine-gun-only movement or accuracy debuff is applied.
+The transient suppression mechanic introduced in v49.5 was removed. Machine guns now differentiate themselves through tuned burst casualty probability, multi-effect burst size, weapon-system multiplicity, engagement-cycle cadence, and periodic reload pauses. Small arms and machine guns remain in the same direct-fire pipeline; no machine-gun-only movement or accuracy debuff is applied.
 
 ## Barricades / field fortifications (v49.7)
 

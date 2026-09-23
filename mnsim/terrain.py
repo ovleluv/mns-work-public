@@ -709,6 +709,10 @@ class TerrainModel:
         return base
 
     def passable(self,unit,p:Vec2)->bool:
+        world=getattr(self,"world",None)
+        if world and not (0.0<=p[0]<=float(world["width_m"])
+                          and 0.0<=p[1]<=float(world["height_m"])):
+            return False
         md=unit.unit_type.metadata
         mobility=str(md.get("mobility_class","FOOT")).upper()
         # Lakes are water bodies: foot infantry may swim, while vehicles/equipment require an
@@ -763,6 +767,10 @@ class TerrainModel:
         each resulting interval. Roads/bridges are exceptions only where their
         entire necessary corridor is present. No fixed-distance sampling.
         """
+        world=getattr(self,"world",None)
+        if world and any(not (0.0<=p[0]<=float(world["width_m"])
+                              and 0.0<=p[1]<=float(world["height_m"])) for p in (a,b)):
+            return False
         if a!=b and self.segment_crosses_barricade(a,b):return False
         areas,water_restricted=movement_regions(self,unit)
         if not areas and not water_restricted:return True

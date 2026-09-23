@@ -3,7 +3,7 @@ import copy, json
 from pathlib import Path
 from .model import Side, Unit
 from .simulation import Simulation
-from .bml import parse_order, apply_bml_document
+from .bml import parse_order, apply_bml_document, validate_order_tree, validate_order_tree_position
 from .config import deep_update, load_json_config
 from .terrain import TerrainModel
 from .definitions import default_definition_registry
@@ -135,6 +135,7 @@ def load_scenario(path: str, bml_files: dict | None = None, seed: int | None = N
             "visual_sensor": copy.deepcopy(infantry.metadata.get("visual_sensor", {})),
         }
 
+    pending_orders=[]
     for r in raw["units"]:
         resolved_name, typ, was_upgraded = unit_catalog.resolve_formation_type(r["type"], r.get("echelon", "PLT"))
         md = dict(r.get("metadata", {})); md.setdefault("branch", typ.branch)
@@ -211,11 +212,31 @@ def load_scenario(path: str, bml_files: dict | None = None, seed: int | None = N
         )
         initialize_transport_metadata(u)
         sim.add_unit(u)
-        for o in r.get("orders", []): sim.issue_order(u.uid, parse_order(o))
+        pending_orders.extend((u.uid,o) for o in r.get("orders", []))
 
     for u in sim.units.values():
         if u.parent_id and u.parent_id in sim.units:
             sim.units[u.parent_id].children.append(u.uid)
+
+    for uid, raw_order in pending_orders:
+        order=parse_order(raw_order)
+        validate_order_tree(sim,sim.units[uid],order)
+        sim.issue_order(uid,order)
+
+    # BML plans may command the aggregate itself. Construct it before resolving mission unit IDs.
+    for a in raw.get("aggregations", []):
+        if any(sim.units[uid].order_queue for uid in a["children"] if uid in sim.units):
+            raise ValueError("Aggregated children cannot keep embedded orders; command the aggregate instead")
+        aggregate_pos=(validate_order_tree_position(sim,a["pos"],f"aggregate {a['id']} position")
+                       if "pos" in a else None)
+        parent=sim.aggregate_units(
+            new_uid=a["id"], name=a.get("name", a["id"]), child_ids=a["children"],
+            echelon=a.get("echelon", "COY"), pos=aggregate_pos,
+        )
+        for raw_order in a.get("orders",[]):
+            order=parse_order(raw_order)
+            validate_order_tree(sim,parent,order)
+            sim.issue_order(parent.uid,order)
 
     # External side-specific BML mission files.  Scenario files describe the battlefield/OOB;
     # BML plans may be selected independently at run time.  For backward compatibility only,
@@ -243,10 +264,4 @@ def load_scenario(path: str, bml_files: dict | None = None, seed: int | None = N
         sim.bml_files[str(side).upper()] = str(bml_path)
         sim.log("BML_LOADED", side=str(side).upper(), file=str(bml_path))
 
-    # Optional load-time aggregation, e.g. three platoons displayed/fought as one company.
-    for a in raw.get("aggregations", []):
-        sim.aggregate_units(
-            new_uid=a["id"], name=a.get("name", a["id"]), child_ids=a["children"],
-            echelon=a.get("echelon", "COY"), pos=tuple(a["pos"]) if "pos" in a else None,
-        )
     return sim

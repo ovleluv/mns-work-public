@@ -23,6 +23,23 @@ class EventQueue:
         while self._q and self._q[0].time <= now:
             yield heappop(self._q)
 
+    def remap_formation_damage(self, source_uid: str, destination_uid: str,
+                               element_ids: Dict[str, str]):
+        """Follow element ownership when formations aggregate or deaggregate.
+
+        Direct and area effects already selected a physical element. Moving that element to a
+        different active unit must not make an in-flight effect disappear. Event ordering and
+        impact times are unchanged.
+        """
+        for event in self._q:
+            if (event.kind not in ("ELEMENT_LOSS", "EQUIPMENT_EFFECT")
+                    or event.payload.get("target") != source_uid):
+                continue
+            mapped = element_ids.get(event.payload.get("element"))
+            if mapped is not None:
+                event.payload["target"] = destination_uid
+                event.payload["element"] = mapped
+
     def remap_equipment_effects(self, source_uid: str, element_id: str,
                                 removed_index: int, detached_uid: str):
         """Keep queued spatial hits attached to their physical item after a split.

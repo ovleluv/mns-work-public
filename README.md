@@ -77,7 +77,7 @@ a primary observation/mission cue, while `CombatResolver.fire_local()` allocates
 FormationElement/weapon stream among its own actionable targets. The allocator preserves FoW Track
 requirements, weapon range and compatibility, per-stream target locks/acquisition delay, and a configurable
 mission-target preference. A saturation penalty distributes otherwise comparable fire streams across
-multiple enemy formations. This changes target allocation, not calibrated weapon rates or damage mechanics.
+multiple enemy formations. This changes target allocation, not configured weapon rates or damage mechanics.
 
 Relevant defaults: `local_target_lock_min_s`, `local_target_switch_score_ratio`,
 `local_fire_mission_target_bonus`, and `local_fire_saturation_penalty`.
@@ -228,7 +228,7 @@ The terrain graphics are deliberately abstract placeholders. Terrain/LOS mechani
 ## v0.6 Fog of War
 - Combat is no longer triggered from omniscient enemy coordinates.
 - Every unit maintains its own local track database: DETECTED -> CLASSIFIED -> IDENTIFIED -> STALE -> LOST.
-- Track position contains uncertainty; target selection and weapon-envelope checks use the estimated position.
+- Track position contains uncertainty; target selection and the decision to attempt a shot use the estimated position. Once a round is expended, actual range, cover, and target components determine whether it can cause damage.
 - Sensor reports are shared to friendly units after a stochastic C2 delay, with reduced confidence.
 - BLUE/RED tactical views hide ground truth. `B`, `R`, `G` switch BLUE, RED, and observer/God view.
 - `1`, `2`, `4`, `8` select those speeds directly; `[` / `]` steps through 1x/2x/4x/8x/16x/32x. The top-right speed buttons allow direct mouse selection of all six speeds.
@@ -387,7 +387,9 @@ Default policy:
 - a 0.28 confidence floor / 0.25 display threshold,
 - absence of observation alone is **not** treated as destruction evidence.
 
-The belief can be removed through an explicit terminal-evidence/BDA path (`mark_destroyed`).
+The belief can be removed through an explicit terminal-evidence/BDA API (`mark_destroyed`).
+The current simulation does not infer terminal evidence automatically from hidden destruction;
+an entity-target BML mission therefore cannot complete merely because its true target was lost.
 Future doctrine can replace these defaults with branch/echelon-specific memory, intelligence
 fusion, false-contact handling, relocation prediction, or battle-damage-assessment thresholds.
 
@@ -906,7 +908,7 @@ features while remaining elevation-free; future terrain editors can emit the sam
 ## Map / scenario editor
 `editor.py` is a separate Pygame authoring tool for unit placement and vector terrain (roads, polyline rivers, polyline bridges, woods/forest/brush/urban polygons). It saves the same scenario/terrain JSON consumed by `mnsim.scenario.load_scenario`; no editor-only runtime format is introduced. `main.py` accepts a scenario path plus optional side-specific BML paths, and Ctrl+O reopens the full run-selection workflow.
 
-Dense FOREST terrain is a polygon area distinct from lighter WOODS. Default dense-forest calibration allows FOOT movement at 0.45x open-ground speed, forbids TRACKED/WHEELED/WHEELED_TOWED off-road traversal (explicit roads remain usable), and limits ordinary visual penetration through tree cover to about 100 m (THERMAL 120 m). These are data-driven area properties and can be changed per map/forest polygon. The map/scenario editor authors FOREST by clicking polygon vertices and right-clicking to close the area.
+Dense FOREST terrain is a polygon area distinct from lighter WOODS. Default dense-forest tuning allows FOOT movement at 0.45x open-ground speed, forbids TRACKED/WHEELED/WHEELED_TOWED off-road traversal (explicit roads remain usable), and limits ordinary visual penetration through tree cover to 75 m (THERMAL 105 m). These are data-driven area properties and can be changed per map/forest polygon. The map/scenario editor authors FOREST by clicking polygon vertices and right-clicking to close the area.
 
 Startup workflow: `editor.py` with no argument now starts a completely empty 4 km x 4 km OPEN plain with no units or terrain. Use N to reset to another blank map, O to open an existing scenario, and S/Shift+S to save. `main.py` no longer silently loads demo.json. Normal GUI launch uses three independent choices: Scenario (required) -> BLUE BML (optional; Cancel means none) -> RED BML (optional; Cancel means none). Ctrl+O repeats the same three-step run selection. Explicit command-line use is `python main.py scenario.json [--blue-bml blue.json] [--red-bml red.json]`.
 
@@ -1028,7 +1030,7 @@ Visual sensing now treats WOODS/FOREST as clutter crossed by the observer-target
 - VISUAL and THERMAL may use different penetration budgets.
 - The interface remains in `TerrainModel.observation_modifier()` / `EnvironmentObservationModel`, so future BUILDING, smoke, and elevation occlusion can use the same sensing pipeline instead of special-casing unit branches.
 
-Current fallback penetration values are 100 m VISUAL / 120 m THERMAL for FOREST and 250 m VISUAL / 300 m THERMAL for WOODS when a terrain object does not explicitly author its own values. Terrain-authored values take precedence.
+Current fallback penetration values are 75 m VISUAL / 105 m THERMAL for FOREST and 180 m VISUAL / 240 m THERMAL for WOODS when a terrain object does not explicitly author its own values. Terrain-authored values take precedence.
 
 ## v47 editable formation composition and mounted infantry templates
 
@@ -1103,11 +1105,11 @@ than the original 1500x900 pixel layout.
 ### v49.3 weapon composition consistency
 The editor now uses weapon inventory semantics rather than showing `systems / operators / ammo` for every weapon. AT4-type disposable weapons are configured as carried rounds only; crew-served weapons expose weapon count + crew; assigned individual weapons expose weapon count; vehicle-mounted weapons rely on vehicle crew and provider-limited mounts. A regression audit rejects impossible default TO&E combinations such as more one-person assigned weapons than personnel or more platform mounts than providers.
 
-### v49.4: bounded area defence and anti-armor calibration
+### v49.4: bounded area defence and anti-armor tuning
 - Added `SECURE_AREA`: center/radius or polygon defence with Track-based bounded pursuit and re-centering.
 - Direct-fire anti-armor hit probability is now explicitly separated from post-hit equipment effect.
-- `ATGM_GENERIC` is calibrated as a modern guided ATGM baseline; `JAVELIN_FGM148` is an explicit higher-end entry used by US mechanized/motorized AT teams.
-- AT4 remains an unguided disposable round with substantially lower MBT kill probability per hit than Javelin-class guided AT.
+- `ATGM_GENERIC` is a synthetic modern-style guided ATGM baseline; `JAVELIN_FGM148` is a separate stronger scenario entry used by US mechanized/motorized AT teams. These probabilities are not validated real-world weapon performance.
+- In these synthetic settings, the unguided disposable AT4-type entry has a lower modeled catastrophic-armor probability than the Javelin entry.
 
 ## v49.5 machine-gun and direct-fire timing audit
 - Machine guns now apply transient burst lethality to personnel even when a burst causes no immediate casualty. Direct-fire lethality decays over time and reduces exposed tactical movement and outgoing direct-fire accuracy.
@@ -1119,7 +1121,7 @@ The editor now uses weapon inventory semantics rather than showing `systems / op
 
 
 ## v49.6 machine-gun lethality correction
-The transient suppression mechanic introduced in v49.5 was removed. Machine guns now differentiate themselves through calibrated burst casualty probability, multi-effect burst size, weapon-system multiplicity, engagement-cycle cadence, and periodic reload pauses. Small arms and machine guns remain in the same direct-fire pipeline; no machine-gun-only movement or accuracy debuff is applied.
+The transient suppression mechanic introduced in v49.5 was removed. Machine guns now differentiate themselves through tuned burst casualty probability, multi-effect burst size, weapon-system multiplicity, engagement-cycle cadence, and periodic reload pauses. Small arms and machine guns remain in the same direct-fire pipeline; no machine-gun-only movement or accuracy debuff is applied.
 
 ### v49.6.1 portable legacy scenario loading
 - Standard engine resources (`config/defaults.json`, `config/toe_templates.json`, artillery/targeting doctrine) are no longer serialized as version-folder-relative paths by the editor.

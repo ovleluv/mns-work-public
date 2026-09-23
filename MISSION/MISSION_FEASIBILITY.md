@@ -102,8 +102,8 @@
 | 확인한 구현 | 소스 위치 | BML 작성 시 의미 |
 |---|---|---|
 | 허용 task 목록과 컴파일 | [bml.py](../mnsim/bml.py), `MISSION_TASKS` 및 `compile_mission` (93행, 101행 부근) | 전용 AMBUSH/RECONNAISSANCE/MOBILE_DEFENSE/DELAY task는 없음. 기존 명령 조합의 가능성과 전용 task 유무는 구분. |
-| 조건 언어 | [bml.py](../mnsim/bml.py), `ConditionEvaluator.resolve` (36행) | 시간·자기 손실·상태·목표 거리 등만 사용 가능. Track 개수·구역 진입 조건은 없음. |
-| 실제 적 위치를 쓰는 근접 수 | [bml.py](../mnsim/bml.py), `self.enemy_count_near` (49행) | FoW를 우회하므로 8개 케이스에서 사용하지 않음. 해결책은 관측 Track 기반 대체 조건. |
+| 조건 언어 | [bml.py](../mnsim/bml.py), `ConditionEvaluator.resolve` | 시간·자기 손실·상태·목표 거리와 근접한 행동 가능 Track 수를 사용할 수 있다. 특정 적의 구역 진입·다른 아군의 준비 상태 조회는 없음. |
+| 근접 접촉 수 | [bml.py](../mnsim/bml.py), `self.enemy_count_near` | 이름은 유지하지만 현재는 실제 적 위치 대신 행동 가능한 Track의 추정 위치를 센다. 기존 8개 케이스는 이 조건을 사용하지 않는다. |
 | 시간/조건/기한 처리 | [simulation.py](../mnsim/simulation.py), `_step_unit` (166행) | 조건은 명령 실행 전제조건이 아니라 실행 중 명령 교체 트리거. 시작 대기는 사격 금지와 다름. |
 | 구역 방어 | [simulation.py](../mnsim/simulation.py), `_step_defend_area_order` (440행) | 추격 경계와 사격 가능 범위는 별도. |
 | 좌표 공격·표적 공격 | [simulation.py](../mnsim/simulation.py), `_step_attack_order` (587행), `_step_entity_attack_order` (515행) | 적 ID만 주어도 자동으로 실제 위치를 알아내지 않음. 표적 ID 명령에서 Track/명시적 참조가 없으면 대기 가능. |
@@ -116,7 +116,7 @@
 
 지속형 `ATTACK_POSITION` 또는 무기한 `HOLD` 뒤에 후속 명령을 단순히 추가하면 다음 명령이 실행되지 않을 수 있다. 다음 단계로 넘기려면 유한 지속시간, 명시적 조건/기한 분기, 또는 적절한 `persistent=false`를 사용해야 한다. 이번 케이스는 필요 지점에 종료·교체 규칙을 명시했다.
 
-정의되지 않은 `task`는 거부되지만 임의의 `directives` 키가 모두 엄격하게 검증되는 것은 아니다. 따라서 `hold_fire: true` 같은 키를 넣고 파일이 로드된다는 사실만으로 그 기능이 구현되었다고 판단하면 안 된다. 기능 확장은 컴파일러, 실행부, 재현 가능한 검증을 함께 변경해야 한다.
+정의되지 않은 `task`, 분기 task, 조건 경로, `directives` 키와 지도 밖 좌표는 현재 BML 로드 단계에서 거부한다. `hold_fire: true`는 지원 지시가 아니며 로드 오류가 된다. 사격 보류 기능을 추가하려면 컴파일러, 사격 실행부, 재현 가능한 검증을 함께 변경해야 한다.
 
 ## 5. 재현 파일
 

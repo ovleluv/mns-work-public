@@ -194,6 +194,7 @@ class Order:
     start_at_s: Optional[float] = None
     deadline_s: Optional[float] = None
     on_deadline: Optional[Dict[str, Any]] = None
+    deadline_reported: bool = field(default=False, compare=False, repr=False)
 
 
 @dataclass
@@ -218,6 +219,8 @@ class Track:
     belief_confidence: float = 0.0
     existence_confirmed: bool = False
     last_confirmed_time: float = 0.0
+    # The confidence at the last observation anchors half-life decay across repeated scans.
+    belief_anchor_confidence: Optional[float] = None
 
     def actionable(self, now: float, max_age: float = 45.0, min_confidence: float = 0.35) -> bool:
         return self.state != "LOST" and (now - self.last_seen_time) <= max_age and self.confidence >= min_confidence
