@@ -75,7 +75,3 @@ python -B -m pytest tests/test_phase_doctrine_bml.py::test_loss_condition_can_re
 ```
 
 이 두 테스트는 통과했다. `_validation_tmp`는 테스트 도구가 사용하는 임시 입력 디렉터리이며 작전 산출물이 아니다.
-
-## TDG 기반 방어 케이스
-
-Warfighters 공개 사례를 변환한 추가 맵·시나리오·양측 BML은 [TDG_DEFENSE 패키지](TDG_DEFENSE/README.md)에 있다. 원문의 근거와 시뮬레이터용 변경 사항, BLUE 기본안·대안을 별도로 제공한다.

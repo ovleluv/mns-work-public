@@ -1,5 +1,6 @@
 
 from __future__ import annotations
+import copy
 import math
 from typing import Iterable, Tuple
 from .model import Unit, UnitState, FormationElement, WeaponModel
@@ -128,28 +129,29 @@ class IndirectFireResolver:
                                 track_error_m: float, track_confidence: float,
                                 observation_time: float, mode: str, request_time: float):
         perceived_d=math.dist(shooter.pos,aim)
-        if perceived_d > weapon.range_m:
+        min_range=max(0.0,float(weapon.metadata.get("min_range_m",0.0)))
+        if not min_range <= perceived_d <= weapon.range_m:
             self.sim.log("FIRE_MISSION_ABORTED",shooter=shooter.uid,target=target_id,weapon=weapon.name,
                          reason="AIM_POINT_OUT_OF_RANGE")
-            return
+            return 0
 
         power=shooter.firepower(source_element,weapon)
         pieces=power.participants
         if pieces<=0:
             self.sim.log("FIRE_MISSION_ABORTED",shooter=shooter.uid,weapon=weapon.name,
                          reason="WEAPON_OR_CREW_UNAVAILABLE")
-            return
+            return 0
         profile_name,profile=self._fire_pattern(shooter)
         per_piece=max(1,int(profile.get("rounds_per_piece",weapon.metadata.get("salvo_rounds_per_piece",1))))
         requested_rounds=pieces*per_piece
         if weapon.ammo_remaining==0:
-            return
+            return 0
         if weapon.ammo_remaining>0:
             rounds=min(requested_rounds,weapon.ammo_remaining); weapon.ammo_remaining-=rounds
         else:
             rounds=requested_rounds
         if rounds<=0:
-            return
+            return 0
 
         shooter.weapon_last_fire[f"{source_element.eid}:{weapon.name}"]=self.sim.time
         shooter.target_id=target_id
@@ -183,7 +185,15 @@ class IndirectFireResolver:
                 shooter=shooter.uid,target=target_id,weapon=weapon.name,round=round_idx+1,
                 pos=(ix,iy),mode=mode,fire_profile=profile_name,
                 deliberate_aim=deliberate_aim,
+                # A round already in flight retains the effect of the weapon that launched it.
+                # The firing element may be destroyed, detached, or re-equipped before impact.
+                weapon_snapshot={"name":weapon.name,"capability":weapon.capability,
+                                 "range_m":weapon.range_m,"shots_per_min":weapon.shots_per_min,
+                                 "pk":weapon.pk,"target_tags":list(weapon.target_tags),
+                                 "max_effect_count":weapon.max_effect_count,
+                                 "metadata":copy.deepcopy(weapon.metadata)},
             )
+        return rounds
 
 
     def _equipment_blast_effect(self, element:FormationElement, distance_m:float, weapon:WeaponModel):
@@ -245,17 +255,20 @@ class IndirectFireResolver:
     def resolve_impact(self,payload):
         shooter=self.sim.units.get(payload.get("shooter"))
         if not shooter:return
-        weapon=None
-        for e in shooter.elements.values():
-            for w in e.weapons:
-                if w.name==payload.get("weapon"):
-                    weapon=w; break
-            if weapon:break
+        snapshot=payload.get("weapon_snapshot")
+        weapon=WeaponModel(**snapshot) if snapshot else None
+        if weapon is None:
+            # Legacy callers may still submit a name-only impact payload.
+            for e in shooter.elements.values():
+                for w in e.weapons:
+                    if w.name==payload.get("weapon"):
+                        weapon=w; break
+                if weapon:break
         if weapon is None:return
 
         impact=tuple(payload["pos"]); ix,iy=impact
         friendly_fire=bool(self.sim.combat_config.get("indirect_friendly_fire",True))
-        candidates=[u for u in self.sim.units.values() if u.alive and u.uid!=shooter.uid]
+        candidates=[u for u in self.sim.units.values() if u.alive]
         if not friendly_fire:candidates=[u for u in candidates if u.side!=shooter.side]
 
         effects=0; exposed_personnel=0

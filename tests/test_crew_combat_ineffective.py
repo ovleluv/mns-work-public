@@ -1,6 +1,5 @@
 """Crew loss suspends actions without erasing a surviving physical platform."""
 import copy
-from pathlib import Path
 
 import pytest
 
@@ -199,16 +198,18 @@ def test_legacy_platform_explicit_embedded_crew_loss():
     assert not u.can_observe and u.crew_failure_reason == "NO_CREW"
 
 
-def test_tdg20_real_template_no_crew_does_not_complete_crossing():
-    scenario = Path("MISSION/TDG_DEFENSE/TDG20_SCREEN_DELAY/TDG20_SCREEN_DELAY_SCENARIO.json")
-    sim = load_scenario(str(scenario))
-    lead = sim.units["R-LEAD"]
-    lead.elements["vehicle_crew"].count = 0
+def test_real_tank_template_no_crew_does_not_complete_move():
+    sim = load_scenario("scenarios/demo.json", bml_files={})
+    lead = sim.units["B-TK-1"]
+    lead.current_order = Order("cross", "MOVE", {"destination": (lead.pos[0] + 100, lead.pos[1])})
+    lead.order_queue.clear()
+    lead.elements["tanks_crew"].count = 0
     start = lead.pos
+    equipment = lead.equipment
     for _ in range(40):
         sim.tick(.25)
     assert lead.pos == start and lead.state == UnitState.COMBAT_INEFFECTIVE
-    assert lead.alive and lead.equipment == 1
+    assert lead.alive and lead.equipment == equipment
     assert not any(e["kind"] == "ORDER_COMPLETE" and e["unit"] == lead.uid for e in sim.logs)
 
 

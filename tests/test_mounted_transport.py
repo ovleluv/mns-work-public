@@ -2,7 +2,9 @@ import json
 from pathlib import Path
 from mnsim.scenario import load_scenario
 from mnsim.bml import apply_bml_document
-from mnsim.mounted import transport_capacity, free_seats, required_vehicle_crew, crew_available
+from mnsim.model import Order
+from mnsim.mounted import (transport_capacity, free_seats, required_vehicle_crew,
+                           crew_available, dismount_organic, board_external, disembark_external)
 
 ROOT=Path(__file__).resolve().parents[1]
 
@@ -46,6 +48,23 @@ def test_organic_dismount_and_remount_conserve_personnel(tmp_path):
     _run(sim,30)
     assert not child.active and u.personnel==before and u.metadata['mount_state']=='MOUNTED'
 
+
+def test_mount_waits_for_seats_then_completes_after_passengers_leave(tmp_path):
+    sim=_scenario(tmp_path); carrier=sim.units['B-MECH']; passenger=sim.units['B-SQD']
+    child=dismount_organic(sim,carrier)
+    assert child is not None and board_external(sim,passenger,carrier)
+    carrier.current_order=Order('mount','MOUNT')
+    carrier.metadata['embark_time_s']=0.0
+    sim.tick(.25)
+    assert carrier.current_order is not None
+    assert child.active and carrier.metadata['mount_state']=='DISMOUNTED'
+    assert not any(x['kind']=='ORDER_COMPLETE' and x['order_id']=='mount' for x in sim.logs)
+
+    disembark_external(sim,carrier,passenger.uid)
+    sim.tick(.25)
+    assert carrier.current_order is None
+    assert not child.active and carrier.metadata['mount_state']=='MOUNTED'
+
 def test_external_squad_boards_empty_bradley_and_returns(tmp_path):
     sim=_scenario(tmp_path);sqd=sim.units['B-SQD']; carrier=sim.units['B-BFV']
     # RIFLE_SQD may be larger than a single M2 compartment; override to a six-person test squad.
@@ -62,6 +81,26 @@ def test_external_squad_boards_empty_bradley_and_returns(tmp_path):
     apply_bml_document(sim,{'side':'BLUE','replace_existing_orders':False,'missions':[{'unit':'B-BFV','task':'DISEMBARK','passengers':'ALL'}]})
     _run(sim,20)
     assert sqd.active and 'embarked_in' not in sqd.metadata and free_seats(sim,carrier)==6
+
+
+def test_board_completion_resets_order_clock_before_disembark(tmp_path):
+    sim=_scenario(tmp_path); passenger=sim.units['B-SQD']; carrier=sim.units['B-BFV']
+    for element in passenger.elements.values():
+        if element.category.upper()=='PERSONNEL':
+            element.count=element.initial_count=0
+    first=next(e for e in passenger.elements.values() if e.category.upper()=='PERSONNEL')
+    first.count=first.initial_count=6
+    passenger.order_queue=[Order('board','BOARD',{'carrier':carrier.uid}),
+                           Order('wait','WAIT',{'duration_s':5})]
+    _run(sim,25)
+    assert passenger.metadata.get('embarked_in')==carrier.uid
+    assert any(x['kind']=='ORDER_COMPLETE' and x['order_id']=='board' for x in sim.logs)
+    assert 'order_started_t' not in passenger.metadata
+
+    disembark_external(sim,carrier,passenger.uid)
+    sim.tick(.25)
+    assert passenger.current_order is not None and passenger.current_order.order_id=='wait'
+    assert not any(x['kind']=='ORDER_COMPLETE' and x['order_id']=='wait' for x in sim.logs)
 
 def test_editor_override_metadata_reaches_runtime(tmp_path):
     raw={

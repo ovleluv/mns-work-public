@@ -150,14 +150,58 @@ class NavigationPlanner:
             t = i / n
             yield (a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t)
 
+    def _speed_may_stop_inside_segment(self, unit) -> bool:
+        """Whether authored speed factors require per-sample zero-speed checks.
+
+        TerrainModel.segment_passable already checks continuous hard obstacles. When every
+        remaining movement multiplier is positive, checking speed at the start is sufficient;
+        grade penalties also retain a positive floor. Read live data because scenarios may edit
+        terrain or unit settings while running.
+        """
+        md=unit.unit_type.metadata
+        factors=md.get("terrain_speed_factors",{})
+        if any(float(value)<=0.0 for value in (
+                factors.get("OPEN",1.0), factors.get("ROAD",1.0),
+                factors.get("BRIDGE",factors.get("ROAD",1.0)))):
+            return True
+        mobility=str(md.get("mobility_class","FOOT")).upper()
+        vehicles={"TRACKED","WHEELED","WHEELED_TOWED"}
+        for area in self.terrain.areas:
+            kind=str(area.get("type","")).upper()
+            if kind=="ELEVATION":
+                continue
+            overrides=area.get("mobility_overrides",{})
+            factor=float(overrides.get(mobility,area.get("movement_factor",1.0)))
+            if factor>0.0:
+                continue
+            # Vehicle-restricted forest is blocked off-road and explicitly cleared on-road.
+            # Both cases are already covered by TerrainModel.segment_passable.
+            forbidden={str(x).upper() for x in area.get("impassable_mobility_classes",[])}
+            if (kind=="FOREST" and mobility in vehicles
+                    and (mobility in forbidden or mobility in overrides)):
+                continue
+            return True
+        for river in self.terrain.rivers:
+            overrides=river.get("mobility_overrides",{})
+            factor=overrides.get(mobility,river.get("movement_factor"))
+            # An explicit zero override makes the river impassable away from a bridge;
+            # an unqualified zero movement factor may still affect an amphibious unit.
+            if factor is not None and float(factor)<=0.0 and mobility not in overrides:
+                return True
+        return False
+
     def segment_passable(self, unit, a: Vec2, b: Vec2) -> bool:
         if not self.terrain.segment_passable(unit,a,b):return False
-        samples=list(self._segment_samples(a,b))
-        if any(movement_speed_mps(unit,self.terrain,p,q,state="MOVING") <= 0
-               for p,q in zip(samples,samples[1:])):return False
+        if movement_speed_mps(unit,self.terrain,a,b,state="MOVING")<=0:return False
+        samples=None
+        if self._speed_may_stop_inside_segment(unit):
+            samples=list(self._segment_samples(a,b))
+            if any(movement_speed_mps(unit,self.terrain,p,q,state="MOVING") <= 0
+                   for p,q in zip(samples,samples[1:])):return False
         # With no authored elevation polygons the slope is identically zero.
         if not any(str(area.get("type","")).upper()=="ELEVATION" for area in self.terrain.areas):return True
-        samples=list(self._segment_samples(a,b))
+        if samples is None:
+            samples=list(self._segment_samples(a,b))
         # Prevent routes across implausibly steep authored contour transitions.  Thresholds are
         # formation-scale planning defaults, not vehicle brochure climb limits.
         mobility=str(unit.unit_type.metadata.get("mobility_class","FOOT")).upper()

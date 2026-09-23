@@ -15,6 +15,7 @@ AUTHORED_SCENARIOS = (
     "scenarios/canada_tdg4.json",
     "scenarios/demo.json",
     "scenarios/tdg1.json",
+    "scenarios/tdg3.json",
     "scenarios/test2.json",
     "scenarios/test3.json",
 )
@@ -23,6 +24,7 @@ AUTHORED_TERRAINS = (
     "scenarios/_usercheck/tdg1_terrain.json",
     "scenarios/bench_2_terrain.json",
     "scenarios/tdg1_terrain.json",
+    "scenarios/tdg3_terrain.json",
     "scenarios/test2_terrain.json",
     "scenarios/test3_terrain.json",
 )
@@ -35,6 +37,8 @@ AUTHORED_BMLS = (
     "scenarios/tdg1_addTargetPos_blue_bml.json",
     "scenarios/tdg1_blue_bml.json",
     "scenarios/tdg1_red_bml.json",
+    "scenarios/tdg3_blue_bml.json",
+    "scenarios/tdg3_red_bml.json",
     "scenarios/tdg4_blue_bml_ver0.json",
     "scenarios/tdg4_red_bml_ver0.json",
     "scenarios/test2_blue_bml.json",
@@ -58,6 +62,11 @@ BML_PAIRINGS = (
             "BLUE": "scenarios/tdg1_addTargetPos_blue_bml.json",
             "RED": "scenarios/tdg1_red_bml.json",
         },
+    ),
+    (
+        "tdg3",
+        "scenarios/tdg3.json",
+        {"BLUE": "scenarios/tdg3_blue_bml.json", "RED": "scenarios/tdg3_red_bml.json"},
     ),
     (
         "test2_targets",

@@ -50,7 +50,7 @@ def test_indirect_target_priority_prefers_artillery_when_tracks_are_comparable()
 def test_target_score_uses_perceived_classification_not_ground_truth_branch():
     sim=load_scenario("scenarios/demo.json")
     shooter=sim.units["B-TK-1"]; target=sim.units["R-INF-1"]
-    tr=_track(target,sim.time,"ARMOR","SHARED",.9,15.0)
+    tr=_track(target,sim.time,"ARMOR","LOCAL",.9,15.0)
     shooter.local_tracks[target.uid]=tr
     armor_score=sim.combat.target_score(shooter,target,"DIRECT")
     tr.classification="INFANTRY"

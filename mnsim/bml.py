@@ -297,21 +297,15 @@ def apply_bml_document(sim, raw: Dict[str, Any], expected_side: str | None = Non
     if expected_side and declared and declared != str(expected_side).upper():
         raise ValueError(f"BML side mismatch: expected {expected_side}, file declares {declared}")
 
-    replaced=set()
-    replace_existing=bool(raw.get("replace_existing_orders", True))
-    def prepare(uid):
-        if replace_existing and uid not in replaced:
-            sim.units[uid].order_queue.clear()
-            sim.units[uid].current_order=None
-            sim.units[uid].metadata.pop("order_started_t",None)
-            replaced.add(uid)
-
+    # Compile and validate the complete document before touching any live orders. A typo in a
+    # later mission must not leave earlier formations with only half of a replacement plan.
+    compiled=[]
     for uid, raw_orders in dict(raw.get("orders_by_unit", {})).items():
         if uid not in sim.units:
             raise KeyError(f"BML references unknown unit {uid!r}")
-        _validate_side(sim,uid,expected_side); prepare(uid)
+        _validate_side(sim,uid,declared)
         for ro in raw_orders:
-            sim.issue_order(uid, parse_order(ro))
+            compiled.append((uid,parse_order(ro)))
 
     missions=list(raw.get("missions", []))
     for phase in raw.get("phases", []):
@@ -322,5 +316,15 @@ def apply_bml_document(sim, raw: Dict[str, Any], expected_side: str | None = Non
 
     for mission in missions:
         uid, order = compile_mission(sim, mission)
-        _validate_side(sim,uid,expected_side); prepare(uid)
+        _validate_side(sim,uid,declared)
+        compiled.append((uid,order))
+
+    replaced=set()
+    replace_existing=bool(raw.get("replace_existing_orders", True))
+    for uid, order in compiled:
+        if replace_existing and uid not in replaced:
+            sim.units[uid].order_queue.clear()
+            sim.units[uid].current_order=None
+            sim.units[uid].metadata.pop("order_started_t",None)
+            replaced.add(uid)
         sim.issue_order(uid, order)

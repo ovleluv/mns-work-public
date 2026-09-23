@@ -124,6 +124,8 @@ class Simulation:
         return True
 
     def add_unit(self, unit: Unit):
+        if unit.uid in self.units:
+            raise ValueError(f"Unit ID already exists: {unit.uid}")
         self.units[unit.uid] = unit
         self.log("UNIT_ADD", unit=unit.uid, side=unit.side.value, pos=unit.pos,
                  personnel=unit.personnel, equipment=unit.equipment)
@@ -134,8 +136,14 @@ class Simulation:
         self.units[uid].order_queue.append(order); self.log("ORDER_ISSUED",unit=uid,order=order.kind,order_id=order.order_id)
 
     def tick(self, dt: float):
-        if self.paused: return
-        dt *= self.speed; self.time += dt
+        dt=float(dt); speed=float(self.speed)
+        if not math.isfinite(dt) or dt<0.0 or not math.isfinite(speed) or speed<0.0:
+            raise ValueError("Simulation time step and speed must be finite and non-negative")
+        if self.paused or speed==0.0: return
+        dt *= speed
+        if not math.isfinite(dt) or not math.isfinite(self.time+dt):
+            raise ValueError("Simulation time step exceeds the finite clock range")
+        self.time += dt
         for ev in self.events.pop_due(self.time): self._handle_event(ev.kind, ev.payload)
         for u in list(self.units.values()):
             if u.alive:
@@ -153,11 +161,15 @@ class Simulation:
         interval into bounded simulation-time substeps.  Thus 16x/32x do not turn a 50 ms render
         frame into a single 0.8/1.6 s physics/event jump.
         """
-        if self.paused or wall_dt <= 0.0:
+        wall_dt=float(wall_dt); speed=float(self.speed)
+        if not math.isfinite(wall_dt) or wall_dt<0.0 or not math.isfinite(speed) or speed<0.0:
+            raise ValueError("Wall time step and simulation speed must be finite and non-negative")
+        if self.paused or wall_dt==0.0 or speed==0.0:
             return
-        speed=max(float(self.speed),1e-9)
         max_sim_step_s=max(float(max_sim_step_s),0.01)
         total_sim_dt=float(wall_dt)*speed
+        if not math.isfinite(total_sim_dt):
+            raise ValueError("Accelerated time step exceeds the finite clock range")
         steps=max(1,int(math.ceil(total_sim_dt/max_sim_step_s)))
         sub_wall_dt=float(wall_dt)/steps
         for _ in range(steps):
@@ -344,6 +356,10 @@ class Simulation:
             cid=u.metadata.get("dismount_child_id"); child=self.units.get(cid) if cid else None
             if child is None or not child.alive:
                 self._complete_order(u); return
+            if not carrier_operable(u):
+                u.state=UnitState.DEFENDING; u.metadata["tactical_reason"]="MOUNT / CARRIER INOPERABLE (CREW SHORTAGE)"; return
+            if free_seats(self,u)<child.personnel:
+                u.state=UnitState.DEFENDING; u.metadata["tactical_reason"]="MOUNT / INSUFFICIENT EMPTY SEATS"; return
             radius=float(u.metadata.get("embark_radius_m",20.0))
             if math.dist(u.pos,child.pos)>radius:
                 u.state=UnitState.MOVING; u.metadata["tactical_reason"]="RENDEZVOUS WITH ORGANIC DISMOUNTS"
@@ -351,7 +367,9 @@ class Simulation:
             u.state=UnitState.MOUNTING; started=u.metadata.setdefault("mounted_action_started_t",self.time)
             if self.time-started < float(u.metadata.get("embark_time_s",20.0)):
                 u.metadata["tactical_reason"]="MOUNTING ORGANIC INFANTRY"; return
-            mount_organic(self,u); u.metadata.pop("mounted_action_started_t",None); self._complete_order(u); return
+            if mount_organic(self,u):
+                u.metadata.pop("mounted_action_started_t",None); self._complete_order(u)
+            return
         if kind=="BOARD":
             carrier=self.units.get(str(o.params.get("carrier","")))
             if carrier is None or not carrier.alive or carrier.side!=u.side:
@@ -369,7 +387,7 @@ class Simulation:
             if self.time-started < float(carrier.metadata.get("embark_time_s",20.0)):
                 u.metadata["tactical_reason"]="BOARDING FRIENDLY TRANSPORT"; return
             if board_external(self,u,carrier):
-                u.metadata.pop("mounted_action_started_t",None); u.current_order=None
+                self._complete_order(u)
             return
         if kind=="DISEMBARK":
             u.state=UnitState.DISMOUNTING; started=u.metadata.setdefault("mounted_action_started_t",self.time)
@@ -777,9 +795,11 @@ class Simulation:
         if new_uid in self.units:
             raise ValueError("Aggregate unit ID already exists")
         child_ids = list(dict.fromkeys(child_ids))
-        children=[self.units[x] for x in child_ids if x in self.units and self.units[x].active]
-        child_ids = [c.uid for c in children]
-        if not children: raise ValueError("No active children to aggregate")
+        unavailable=[uid for uid in child_ids if uid not in self.units or not self.units[uid].active]
+        if unavailable:
+            raise ValueError(f"Unknown or inactive aggregate children: {unavailable}")
+        children=[self.units[x] for x in child_ids]
+        if not children: raise ValueError("No children to aggregate")
         side=children[0].side
         if any(c.side!=side for c in children): raise ValueError("Cannot aggregate opposing sides")
         branch=children[0].branch if len({c.branch for c in children})==1 else "COMBINED"
@@ -908,11 +928,7 @@ class Simulation:
         brush/forest/urban/fog/rain/smoke/LOS implementations out of the tactical sensor logic.
         Radar is handled separately and remains omnidirectional unless a radar model says otherwise.
         """
-        profiles=dict(self.combat_config.get("visual_sensor_profiles", {}))
-        base=dict(profiles.get("DEFAULT", {}))
-        base.update(dict(profiles.get(unit.branch, {})))
-        base.update(dict(unit.unit_type.metadata.get("visual_sensor", {})))
-        md=base
+        md=self._visual_sensor_settings(unit)
         sensor_mode=str(md.get("sensor_mode", "VISUAL")).upper()
         forward=float(md.get("forward_range_m", unit.unit_type.detection_range_m))
         fov=float(md.get("forward_fov_deg", self.combat_config.get("visual_forward_fov_deg", 90.0)))
@@ -924,6 +940,13 @@ class Simulation:
         close*=mods.awareness_factor
         forward=min(forward, float(self.combat_config.get("visibility_range_m", 1e9)))
         return max(1.0,forward), max(1.0,min(360.0,fov)), max(0.0,close), max(1.0,slew), max(0.0,mods.detection_factor)
+
+    def _visual_sensor_settings(self, unit: Unit):
+        profiles=dict(self.combat_config.get("visual_sensor_profiles", {}))
+        settings=dict(profiles.get("DEFAULT", {}))
+        settings.update(dict(profiles.get(unit.branch, {})))
+        settings.update(dict(unit.unit_type.metadata.get("visual_sensor", {})))
+        return settings
 
     def _register_threat_cue(self, unit: Unit, source_uid: str | None, cue_type: str = "DIRECT_FIRE"):
         """Record a short-lived directional cue from incoming fire without creating a Track."""
@@ -1096,10 +1119,37 @@ class Simulation:
                 self.belief.age(tr)
 
         sensor_dt=float(self.combat_config.get("sensor_update_s",1.0))
-        for obs in [u for u in self.units.values() if u.can_observe]:
+        all_units=list(self.units.values())
+        living={Side.BLUE:[],Side.RED:[]}
+        for unit in all_units:
+            if unit.alive:
+                living[unit.side].append(unit)
+        upper_cache={}
+        for obs in [u for u in all_units if u.can_observe]:
             self._update_watch_heading(obs,sensor_dt)
-            for tgt in [u for u in self.units.values() if u.alive and u.side != obs.side]:
+            # A target outside every possible range/sector need not pay for polygon LOS. Use
+            # terrain-wide upper bounds so scenario-authored sensor boosts remain detectable.
+            upper=None
+            if self.terrain is not None and hasattr(self.terrain,"observation_upper_bounds"):
+                mode=str(self._visual_sensor_settings(obs).get("sensor_mode","VISUAL")).upper()
+                if mode not in upper_cache:
+                    upper_cache[mode]=self.terrain.observation_upper_bounds(mode)
+                gain=upper_cache[mode]
+                base_forward,base_fov,base_close,_,_=self._visual_sensor_profile(obs)
+                upper=(base_forward*gain["range_factor"],
+                       min(360.0,base_fov*gain["fov_factor"]),
+                       base_close*gain["awareness_factor"])
+            enemies=living[Side.RED if obs.side==Side.BLUE else Side.BLUE]
+            for tgt in enemies:
                 d=obs.distance_to(tgt)
+                if upper is not None:
+                    max_forward,max_fov,max_close=upper
+                    if d>max(max_forward,max_close):
+                        continue
+                    if d>max_close:
+                        bearing=math.degrees(math.atan2(tgt.pos[1]-obs.pos[1],tgt.pos[0]-obs.pos[0]))
+                        if abs(self._angle_delta_deg(bearing,obs.watch_heading_deg))>max_fov*0.5:
+                            continue
                 eligible,r,angular_factor,in_all_round=self._visual_target_geometry(obs,tgt)
                 prev=obs.local_tracks.get(tgt.uid)
                 proximity=float(self.combat_config.get("proximity_contact_m",60.0))
@@ -1601,6 +1651,7 @@ class Simulation:
             child.metadata["target_acquired_t"]=unit.metadata["target_acquired_t"]
 
         self.add_unit(child)
+        self.events.remap_equipment_effects(unit.uid,element.eid,item_index,child.uid)
         unit.children.append(new_uid)
         unit.metadata.setdefault("detached_items",{})[new_uid]={
             "element":element.eid,"state":state,"detached_at":self.time,
@@ -1623,22 +1674,31 @@ class Simulation:
         if mtype=="TRACK_REPORT":
             target=q.get("target")
             if not target: return
+            report_source=q.get("report_origin_uid",msg.get("sender_uid"))
             old=recv.local_tracks.get(target)
             incoming_conf=float(q.get("confidence",.3))*0.92
+            observation_time=min(self.time,float(q.get("observation_time",self.time)))
+            # Radio and C2 delays can deliver reports out of order. An older report must not
+            # replace a newer position or downgrade a locally acquired firing-quality track.
+            if old and observation_time < old.last_seen_time:
+                self.log("TRACK_REPORT_IGNORED",recipient=recv.uid,target=target,reason="OLDER_OBSERVATION")
+                return
             # A better fresh local observation is never overwritten by weaker shared SA.
-            if not (old and old.source=="LOCAL" and old.confidence>=incoming_conf):
+            preserve_local=bool(old and old.source in ("LOCAL","PROXIMITY") and old.state!="LOST"
+                                and (observation_time==old.last_seen_time or old.confidence>=incoming_conf))
+            if not preserve_local:
                 tr=Track(track_id=f"{recv.uid}:{target}",target_id=target,
                     estimated_pos=tuple(q["estimated_pos"]),position_error_m=float(q.get("position_error_m",100))*1.12,
                     classification=q.get("classification","UNKNOWN"),confidence=incoming_conf,
-                    last_seen_time=float(q.get("observation_time",self.time)),
+                    last_seen_time=observation_time,
                     observations=max(1,old.observations if old else 1),source=q.get("track_source","SHARED"),
                     observation_zone="SHARED",state=q.get("state","DETECTED"),belief_confidence=max(old.belief_confidence if old else 0.0,incoming_conf,0.45),
-                    existence_confirmed=True,last_confirmed_time=float(q.get("observation_time",self.time)))
+                    existence_confirmed=True,last_confirmed_time=observation_time)
                 recv.local_tracks[target]=tr
                 self.belief.on_observation(tr,q.get("classification","UNKNOWN"))
             # Shared situational awareness may reorient sensors even if local Track was already better.
-            self._register_shared_situational_cue(recv,tuple(q["estimated_pos"]),incoming_conf,msg.get("sender_uid"),q.get("cue_kind","CONTACT"))
-            self.log("TRACK_SHARED",source=msg.get("sender_uid"),recipient=recv.uid,target=target,
+            self._register_shared_situational_cue(recv,tuple(q["estimated_pos"]),incoming_conf,report_source,q.get("cue_kind","CONTACT"))
+            self.log("TRACK_SHARED",source=report_source,recipient=recv.uid,target=target,
                      channel=msg.get("channel"),confidence=round(incoming_conf,2))
             return
         self.log("COMM_RX_UNHANDLED",recipient=recv.uid,message_type=mtype,source=msg.get("sender_uid"))
@@ -1691,8 +1751,23 @@ class Simulation:
             return
         if kind=="C2_DISSEMINATE_TRACK":
             q=dict(p.get("report",{})); source=q.get("source")
-            n=self.communications.broadcast_side(source,"TRACK_REPORT",q,priority=20)
-            self.log("TRACK_DISSEMINATION",source=source,target=q.get("target"),recipients=n,origin="C2")
+            q.setdefault("report_origin_uid",source)
+            sender=self.units.get(source)
+            relay_uid=source
+            if sender is None or not sender.can_communicate:
+                # Once HQ has the report, losing the observer must not erase the message.
+                side=sender.side.value if sender else q.get("side")
+                relay=next((u for u in self.units.values()
+                            if u.can_communicate and u.side.value==side),None)
+                if relay is not None:
+                    relay_uid=relay.uid
+                    self._receive_comm_message(relay,{"message_type":"TRACK_REPORT",
+                        "sender_uid":source,"channel":"C2_RELAY","payload":q})
+            n=self.communications.broadcast_side(relay_uid,"TRACK_REPORT",q,priority=20)
+            details={"source":source,"target":q.get("target"),"recipients":n,"origin":"C2"}
+            if relay_uid!=source:
+                details["relay"]=relay_uid
+            self.log("TRACK_DISSEMINATION",**details)
             return
         if kind=="COMM_DELIVER":
             msg=dict(p.get("message",{})); recv=self.units.get(msg.get("recipient_uid"))

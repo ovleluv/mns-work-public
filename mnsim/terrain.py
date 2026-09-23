@@ -403,6 +403,9 @@ class TerrainModel:
         Three representative samples per crossed interval are sufficient for the authored smooth
         contour model and make cost depend on polygon complexity rather than sight-line length.
         """
+        if (max(eye_a,eye_b)<=obstacle_height_m+0.5
+                and not any(str(a.get("type","")).upper()=="ELEVATION" for a in self.areas)):
+            return False
         poly=[tuple(x) for x in area.get("polygon",[])]
         if not poly or _point_in_poly(a,poly) or _point_in_poly(b,poly):return False
         intervals=self._line_intervals_inside_polygon(a,b,poly)
@@ -415,6 +418,30 @@ class TerrainModel:
                 if line_z<=top+0.5:return False
         return True
 
+    def observation_upper_bounds(self, sensor_mode:str="VISUAL") -> Dict[str,float]:
+        """Conservative terrain gains for a cheap pre-LOS sensor geometry check.
+
+        Authored modifiers may exceed 1, so a baseline range/FOV alone cannot reject a target.
+        Multiplying every possible gain is deliberately loose but never hides a detectable target.
+        This is recomputed per sensor scan because scenarios may edit terrain modifiers at runtime.
+        """
+        mode=str(sensor_mode).upper()
+        bounds={"range_factor":1.0,"fov_factor":1.0,"awareness_factor":1.0}
+        zones=list(self.data.get("observation_zones",[]))
+        zones += [a for a in self.areas if a.get("observation_modifier") or a.get("sensor_overrides")
+                  or str(a.get("type","")).upper() in ("WOODS","FOREST","BRUSH","URBAN","BUILDING")]
+        for zone in zones:
+            raw=dict(zone.get("observation_modifier",{}))
+            override=dict(zone.get("sensor_overrides",{})).get(mode)
+            if override:
+                raw.update(dict(override))
+            for key in bounds:
+                bounds[key]*=max(1.0,float(raw.get(key,1.0)))
+        for building in self.areas:
+            if str(building.get("type","")).upper()=="BUILDING" and self.building_operational(building):
+                bounds["range_factor"]*=max(1.0,float(building.get("external_range_factor",0.82)))
+        return bounds
+
     def observation_modifier(self, observer_pos:Vec2, target_pos:Vec2, sensor_mode:str="VISUAL") -> Dict[str,float]:
         """Return observation modifiers for the observer-target ray.
 
@@ -424,6 +451,8 @@ class TerrainModel:
         smoke/building/elevation LOS layers.
         """
         out={"range_factor":1.0,"fov_factor":1.0,"awareness_factor":1.0,"detection_factor":1.0}
+        if observer_pos==target_pos:
+            return out
         zones=list(self.data.get("observation_zones",[]))
         zones += [a for a in self.areas if a.get("observation_modifier") or a.get("sensor_overrides")
                   or str(a.get("type","")).upper() in ("WOODS","FOREST","BRUSH","URBAN","BUILDING")]

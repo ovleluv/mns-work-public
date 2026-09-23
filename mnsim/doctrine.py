@@ -99,7 +99,9 @@ class DoctrineEngine:
         out = []
         for tid, tr in unit.local_tracks.items():
             tgt = self.sim.units.get(tid)
-            if tgt and tgt.alive and tgt.side != unit.side and self.sim._track_for(unit, tgt):
+            # Contact existence and classification are perceptual. Ground-truth destruction
+            # does not tell this formation that a still-actionable Track is safe to ignore.
+            if tgt and tgt.side != unit.side and self.sim._track_for(unit, tgt):
                 out.append((tgt, tr))
         return out
 
@@ -270,7 +272,7 @@ class DoctrineEngine:
         # Infantry: if an armor contact is actionable but all anti-armor capability has
         # disappeared (team killed, weapon lost, or ammunition depleted), break contact.
         if unit.branch == "INFANTRY":
-            armor = [x for x in contacts if x[0].branch == "ARMOR"]
+            armor = [x for x in contacts if str(x[1].classification).upper() == "ARMOR"]
             break_if_no_at=bool(self.setting(unit,"infantry_break_contact_if_no_at",default=True))
             allow_break=bool(self.directive(unit,"allow_break_contact",True))
             if armor and not unit.capability_available("ANTI_ARMOR") and break_if_no_at and allow_break:

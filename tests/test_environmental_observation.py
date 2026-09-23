@@ -8,7 +8,7 @@ def test_clear_day_open_terrain_is_neutral():
     sim=load_scenario(str(SCENARIO))
     u=sim.units["B-INF-2"]
     p=sim._visual_sensor_profile(u)
-    assert p[0] == 900.0
+    assert p[0] == u.unit_type.detection_range_m
     assert p[1] == 90.0
     assert p[2] == 220.0
     assert p[4] == 1.0
