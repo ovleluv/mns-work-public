@@ -923,7 +923,7 @@ Scenario and BML are separate artifacts. A scenario contains the battlefield, OO
 
 For backward compatibility, the low-level `load_scenario(path)` API still understands old scenario files containing `bml_files`; however the main GUI/CLI passes an explicit run-time BML selection, so embedded references do not silently override what the user selected. New scenarios should keep BML references out of the scenario JSON.
 
-The BML file supports a `missions` list. Implemented mission tasks are `MOVE_TO`, `ATTACK_POSITION`, `ATTACK_UNIT`, `DESTROY_UNIT`, `DEFEND_POSITION`, `DEFEND_AREA`, `SEIZE`, `HOLD`, and `WITHDRAW`. Existing scenario-local `orders` remain supported. By default, BML replaces existing orders only for units explicitly mentioned in that BML; omitted units are left untouched. `ATTACK_UNIT`/`DESTROY_UNIT` use only the target's FoW Track / last-known Track position, or an explicit BML `target_position`; enemy identity alone never grants Ground Truth position knowledge. For identity-agnostic combat, use coordinate-based `ATTACK_POSITION`, which engages hostile contacts discovered through the normal Track/Belief pipeline. See `BML_GUIDE.md`.
+The BML file supports a `missions` list. The current task list, required fields, generation checklist, and validation steps are in [BML_GENERATION_GUIDE.md](BML_GENERATION_GUIDE.md); [BML_GUIDE.md](BML_GUIDE.md) covers execution details and examples. Existing scenario-local `orders` remain supported. By default, BML replaces existing orders only for units explicitly mentioned in that BML; omitted units are left untouched. `ATTACK_UNIT`/`DESTROY_UNIT` use only the target's FoW Track / last-known Track position, or an explicit BML `target_position`; enemy identity alone never grants Ground Truth position knowledge. For identity-agnostic combat, use coordinate-based `ATTACK_POSITION`, which engages hostile contacts discovered through the normal Track/Belief pipeline.
 
 ## v38 echelon-aware artillery survivability
 - Indirect-fire `max_personnel_loss_per_round` is enforced once per impacted formation per shell, not independently for every FormationElement.
@@ -1142,3 +1142,26 @@ The transient suppression mechanic introduced in v49.5 was removed. Machine guns
 - Generic formation-level calibration is infantry 45 deg/s, armor 20 deg/s, artillery 30 deg/s, default 30 deg/s. These values intentionally represent formation/crew attention and engagement orientation, not literal human head or turret mechanical slew specifications. TO&E `metadata.visual_sensor.watch_slew_deg_per_s` may override them.
 - Outside the CLOSE all-round awareness zone, a remembered direct-fire Track does not permit immediate fire through the rear of the current observation sector. The target must first enter the current forward watch arc; normal weapon acquisition/lay delay then applies.
 - The scenario editor writes `watch_heading_deg` explicitly for newly placed units. Select a unit and use `Ctrl+Left/Right` to adjust the initial watch bearing by 10 degrees. The NATO symbol itself remains north-up/unrotated; a cyan bearing line from its center shows the assigned watch direction. `Shift+Arrow` continues to move the selected unit, while unmodified arrows pan the map.
+
+## v49.10 building-corner navigation correction
+
+- Continuous passability checks and safer waypoint advancement prevent ordinary movement routes from clipping narrow operational BUILDING corners. See [CHANGELOG_v49_10.md](CHANGELOG_v49_10.md).
+
+## v49.11 BML generation and simulator consistency
+
+- Added a [BML generation guide](BML_GENERATION_GUIDE.md) for authoring side-specific plans from scenario IDs, map bounds, supported tasks, perceived Tracks, conditions, phases, and directives. It includes a loadable example and a headless validation workflow.
+- BML now validates nested branches, condition paths, supported directives, and map coordinates before replacing any orders. Load-time aggregate parents can receive BML missions; inactive source children cannot.
+- Corrected the 15-minute contact-belief half-life and delayed-report observation times. Direct fire now decides whether to attempt a shot from perceived information, then applies actual range, cover, and component compatibility after ammunition is spent.
+- Preserved queued personnel/equipment damage across aggregation and deaggregation, and corrected completion-time BML branches and per-order deadline reporting. Updated terrain fallback values and synthetic weapon-performance wording in the documentation.
+- Independent scenario/seed runs use the multicore batch API; a single live simulation remains sequential. The detailed implementation and verification record is in [CHANGELOG_v49_11.md](CHANGELOG_v49_11.md).
+
+### v49.11 work log
+
+| Date (KST) | Commit or artifact | Work |
+|---|---|---|
+| 2026-09-24 | `de91c6f` | Optimized simulator hot paths and repaired engine consistency cases. |
+| 2026-09-24 | `f817a33` | Added deterministic multicore execution for independent scenario/seed batches. |
+| 2026-09-24 | `23b51aa` | Fixed the audited belief, FoW, aggregation, BML, and bounds defects; added regression tests and refreshed the eight-mission validation status. |
+| 2026-09-24 | This documentation update | Added the BML authoring guide, this version summary, and [CHANGELOG_v49_11.md](CHANGELOG_v49_11.md). Use `git log --oneline -- README.md BML_GENERATION_GUIDE.md CHANGELOG_v49_11.md` for the exact documentation commit. |
+
+The v49.11 engine verification at `23b51aa` was 1,700 passed and 323 opt-in tests skipped in the default suite, 14 passed in the full TDG3 integration run, and eight mission checks passed. These checks validate the implemented behaviors; they do not establish real-world weapon calibration or full support for the partially supported operations listed in [MISSION/MISSION_FEASIBILITY.md](MISSION/MISSION_FEASIBILITY.md).
