@@ -1174,7 +1174,7 @@ The transient suppression mechanic introduced in v49.5 was removed. Machine guns
 - BML now validates nested branches, condition paths, supported directives, and map coordinates before replacing any orders. Load-time aggregate parents can receive BML missions; inactive source children cannot.
 - Corrected the 15-minute contact-belief half-life and delayed-report observation times. Direct fire now decides whether to attempt a shot from perceived information, then applies actual range, cover, and component compatibility after ammunition is spent.
 - Preserved queued personnel/equipment damage across aggregation and deaggregation, and corrected completion-time BML branches and per-order deadline reporting. Updated terrain fallback values and synthetic weapon-performance wording in the documentation.
-- Independent scenario/seed runs use the multicore batch API; a single live simulation remains sequential. The detailed implementation and verification record is in [CHANGELOG_v49_11.md](CHANGELOG_v49_11.md).
+- Independent scenario/seed runs use the multicore batch API; a single live simulation remains sequential. The detailed implementation and verification record is in [CHANGELOG.md](CHANGELOG.md) (v49.11).
 
 ## v50 engine optimization, performance and bug fixes
 
