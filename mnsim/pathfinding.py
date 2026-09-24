@@ -199,12 +199,33 @@ class NavigationPlanner:
         # formation-scale planning defaults, not vehicle brochure climb limits.
         return all(abs(self.terrain.slope_angle_deg(x,y))<=max_grade for x,y in zip(samples,samples[1:]))
 
+    @staticmethod
+    def _on_segment(p: Vec2, a: Vec2, b: Vec2, tol: float = 1e-6) -> bool:
+        dx,dy=b[0]-a[0],b[1]-a[1]; l2=dx*dx+dy*dy
+        if l2<=1e-12:
+            return math.dist(p,a)<=tol
+        t=((p[0]-a[0])*dx+(p[1]-a[1])*dy)/l2
+        if t< -1e-9 or t>1.0+1e-9:
+            return False
+        q=(a[0]+t*dx,a[1]+t*dy)
+        return math.dist(p,q)<=tol*max(1.0,math.sqrt(l2))
+
     def segment_passable(self, unit, a: Vec2, b: Vec2) -> bool:
         a=(float(a[0]),float(a[1])); b=(float(b[0]),float(b[1]))
-        if not self.terrain.segment_passable(unit,a,b):return False
         # Unit-level mobility (crew, speed, surviving mobile vehicles) is independent of the leg.
         if movement_speed_mps(unit,None,state="MOVING")<=0 or self.terrain.mobile_equipment_fraction(unit)<=0:
             return False
+        # A formation re-checks the leg from its *current* position every step.  When that
+        # position still lies on a leg already verified toward the same end point (same terrain
+        # revision, unit type and building permission), the remaining part is a sub-segment of a
+        # passable segment and is therefore passable too.
+        rev=self.terrain.revision()
+        sig=(rev,self._unit_type_key(unit),str(unit.metadata.get("_building_access_id","")))
+        verified=unit.metadata.get("_nav_verified_legs") or []
+        for va,vb,vsig in verified:
+            if vsig==sig and vb==b and self._on_segment(a,va,vb):
+                return True
+        if not self.terrain.segment_passable(unit,a,b):return False
         cache=self._cache()
         key=("PASS",self._unit_type_key(unit),a,b)
         hit=cache.get(key)
@@ -212,6 +233,10 @@ class NavigationPlanner:
             md=unit.unit_type.metadata
             hit=self._terrain_segment_ok(md,a,b) and self._grade_ok(unit,a,b)
             cache[key]=hit
+        if hit:
+            legs=[leg for leg in verified if leg[2]==sig and leg[1]!=b][-3:]
+            legs.append((a,b,sig))
+            unit.metadata["_nav_verified_legs"]=legs
         return hit
 
     def _segment_time_cost(self, unit, a: Vec2, b: Vec2) -> float:

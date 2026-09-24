@@ -8,15 +8,16 @@ developed in parallel with it and merged on top.
 
 ### Combat realism model
 
-Measured on `scenarios/demo.json`, 1800 s, 5 seeds (mean, before -> after): formations wiped out
-1.8 -> 1.2, artillery crew surviving 47.6 -> 81.4 of 87, personnel lost 141.6 -> 110.4,
-direct-fire rounds 648 -> 311 (suppressed formations fire less).
+Measured on `scenarios/demo.json`, 1800 s, 5 seeds, with the stress model enabled (mean, before ->
+after): formations wiped out 1.8 -> 1.2, artillery crew surviving 47.6 -> 81.4 of 87, personnel lost
+141.6 -> 110.4, direct-fire rounds 648 -> 311 (suppressed formations fire less).
 
 - **Suppression and morale** (`mnsim/stress.py`, `combat.stress_model`): every incoming round,
   near miss and casualty suppresses (scaled by formation size and prepared positions); suppression
   cuts rate of fire, accuracy, movement and detection. Morale falls with losses, leader loss and
   sustained fire; SHAKEN/PINNED formations stop advancing, BROKEN ones fall back and rally.
-  `hold_at_all_costs` lowers the break point. `enabled: false` restores the pure attrition kernel.
+  `hold_at_all_costs` lowers the break point. **Disabled by default** (the coefficients are
+  uncalibrated); enable with `combat.stress_model.enabled: true`.
 - **Prepared positions**: protection builds from hasty to dug-in over `dig_in_time_s`; applies to
   direct fire, artillery effects and the per-round casualty cap.
 - **Observation**: halted formations sweep their sector (all round when none is assigned); large
@@ -57,8 +58,13 @@ direct-fire rounds 648 -> 311 (suppressed formations fire less).
 - UI reports load errors, pauses on engine exceptions and writes timestamped replay logs.
 
 ### Performance
-- About 2.3x faster on `scenarios/demo.json`: exact interval passability instead of 20 m sampling,
-  cached planner edges, sensor range culling before ray casting.
+- Exact interval passability instead of 20 m sampling, cached planner edges, reuse of a leg
+  verified from the current position, grid spatial index for road/river polylines, cached polygon
+  bounding boxes, per-step memo of firepower/crew queries, and sensor range/sector culling before
+  ray casting.
+- Against v49.11 (`5e0281e`), same machine: `passable` 69.0 -> 10.7 us, `river_at` 23.5 -> 1.0 us,
+  `speed_factor` 128 -> 9.3 us, A* route 1.00 -> 0.32 s, sensor scan (21 units) 36.3 -> 3.1 ms;
+  600 simulated seconds of `tdg3.json` 95.8 -> 18.7 s and of `demo.json` 21.3 -> 9.2 s.
 
 ### Tooling
 - `pyproject.toml` (pytest/ruff/mypy settings), `constraints.txt`, GitHub Actions CI.

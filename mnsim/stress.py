@@ -16,7 +16,8 @@ Design rules (consistent with the rest of the engine)
 * Perception-neutral: the *target* feels fire that physically arrives; nobody gains knowledge.
 * Data-driven: all coefficients live in ``combat.stress_model`` (config/defaults.json) and a
   unit type may set ``metadata.morale`` (training/quality baseline, default 1.0).
-* Can be switched off with ``stress_model.enabled = false`` for calibration comparisons.
+* Disabled by default (``stress_model.enabled = false``); switch it on per scenario or in
+  ``config/defaults.json``.
 
 State lives on ``Unit.suppression`` (0..1) and ``Unit.morale`` (0..1).
 """
@@ -28,7 +29,9 @@ from typing import Any, Dict
 from .model import Unit, UnitState
 
 DEFAULTS: Dict[str, Any] = {
-    "enabled": True,
+    # Off by default: the coefficients are uncalibrated.  Enable per scenario or in
+    # config/defaults.json (combat.stress_model.enabled) for experiments.
+    "enabled": False,
     # --- suppression inputs ---
     "direct_suppression_per_round": 0.035,
     "direct_hit_multiplier": 1.5,

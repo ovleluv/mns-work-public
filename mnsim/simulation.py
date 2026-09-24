@@ -159,6 +159,8 @@ class Simulation(PerceptionMixin, CompositionMixin):
         sim_dt=float(sim_dt)
         if not math.isfinite(sim_dt) or sim_dt<0.0:
             raise ValueError(f"simulation step must be finite and non-negative: {sim_dt!r}")
+        from . import model as _model
+        _model.STATE_EPOCH[0] += 1
         start=self.time; end=start+sim_dt
         if not math.isfinite(end):
             raise ValueError("Simulation time step exceeds the finite clock range")

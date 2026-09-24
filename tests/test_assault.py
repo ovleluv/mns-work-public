@@ -58,6 +58,7 @@ def test_assault_waits_for_support_by_fire_and_uses_contact_range():
 
 def test_assault_is_called_off_when_the_attacker_is_shaken():
     sim, b, r = _duel()
+    sim.combat_config["stress_model"] = {"enabled": True}
     b.target_id = r.uid
     from mnsim.model import Track
     b.local_tracks[r.uid] = Track(track_id="t", target_id=r.uid, estimated_pos=r.pos, position_error_m=5.0,
@@ -72,6 +73,7 @@ def test_assault_is_called_off_when_the_attacker_is_shaken():
 
 def test_close_combat_breaks_the_weaker_side():
     sim, b, r = _duel(ratio=3)
+    sim.combat_config["stress_model"] = {"enabled": True}
     r.pos = (b.pos[0] + 20.0, b.pos[1])
     r.state = UnitState.DEFENDING
     before = r.morale

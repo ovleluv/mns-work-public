@@ -40,16 +40,6 @@ A future developer or LLM should preserve these boundaries unless there is a str
 10. **Demo numbers are synthetic tuning values.** Weapon probabilities/ranges in this prototype exist
     to exercise the engine architecture. Replace them with validated scenario data when doing calibrated studies.
 
-## Combat realism layer (v50)
-
-Suppression/morale (`mnsim/stress.py`), fire and movement with assault and close combat
-(`mnsim/assault.py`), prepared positions, sector scanning, terrain LOS, a per-second detection
-hazard, armor protection classes, outranged withdrawal and artillery shoot-and-scoot sit on top of
-the compositional attrition kernel. All coefficients are in
-`config/defaults.json` (`stress_model`, `watch_sweep`, `fire_motion`, `armor_vulnerability`,
-`outranged_reaction`, `classification_error`, `target_signature`, `assault`, `dig_in_time_s`, ...). Each block has
-an `enabled` switch so calibration studies can isolate the kernel. See [CHANGELOG.md](CHANGELOG.md) (v50).
-
 ## Current module responsibilities
 
 ```text
@@ -1186,18 +1176,53 @@ The transient suppression mechanic introduced in v49.5 was removed. Machine guns
 - Preserved queued personnel/equipment damage across aggregation and deaggregation, and corrected completion-time BML branches and per-order deadline reporting. Updated terrain fallback values and synthetic weapon-performance wording in the documentation.
 - Independent scenario/seed runs use the multicore batch API; a single live simulation remains sequential. The detailed implementation and verification record is in [CHANGELOG_v49_11.md](CHANGELOG_v49_11.md).
 
-## v50 review fixes and combat realism model
+## v50 engine optimization, performance and bug fixes
 
-Changes relative to v49.11.
+Changes relative to v49.11. Details and per-commit notes are in [CHANGELOG.md](CHANGELOG.md).
 
-- Reproducibility: engagement grouping is ordered, so the same seed gives the same run regardless of `PYTHONHASHSEED`. Sensor scans run on a fixed `k * sensor_update_s` grid, events are handled at their own timestamps, and the UI advances in fixed 0.25 s steps with render interpolation, so results no longer depend on frame rate or the 1x–32x speed setting.
-- Fog of war: direct-fire decisions use the composition seen at the last observation (`Track.perceived_tags`). Kills become known only to formations that watched them and through their reports (battle-damage assessment); `ATTACK_UNIT` / `DESTROY_UNIT` complete on that evidence or end after `search_timeout_s` without a track.
-- Combat stress: suppression and morale/cohesion in `mnsim/stress.py`. Suppressed formations fire less often and less accurately, move and observe worse; SHAKEN/PINNED formations stop advancing, BROKEN formations fall back and rally. `hold_at_all_costs` lowers the break point.
-- Observation: halted formations sweep their sector (all round without an assigned sector), large formations observe from their footprint, ridges and crests block observation and fire through a DEM line-of-sight check, detection is a per-second hazard with size/firing signature, and classification can be wrong until a contact is IDENTIFIED.
-- Fire effects: firing on the move and at moving targets, kill probabilities by weapon penetration class and target `protection_class`, protection that builds from a hasty to a prepared position over `dig_in_time_s`, artillery time of flight from range, and one aiming bias per fire mission.
-- Fire and movement (`mnsim/assault.py`): an attacking formation no longer stops at its stand-off range. After supporting by fire it assaults once it has fire superiority (or has supported for `commit_after_s`) and is steady and not taking heavy losses, closes on the perceived position at full movement speed, and resolves close combat at `contact_m` with casualties and a morale shock driven by the fighting-power ratio. Failed assaults revert to support by fire. The `assault` directive or `assault.enabled` can switch it off.
-- Doctrine: formations under fire they cannot answer withdraw (`outranged_reaction`), batteries under counter-battery fire displace (shoot and scoot), and formations on a collapsing bridge are moved to the nearest bank.
-- Input validation (`mnsim/validation.py`): JSON `NaN`/`Infinity` are rejected, coordinates and conditions are checked at load time, scenario file references are confined to the scenario folder and the project, the editor never writes terrain outside the scenario folder, and the UI pauses on engine errors instead of exiting.
-- Engine structure and performance: perception and composition code moved from `simulation.py` into `mnsim/perception.py` and `mnsim/composition.py`; exact-interval passability and cached planner edges make `scenarios/demo.json` about 2.3x faster.
-- Tooling: `pyproject.toml`, `constraints.txt`, GitHub Actions CI, and `MISSION/validate_missions.py` validation over several seeds.
-- All new model blocks can be disabled in `config/defaults.json`. Details and measured before/after results are in [CHANGELOG.md](CHANGELOG.md).
+### Performance
+
+Measured on the same machine against the v49.11 baseline (`5e0281e`).
+
+| Benchmark (tdg3 terrain, fixed inputs) | v49.11 | v50 |
+|---|---:|---:|
+| `TerrainModel.passable` | 69.0 µs | 10.7 µs |
+| `TerrainModel.river_at` | 23.5 µs | 1.0 µs |
+| `TerrainModel.speed_factor` | 128.0 µs | 9.3 µs |
+| `observation_modifier` (one sight line) | 120.2 µs | 78.1 µs |
+| Planner `segment_passable` | 100.9 µs | 34.9 µs |
+| `plan_route` (A*) | 1.00 s | 0.32 s |
+| Sensor scan, 21 units | 36.3 ms | 3.1 ms |
+
+| 600 s of simulated time | v49.11 | v50 |
+|---|---:|---:|
+| `scenarios/tdg3.json` + BML | 95.8 s | 18.7 s |
+| `scenarios/demo.json` | 21.3 s | 9.2 s |
+
+`tdg1` is not comparable: in v49.11 its formations never detected each other, so no combat was computed.
+
+- Movement passability is tested exactly once per terrain boundary interval instead of every 20 m, planner edge results are cached per terrain revision, and a leg already verified from the current position is not re-checked every step.
+- Road and river polylines use a grid spatial index; polygon areas carry cached bounding boxes.
+- Firepower and crew-status queries are memoised within a step (keyed on the unit's composition).
+- Sensor pairs outside every possible range or sector are rejected before any terrain ray is cast.
+
+### Engine correctness
+
+- The same seed gives the same run regardless of `PYTHONHASHSEED`; engagement groups are built in a fixed order.
+- Results no longer depend on the integration step, frame rate or the 1x–32x speed setting: sensor scans run on a fixed schedule, events are handled at their own timestamps, detection is a per-second hazard, and the UI advances in fixed 0.25 s steps with render interpolation.
+- Fog of war: fire decisions use the composition seen at the last observation, and a kill becomes known only to formations that watched it (and through their reports).
+
+### Bug fixes
+
+- Delayed artillery effects could hit the wrong vehicle after another vehicle was detached; items now carry stable ids.
+- Dismounted infantry could not fire; formations with both direct and indirect weapons never completed direct-fire acquisition.
+- `STRIKE_INFRASTRUCTURE` ignored `start_at_s`; damage could trigger the branch of a phase order that had not started; a stale "no route" flag from a withdrawal cancelled later `HOLD` orders; `BOARD` skipped completion bookkeeping.
+- `ATTACK_UNIT` / `DESTROY_UNIT` waited forever when the kill was not observed; a formation emptied by vehicle detachment was reported destroyed.
+- Shared reports could overwrite a closer local track; a formation on a collapsing bridge was stranded; a unit with a dead radio could still report to HQ.
+- `direct_fire_requires_local_track` in `config/defaults.json` was outside the `combat` block and ignored.
+- Malformed scenario/BML input (`NaN`, far-off coordinates, wrong condition types) no longer hangs or crashes the engine; it is rejected at load time with the offending field.
+
+### Model additions
+
+- Attacks no longer stop at the stand-off line: after support by fire the attacker assaults and resolves close combat (`mnsim/assault.py`, `combat.assault`).
+- Optional realism blocks in `config/defaults.json` (sector scanning, terrain line of sight, armor protection classes, artillery shoot-and-scoot, etc.). The combat stress model (suppression/morale, `combat.stress_model`) is **disabled by default**.

@@ -7,6 +7,10 @@ import warnings
 
 Vec2 = Tuple[float, float]
 
+#: Bumped by every Simulation step.  Per-unit memoised queries (operational weapons, crew status)
+#: are valid only within one step *and* only while the unit's composition key is unchanged.
+STATE_EPOCH = [0]
+
 class Side(str, Enum):
     BLUE = "BLUE"
     RED = "RED"
@@ -288,10 +292,26 @@ class Unit:
     def alive(self) -> bool:
         return self.active and self.state != UnitState.DESTROYED and self.current_strength > 0
 
+    def _composition_key(self):
+        """Everything the firepower/crew queries depend on that changes during a run."""
+        return (STATE_EPOCH[0], self.active, self.state, self.metadata.get("mount_state"),
+                tuple((e.eid, e.count, tuple(e.item_states), len(e.weapons),
+                       tuple(w.ammo_remaining for w in e.weapons)) for e in self.elements.values()))
+
+    def _memo(self, name, compute):
+        key = self._composition_key()
+        cache = self.__dict__.setdefault("_query_memo", {})
+        hit = cache.get(name)
+        if hit is not None and hit[0] == key:
+            return hit[1]
+        value = compute()
+        cache[name] = (key, value)
+        return value
+
     @property
     def crew_failure_reason(self):
         from .firepower import crew_failure_reason
-        return crew_failure_reason(self)
+        return self._memo("crew_failure_reason", lambda: crew_failure_reason(self))
 
     @property
     def can_observe(self) -> bool:
@@ -363,12 +383,10 @@ class Unit:
 
     def operational_weapons(self) -> List[tuple[FormationElement, WeaponModel]]:
         """Weapons with at least one current participant.  Read-only (no bookkeeping)."""
-        out = []
-        for e in self.elements.values():
-            for w in e.weapons:
-                if self.firepower(e, w).participants > 0:
-                    out.append((e, w))
-        return out
+        def compute():
+            return tuple((e, w) for e in self.elements.values() for w in e.weapons
+                         if self.firepower(e, w).participants > 0)
+        return list(self._memo("operational_weapons", compute))
 
     def mark_unavailable_fire_cycles(self) -> None:
         """Flag direct-fire cycles whose weapon currently has no participants.

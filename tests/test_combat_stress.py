@@ -8,7 +8,14 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def _sim():
-    return load_scenario(str(ROOT / "scenarios" / "demo.json"), bml_files={})
+    sim = load_scenario(str(ROOT / "scenarios" / "demo.json"), bml_files={})
+    sim.combat_config["stress_model"] = {"enabled": True}   # off by default; opt in here
+    return sim
+
+
+def test_stress_model_is_disabled_by_default():
+    sim = load_scenario(str(ROOT / "scenarios" / "demo.json"), bml_files={})
+    assert not sim.stress.enabled
 
 
 def _rifle(u):

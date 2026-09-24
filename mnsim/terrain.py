@@ -128,13 +128,72 @@ class TerrainModel:
             best=wall;break
         return best
 
-    def on_road(self,p:Vec2)->bool:
-        for road in self.roads:
-            pts=[tuple(x) for x in road.get("points",[])]
-            width=float(road.get("width_m",30.0))
+    # ---------- spatial indices for point queries ----------
+    # Point queries (on_road / river_at / area_at / passable) run hundreds of thousands of times
+    # per simulated hour.  Polylines are bucketed into a uniform grid and polygons carry cached
+    # bounding boxes.  Indices are rebuilt whenever the feature list or a feature's geometry size
+    # changes, and query results (including "first feature in authored order") are unchanged.
+    @staticmethod
+    def _epoch():
+        from .model import STATE_EPOCH
+        return STATE_EPOCH[0]
+
+    def _polyline_index(self, kind:str, default_width:float):
+        feats=self.roads if kind=="roads" else self.rivers
+        quick=(id(feats),len(feats)); epoch=self._epoch()
+        cache=self.__dict__.setdefault("_polyline_index_cache",{})
+        hit=cache.get(kind)
+        # Full geometry signature is verified at most once per simulation step.
+        if hit is not None and hit[1]==quick and hit[0]==epoch:
+            return hit[3]
+        sig=quick+tuple((id(f),len(f.get("points",[])),f.get("width_m")) for f in feats)
+        if hit is not None and hit[2]==sig:
+            cache[kind]=(epoch,quick,sig,hit[3])
+            return hit[3]
+        cell=max(10.0,float(self.navigation_config.get("terrain_index_cell_m",100.0)))
+        grid:Dict[Tuple[int,int],list]={}
+        for fi,f in enumerate(feats):
+            pts=[(float(x[0]),float(x[1])) for x in f.get("points",[])]
+            half=float(f.get("width_m",default_width))/2.0+BOUNDARY_EPS_M
+            if len(pts)<2 or half<=BOUNDARY_EPS_M and kind=="rivers":
+                continue
             for a,b in zip(pts,pts[1:]):
-                if _point_segment_distance(p,a,b)<=width/2+BOUNDARY_EPS_M: return True
-        return False
+                x0=int(math.floor((min(a[0],b[0])-half)/cell)); x1=int(math.floor((max(a[0],b[0])+half)/cell))
+                y0=int(math.floor((min(a[1],b[1])-half)/cell)); y1=int(math.floor((max(a[1],b[1])+half)/cell))
+                for cx in range(x0,x1+1):
+                    for cy in range(y0,y1+1):
+                        grid.setdefault((cx,cy),[]).append((fi,a,b,half))
+        index=(cell,grid)
+        cache[kind]=(epoch,quick,sig,index)
+        return index
+
+    def _polyline_hit_index(self, kind:str, p:Vec2, default_width:float):
+        cell,grid=self._polyline_index(kind,default_width)
+        best=None
+        for fi,a,b,half in grid.get((int(math.floor(p[0]/cell)),int(math.floor(p[1]/cell))),()):
+            if (best is None or fi<best) and _point_segment_distance(p,a,b)<=half:
+                best=fi
+        return best
+
+    def _area_polys(self):
+        """[(area, polygon tuples, bbox)] cached per area list / geometry size."""
+        quick=(id(self.areas),len(self.areas)); epoch=self._epoch()
+        hit=self.__dict__.get("_area_poly_cache")
+        if hit is not None and hit[1]==quick and hit[0]==epoch:
+            return hit[3]
+        sig=quick+tuple((id(a),len(a.get("polygon",[]))) for a in self.areas)
+        if hit is not None and hit[2]==sig:
+            self.__dict__["_area_poly_cache"]=(epoch,quick,sig,hit[3])
+            return hit[3]
+        polys=[]
+        for a in self.areas:
+            poly=[tuple(x) for x in a.get("polygon",[])]
+            polys.append((a,poly,self._poly_bbox(poly) if poly else None))
+        self.__dict__["_area_poly_cache"]=(epoch,quick,sig,polys)
+        return polys
+
+    def on_road(self,p:Vec2)->bool:
+        return self._polyline_hit_index("roads",p,30.0) is not None
 
     def river_at(self,p:Vec2):
         """Return the authored river containing *p*, if any.
@@ -143,15 +202,16 @@ class TerrainModel:
         as a polyline ``points`` plus ``width_m``.  The latter is easier for scenario/terrain editors
         and produces believable bends without requiring a hand-built bank polygon.
         """
-        for river in self.rivers:
+        if not self.rivers:
+            return None
+        best=self._polyline_hit_index("rivers",p,0.0)
+        for i,river in enumerate(self.rivers):
+            if best is not None and i>=best:
+                break
             poly=[tuple(x) for x in river.get("polygon",[])]
-            if poly and (_point_in_poly(p,poly) or _point_polygon_boundary_distance(p,poly)<=BOUNDARY_EPS_M): return river
-            pts=[tuple(x) for x in river.get("points",[])]
-            width=float(river.get("width_m",0.0))
-            if len(pts)>=2 and width>0:
-                if any(_point_segment_distance(p,a,b)<=width/2.0+BOUNDARY_EPS_M for a,b in zip(pts,pts[1:])):
-                    return river
-        return None
+            if poly and (_point_in_poly(p,poly) or _point_polygon_boundary_distance(p,poly)<=BOUNDARY_EPS_M):
+                return river
+        return self.rivers[best] if best is not None else None
 
     def in_river(self,p:Vec2)->bool:
         """Return whether *p* lies in river water."""
@@ -162,9 +222,11 @@ class TerrainModel:
     def area_at(self,p:Vec2):
         """Return authored polygon terrain areas containing *p* (WOODS/URBAN/MARSH/etc.)."""
         out=[]
-        for area in self.areas:
-            poly=[tuple(x) for x in area.get("polygon",[])]
-            if poly and _point_in_poly(p,poly): out.append(area)
+        x,y=p
+        for area,poly,bbox in self._area_polys():
+            if not poly or x<bbox[0] or x>bbox[2] or y<bbox[1] or y>bbox[3]:
+                continue
+            if _point_in_poly(p,poly): out.append(area)
         return out
 
     def areas_of_type(self,p:Vec2,*types:str):
@@ -872,9 +934,8 @@ class TerrainModel:
         # Movement treats polygon boundaries as closed. Keep LOS/area queries'
         # historical point-in-polygon convention independent of this policy.
         areas=[]
-        for area in self.areas:
-            poly=area.get("polygon",[])
-            if not poly or not self._segment_bbox_overlap(p,p,self._poly_bbox(poly)):continue
+        for area,poly,bbox in self._area_polys():
+            if not poly or not self._segment_bbox_overlap(p,p,bbox):continue
             if _point_in_poly(p,poly) or _point_polygon_boundary_distance(p,poly)<=BOUNDARY_EPS_M:
                 areas.append(area)
         lake=next((a for a in areas if str(a.get("type","")).upper()=="LAKE"),None)

@@ -1,5 +1,5 @@
 {
-  "checked_at_utc": "2026-09-24T07:02:31.849136+00:00",
+  "checked_at_utc": "2026-09-24T07:47:14.524257+00:00",
   "python": "3.12.13",
   "seed": 7,
   "validation_seeds": [
@@ -171,16 +171,14 @@
         "7": {
           "reserve_engaged": false
         },
-        "8": {
-          "reserve_engaged": false
-        },
+        "8": {},
         "9": {
           "reserve_engaged": false
         },
-        "10": {},
-        "11": {
+        "10": {
           "reserve_engaged": false
-        }
+        },
+        "11": {}
       }
     },
     {
@@ -235,18 +233,9 @@
       ],
       "failed_checks_by_seed": {
         "7": {},
-        "8": {
-          "retreat_completed": false,
-          "rally_hold_entered": false
-        },
-        "9": {
-          "retreat_completed": false,
-          "rally_hold_entered": false
-        },
-        "10": {
-          "retreat_completed": false,
-          "rally_hold_entered": false
-        },
+        "8": {},
+        "9": {},
+        "10": {},
         "11": {}
       }
     }
@@ -260,7 +249,7 @@
   },
   "sha256": {
     "config/artillery_doctrine.json": "bd35ded04bdd1eeeae330a015cb855795242c09e7769ea6b6311f560f92030d5",
-    "config/defaults.json": "65c669766bc27d5c265bc73227037bfcbc699121cfc835ec90fc9991a425a16b",
+    "config/defaults.json": "dfe0b327c48c83e86c9d5454a3ee586e671076511f7023a5dbc8a5856d2ca890",
     "config/doctrine_profiles.json": "b34d4ddc6feb093826b17e5a418e2e06c3433dbcfc9d68ac1a8af2e56a718201",
     "config/targeting_doctrine.json": "f620bb67826f8db80a7b8c2ee7390ee8d04198670489ef09fd2ce147f0e5ecb8",
     "config/terrain_demo.json": "acee5f91dce1cade1125691adfa9b4c13a7945339ecc077b1f491adb44028596",
@@ -293,17 +282,17 @@
     "mnsim/formation_geometry.py": "f08e657eeed7f13e11bdd5253d658fdc624a8417ed82d7dab19dbb8cf293f436",
     "mnsim/indirect_fire.py": "e8f19327d50d204d4ed8306bacd8c5656211a5105dce33a374b9003fb5659290",
     "mnsim/mobility.py": "5b35b3287fbc4a3eb51ee54fa703ca404c7963fc547cd1e78e402eb3562c5a93",
-    "mnsim/model.py": "de6884769c1ca39ea4a60e9c9fad224934ff1da437a66dfc0e8687bc206fe3c1",
+    "mnsim/model.py": "0c94f986cdb699923944dcc2b76633827c962d4a6033342e45c4e485fae44435",
     "mnsim/mounted.py": "7062b304095fb16118e899e778d09a54f524f4ef3e2c8f743ce27c65ac7585c9",
     "mnsim/ownership.py": "d0a9784af5efbfb476d91f2758e9a2b064597025884150f0b5bcb447210b1a49",
-    "mnsim/pathfinding.py": "2be061deba940a21b778181c6ca106b5d7f14216e0ffdf12e975821b3bd0d782",
+    "mnsim/pathfinding.py": "c1b391c4c1d933d47063faa6c8eba62346bd8e23252a6eaf98f0635a5f4fba36",
     "mnsim/perception.py": "28646948e237e402d2d4f39abfeb98d3166e16a656be663379d52d3fd9d23dbe",
     "mnsim/replay.py": "7362a37b8f3540be31b70e5109f831e8fe8420ee4444f2fee2aeec094f620089",
     "mnsim/scenario.py": "4ff5fab30228f292630dea751f4632a8b5e0300a4382a7a2ee006b39c03b6420",
-    "mnsim/simulation.py": "18ec810662342e1851cfbf40ff34a42b0f3aab3906033f1058e48246949b2f4c",
-    "mnsim/stress.py": "4a2b4c3c1d23a25079bdc59dd74f0e26815ba87440f5661944383999b9cd000e",
+    "mnsim/simulation.py": "35493f61185ab4e71e5ed8c9aba1835fed5cecc146f92f06a028a45847feb1fd",
+    "mnsim/stress.py": "c9b2b805878c0e03f3d1e4ca3bb153b741d3d133200da1c2e762aa82712c6ed8",
     "mnsim/symbology.py": "10bc56adf33ee1f447536a930ca1fe293ac480555b9dcf338dab5c27fc199c41",
-    "mnsim/terrain.py": "d3e5b0a2383dd944e8545977b998a1463d7223c06174a5fbcb09c05dfcee4082",
+    "mnsim/terrain.py": "f285b2785dfbdaf77246e86dee7f8ea46051c7623b66c875a6c8c1f33d154690",
     "mnsim/traversal.py": "0033f8d8ff9482af20b1019aa343644da6c862d1cc413cdd9ba091d39e0efdea",
     "mnsim/validation.py": "3ea76c7f022026ec0fc4dab8d7a84e78565629a3a65c7d6f9e86bcb9727b2665",
     "MISSION/AMBUSH/AMBUSH_BLUE_BML.json": "0f2e24a15a8bc1422fd6f7ea2f9450c684afd78ec0502aa66509a355bd5e440e",

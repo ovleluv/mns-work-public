@@ -332,7 +332,7 @@
     "direct_fire_watch_edge_margin_deg": 5.0,
     "direct_fire_requires_local_track": true,
     "stress_model": {
-      "enabled": true,
+      "enabled": false,
       "direct_suppression_per_round": 0.035,
       "direct_hit_multiplier": 1.5,
       "heavy_round_multiplier": 1.5,
