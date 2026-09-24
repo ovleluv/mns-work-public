@@ -89,3 +89,30 @@ def test_stress_model_can_be_disabled():
     sim.combat_config["stress_model"] = {"enabled": False}
     u.suppression = 0.9
     assert sim.stress.accuracy_factor(u) == 1.0 and sim.stress.morale_state(u) == "STEADY"
+
+
+def test_outranged_defender_withdraws_after_sustained_unanswerable_fire():
+    sim = _sim(); u = sim.units["R-INF-2"]
+    u.current_order = Order(order_id="D", kind="DEFEND", params={"duration_s": 9999})
+    u.local_tracks.clear()                                 # the shooter is not even seen
+    start = u.pos
+    for _ in range(int(40 / 0.25)):
+        u.metadata["threat_cue_type"] = "DIRECT_FIRE"
+        u.metadata["threat_cue_source_uid"] = "B-INF-2"
+        u.metadata["threat_cue_heading_deg"] = 180.0       # fire from the west
+        u.metadata["threat_cue_until_t"] = sim.time + 5.0
+        sim.doctrine._outranged_reaction(u, 0.25)
+        sim.time += 0.25
+    assert any(e["kind"] == "OUTRANGED_WITHDRAW" for e in sim.logs)
+    assert u.pos[0] > start[0]                             # moved east, away from the fire
+
+
+def test_hold_at_all_costs_does_not_withdraw_when_outranged():
+    sim = _sim(); u = sim.units["R-INF-2"]
+    u.current_order = Order(order_id="D", kind="HOLD", directives={"hold_at_all_costs": True})
+    u.local_tracks.clear()
+    for _ in range(200):
+        u.metadata.update(threat_cue_type="DIRECT_FIRE", threat_cue_source_uid="B-INF-2",
+                          threat_cue_heading_deg=180.0, threat_cue_until_t=sim.time + 5.0)
+        assert not sim.doctrine._outranged_reaction(u, 0.25)
+        sim.time += 0.25

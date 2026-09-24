@@ -242,6 +242,68 @@ class DoctrineEngine:
             return True
         return False
 
+    STATIC_ORDERS = ("HOLD", "DEFEND", "WAIT")
+
+    def _max_reply_range(self, unit: Unit, track) -> float:
+        best = 0.0
+        for _, w in unit.operational_weapons():
+            if str(w.capability).upper() == "INDIRECT_FIRE":
+                continue
+            if track is None or self.sim.combat.weapon_can_affect_perceived(w, track):
+                best = max(best, float(w.range_m))
+        return best
+
+    def _outranged_reaction(self, unit: Unit, dt: float) -> bool:
+        cfg = dict(self.sim.combat_config.get("outranged_reaction", {}) or {})
+        if not bool(cfg.get("enabled", True)):
+            return False
+        order = unit.current_order
+        kind = str(order.kind).upper() if order else "NONE"
+        latched = unit.metadata.get("_outranged_withdraw_dest")
+        if latched is not None:
+            if math.dist(unit.pos, tuple(latched)) <= float(self.sim.combat_config.get("order_arrival_m", 3.0)):
+                unit.metadata.pop("_outranged_withdraw_dest", None)
+                unit.metadata.pop("_outranged_since", None)
+                return False
+            unit.state = UnitState.RETREATING
+            unit.metadata["tactical_reason"] = "OUTRANGED / WITHDRAW OUT OF RANGE"
+            self.sim._move_toward(unit, tuple(latched), dt)
+            return True
+        if kind not in self.STATIC_ORDERS and order is not None:
+            unit.metadata.pop("_outranged_since", None)
+            return False
+        now = self.sim.time
+        cue_live = (now <= float(unit.metadata.get("threat_cue_until_t", -1e9))
+                    and str(unit.metadata.get("threat_cue_type", "")).upper() == "DIRECT_FIRE")
+        if not cue_live or not self.withdrawal_allowed(unit, autonomous=True) or not self._has_tactical_mobility(unit):
+            unit.metadata.pop("_outranged_since", None)
+            return False
+        src = unit.metadata.get("threat_cue_source_uid")
+        tr = unit.local_tracks.get(src) if src else None
+        reply = self._max_reply_range(unit, tr)
+        if tr is not None and tr.state not in ("LOST", "DESTROYED"):
+            perceived = math.dist(unit.pos, tr.estimated_pos)
+            can_answer = reply > 0.0 and perceived <= reply
+        else:
+            can_answer = False            # fired on by an enemy it cannot even see
+        if can_answer:
+            unit.metadata.pop("_outranged_since", None)
+            return False
+        since = unit.metadata.setdefault("_outranged_since", now)
+        if now - since < float(cfg.get("tolerate_s", 20.0)):
+            return False
+        away = float(unit.metadata.get("threat_cue_heading_deg", unit.heading_deg)) + 180.0
+        dest = self._reachable_retreat_destination(unit, away, float(cfg.get("withdraw_m", 350.0)))
+        if dest is None:
+            return False
+        unit.metadata["_outranged_withdraw_dest"] = tuple(dest)
+        self.sim.log("OUTRANGED_WITHDRAW", unit=unit.uid, source=src, reply_range_m=round(reply, 1),
+                     order=kind)
+        unit.state = UnitState.RETREATING
+        unit.metadata["tactical_reason"] = "OUTRANGED / WITHDRAW OUT OF RANGE"
+        self.sim._move_toward(unit, tuple(dest), dt)
+        return True
+
     def _indirect_fire_dispersion_reaction(self, unit: Unit) -> None:
         if not bool(self.setting(unit,"indirect_fire_auto_disperse",default=True)):
             return
@@ -332,6 +394,11 @@ class DoctrineEngine:
         # Morale and suppression override the COA order: broken formations withdraw and
         # reorganise, pinned/shaken ones stop advancing and go to ground (they keep firing).
         if self._stress_behavior(unit, contacts, dt):
+            return True
+
+        # Under sustained fire it cannot answer (outranged, or the shooter is unseen), a
+        # non-attacking formation pulls back out of the beaten zone instead of dying in place.
+        if self._outranged_reaction(unit, dt):
             return True
 
         if not contacts:

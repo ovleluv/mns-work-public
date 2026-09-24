@@ -399,6 +399,11 @@
       "firing_window_s": 10.0,
       "firing_factor": 1.6
     },
-    "visual_angular_error_rad": 0.01
+    "visual_angular_error_rad": 0.01,
+    "outranged_reaction": {
+      "enabled": true,
+      "tolerate_s": 20.0,
+      "withdraw_m": 350.0
+    }
   }
 }
