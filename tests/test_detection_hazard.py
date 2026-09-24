@@ -44,3 +44,16 @@ def test_firing_and_size_raise_signature():
         if e.category.upper() == "PERSONNEL":
             e.count = 1
     assert sim._target_signature(u) < quiet
+
+
+def test_classification_can_be_wrong_until_identified_and_sticks():
+    from mnsim.model import Track
+    sim = load_scenario(str(ROOT / "scenarios" / "demo.json"), bml_files={})
+    tank = sim.units["R-TK-1"]
+    sim.combat_config["classification_error"] = {"enabled": True, "max_error_probability": 1.0}
+    assert sim._perceived_class(None, tank, 0.52) == "MECH_INFANTRY"
+    prev = Track(track_id="t", target_id=tank.uid, estimated_pos=tank.pos, position_error_m=10.0,
+                 classification="MECH_INFANTRY", state="CLASSIFIED")
+    sim.combat_config["classification_error"] = {"enabled": True, "max_error_probability": 0.0}
+    assert sim._perceived_class(prev, tank, 0.7) == "MECH_INFANTRY"      # sticky judgement
+    assert sim._perceived_class(None, tank, 0.9) == "ARMOR"              # confident -> correct

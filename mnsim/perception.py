@@ -314,6 +314,27 @@ class PerceptionMixin:
         angular=max(0.25,1.0-0.65*(off/half)**1.5)
         return True, forward, angular*env_detection, False
 
+    DEFAULT_CONFUSION = {"ARMOR":"MECH_INFANTRY","MECH_INFANTRY":"ARMOR","MOTORIZED_INFANTRY":"MECH_INFANTRY",
+                         "INFANTRY":"RECON","RECON":"INFANTRY","ARTILLERY":"ARMOR"}
+
+    def _perceived_class(self, prev, tgt: Unit, conf: float) -> str:
+        """Classification below IDENTIFIED can be wrong (similar-looking formation types).
+
+        Error probability shrinks with confidence; a classification, once formed, sticks until
+        the contact is identified (observers do not re-roll their judgement every glance).
+        """
+        if prev is not None and prev.state=="CLASSIFIED" and prev.classification not in ("UNKNOWN",""):
+            return prev.classification
+        cfg=dict(self.combat_config.get("classification_error",{}) or {})
+        if not bool(cfg.get("enabled",True)):
+            return tgt.branch
+        table=dict(self.DEFAULT_CONFUSION); table.update({str(k).upper():str(v).upper() for k,v in dict(cfg.get("confusion",{})).items()})
+        wrong=table.get(tgt.branch)
+        p=float(cfg.get("max_error_probability",0.25))*max(0.0,min(1.0,(0.82-conf)/0.30))
+        if wrong and self.rng.random()<p:
+            return wrong
+        return tgt.branch
+
     def _sensor_step(self):
         stale_s=float(self.combat_config.get("track_stale_s",18.0)); lost_s=float(self.combat_config.get("track_lost_s",45.0))
         # Age all tracks. Counter-battery point-of-origin solutions remain tactically useful
@@ -400,7 +421,7 @@ class PerceptionMixin:
                 ang=self.rng.random()*math.tau; mag=abs(self.rng.gauss(0,err*0.45))
                 est=(tgt.pos[0]+math.cos(ang)*mag,tgt.pos[1]+math.sin(ang)*mag)
                 state="DETECTED"; cls="UNKNOWN"
-                if n>=2 or conf>=0.52: state="CLASSIFIED"; cls=tgt.branch
+                if n>=2 or conf>=0.52: state="CLASSIFIED"; cls=self._perceived_class(prev,tgt,conf)
                 if n>=4 or conf>=0.82: state="IDENTIFIED"; cls=tgt.branch
                 tr=Track(track_id=f"{obs.uid}:{tgt.uid}",target_id=tgt.uid,estimated_pos=est,
                          position_error_m=err,classification=cls,confidence=conf,last_seen_time=self.time,

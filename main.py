@@ -968,6 +968,10 @@ def draw_bottom(screen, fonts, sim, selected, layout):
     vals=[("SIM TIME",f"T+ {sim.time:7.1f} s"),("SPEED",f"x{sim.speed:g}"),("ENGAGEMENTS",str(len(sim.engagements))),("LAND TARGETS","ENGAGE WITHIN RANGE"),("POSTURE",selected.state.value if selected else "-"),("TARGET",selected.target_id if selected and selected.target_id else "-")]
     if selected:
         vals.append(("ACTION",str(selected.metadata.get("tactical_reason","-") or "-")))
+        if getattr(sim,"stress",None) is not None and sim.stress.enabled:
+            dig=sim.dig_in_fraction(selected) if hasattr(sim,"dig_in_fraction") else 0.0
+            vals.append(("MORALE",f"{sim.stress.morale_state(selected)} {selected.morale*100:.0f}%   SUPPRESSION {selected.suppression*100:.0f}%"
+                                   +(f"   DUG-IN {dig*100:.0f}%" if dig>0 else "")))
         if selected.branch=="ARTILLERY":
             vals.append(("FIRE PROFILE",str(selected.metadata.get("artillery_fire_profile","CONCENTRATED"))))
         if selected.metadata.get("last_contact_id"):

@@ -427,6 +427,18 @@
     },
     "artillery_displace_on_counterfire": true,
     "artillery_counterfire_displace_m": 500.0,
-    "artillery_displace_cooldown_s": 240.0
+    "artillery_displace_cooldown_s": 240.0,
+    "classification_error": {
+      "enabled": true,
+      "max_error_probability": 0.25,
+      "confusion": {
+        "ARMOR": "MECH_INFANTRY",
+        "MECH_INFANTRY": "ARMOR",
+        "MOTORIZED_INFANTRY": "MECH_INFANTRY",
+        "INFANTRY": "RECON",
+        "RECON": "INFANTRY",
+        "ARTILLERY": "ARMOR"
+      }
+    }
   }
 }
