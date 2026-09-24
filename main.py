@@ -659,8 +659,8 @@ def _visual_profile_for_ui(unit, sim=None):
     # Use the same data-driven profile as the engine so F1/properties/map never drift from
     # branch defaults or weather/illumination modifiers. Terrain crossed farther down a sightline
     # can further degrade detection per target and therefore cannot be represented by one perfect arc.
-    if sim is not None and hasattr(sim, "_visual_sensor_profile"):
-        forward,fov,close,_,_=sim._visual_sensor_profile(unit, None)
+    if sim is not None and hasattr(sim, "visual_sensor_profile"):
+        forward,fov,close,_,_=sim.visual_sensor_profile(unit, None)
         return float(forward),float(fov),float(close)
     md=dict(unit.unit_type.metadata.get("visual_sensor", {}))
     return (float(md.get("forward_range_m", unit.unit_type.detection_range_m)),
@@ -988,7 +988,7 @@ def draw_bottom(screen, fonts, sim, selected, layout):
         screen.blit(small.render(_clip_text(small,f"Watch direction   {selected.watch_heading_deg%360:.0f} deg",p3.w-28),True,TEXT),(p3.left+14,sy)); sy+=24
         for elem in selected.elements.values():
             if elem.role.upper() == "COUNTER_BATTERY_RADAR" and sy+22 < p3.bottom:
-                rr=float(elem.metadata.get("radar_range_m",0.0)); status="ON" if sim._radar_element_operational(selected,elem) else "DISABLED"
+                rr=float(elem.metadata.get("radar_range_m",0.0)); status="ON" if sim.radar_element_operational(selected,elem) else "DISABLED"
                 s=f"Counter-battery radar   {rr:.0f} m  {status}"; screen.blit(small.render(_clip_text(small,s,p3.w-28),True,TEXT if elem.operational else MUTED),(p3.left+14,sy)); sy+=24
         rows=[(w.name,w.range_m,elem.count,w.ammo_remaining) for elem,w in selected.operational_weapons()]
         if not rows: screen.blit(small.render("No operational weapon capability",True,MUTED),(p3.left+14,sy))
@@ -1186,7 +1186,13 @@ def main():
     if not scenario_path:
         print("No scenario selected; simulator not started.")
         return
-    sim=load_scenario(scenario_path,bml_files=selected_bml); set_world(sim)
+    try:
+        sim=load_scenario(scenario_path,bml_files=selected_bml)
+    except Exception as ex:
+        # Untrusted scenario/BML data: report the offending field instead of a traceback.
+        print(f"Failed to load scenario {scenario_path}: {ex}")
+        return
+    set_world(sim)
     controller=SimulationController(sim, supported_speeds=SIM_SPEEDS)
     print(f"Scenario: {os.path.abspath(scenario_path)}")
     print(f"Terrain : {getattr(sim, 'terrain_file', '(none)')}")
@@ -1202,6 +1208,7 @@ def main():
     layout=build_layout(*screen.get_size())
     cam=Camera(WORLD_W/2,WORLD_H/2,1.0)
     selected=None; view_mode="BLUE"; dragging=False; drag_origin=(0,0); last_mouse=(0,0); drag_moved=False; running=True; help_visible=False
+    sim_error=None
 
     while running:
         dt=min(clock.tick(FPS)/1000.0,0.05)
@@ -1244,7 +1251,7 @@ def main():
                         try:
                             sim=load_scenario(chosen,bml_files=chosen_bml); scenario_path=chosen; selected_bml=chosen_bml; set_world(sim)
                             controller=SimulationController(sim, supported_speeds=SIM_SPEEDS)
-                            cam=Camera(WORLD_W/2,WORLD_H/2,1.0); selected=None
+                            cam=Camera(WORLD_W/2,WORLD_H/2,1.0); selected=None; sim_error=None
                         except Exception as ex:
                             print(f"Failed to load scenario {chosen}: {ex}")
                 elif e.key==pygame.K_F1: help_visible=not help_visible; dragging=False
@@ -1262,12 +1269,20 @@ def main():
                     elif e.key==pygame.K_g: view_mode="GOD"; selected=None
                     elif e.key==pygame.K_HOME: cam.reset()
                     elif e.key==pygame.K_l:
-                        os.makedirs("logs",exist_ok=True); sim.save_log("logs/replay.jsonl"); print("saved logs/replay.jsonl")
+                        out=_replay_log_path(); sim.save_log(out); print(f"saved {out}")
 
         # F1 behaves as a modal inspection popup: simulation is visually frozen while open.
         # At high acceleration, split wall-clock advancement into bounded simulation-time
         # substeps so sensor scans and chained discrete events do not become frame-rate dependent.
-        if not help_visible: controller.advance_realtime(dt)
+        if not help_visible and sim_error is None:
+            try:
+                controller.advance_realtime(dt)
+            except Exception as ex:
+                # Keep the operator picture alive: pause on an engine error rather than exiting.
+                import traceback
+                traceback.print_exc()
+                sim.paused=True
+                sim_error=f"SIMULATION HALTED at T={sim.time:.1f}s: {type(ex).__name__}: {ex}"
 
         screen.fill(PANEL)
         draw_terrain(screen,cam,map_tiny,layout,sim)
@@ -1293,10 +1308,25 @@ def main():
         status=map_tiny.render(_clip_text(map_tiny,status_text,max(100,layout.map_rect.w-450)),True,(77,80,74))
         screen.blit(status,(min(layout.map_rect.left+440,layout.map_rect.right-status.get_width()-8),layout.map_rect.bottom-38))
 
+        if sim_error:
+            banner=map_tiny.render(_clip_text(map_tiny,sim_error+"  (Ctrl+O to load another scenario)",max(100,layout.map_rect.w-24)),True,(255,255,255))
+            pygame.draw.rect(screen,(170,40,40),(layout.map_rect.left+8,layout.map_rect.top+34,banner.get_width()+12,banner.get_height()+8))
+            screen.blit(banner,(layout.map_rect.left+14,layout.map_rect.top+38))
         if help_visible: draw_help(screen,fonts,layout)
         pygame.display.flip()
 
     pygame.quit()
+
+
+def _replay_log_path(directory="logs"):
+    """Unique, timestamped replay file so an earlier run is never silently overwritten."""
+    import datetime
+    os.makedirs(directory,exist_ok=True)
+    stamp=datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+    path=os.path.join(directory,f"replay-{stamp}.jsonl"); n=1
+    while os.path.exists(path):
+        n+=1; path=os.path.join(directory,f"replay-{stamp}-{n}.jsonl")
+    return path
 
 
 if __name__=="__main__":

@@ -91,7 +91,7 @@ pip install -r requirements.txt
 python main.py scenarios/demo.json
 ```
 
-Controls: `SPACE` pause/resume; top-right buttons select `1x/2x/4x/8x/16x/32x`; `1/2/4/8` remain direct keyboard shortcuts and `[` / `]` step slower/faster; click a unit to inspect it; `L` writes `logs/replay.jsonl`.
+Controls: `SPACE` pause/resume; top-right buttons select `1x/2x/4x/8x/16x/32x`; `1/2/4/8` remain direct keyboard shortcuts and `[` / `]` step slower/faster; click a unit to inspect it; `L` writes a timestamped `logs/replay-YYYYMMDD-HHMMSS.jsonl` (never overwriting an earlier log). If the engine raises during a run, the view pauses and shows the error instead of exiting.
 
 ## Architecture
 

@@ -17,7 +17,13 @@ When they become true, `on_true` replaces the active order. Supported paths incl
 - `self.time_in_order`
 - `self.capability.<CAPABILITY>`
 - `self.distance_to_objective`, `self.at_objective`
-- legacy `self.enemy_count_near`
+- `self.enemy_count_near` — number of current enemy Tracks whose *estimated* position is within
+  `condition_radius_m` (default 800 m); it never counts unobserved enemy units
+
+Conditions are validated when the BML is loaded: `lhs` must be one of the paths above, numeric
+paths need a finite numeric `rhs`, `self.capability.*`/`self.at_objective` need `true`/`false`
+with `==`/`!=`, and `self.state` needs a state-name string. Coordinates must be finite and lie
+inside the world (plus a 25% margin).
 
 Operators: `<`, `<=`, `>`, `>=`, `==`, `!=`.
 

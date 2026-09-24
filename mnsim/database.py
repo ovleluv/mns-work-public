@@ -17,7 +17,8 @@ from typing import Any, Dict, Mapping
 def _json_cell(value: str, default):
     if value is None or str(value).strip() == "":
         return default
-    return json.loads(value)
+    from .validation import strict_json_loads
+    return strict_json_loads(value)
 
 
 def _int_cell(value: str, default: int) -> int:
@@ -25,7 +26,13 @@ def _int_cell(value: str, default: int) -> int:
 
 
 def _float_cell(value: str, default: float) -> float:
-    return default if value is None or str(value).strip() == "" else float(value)
+    if value is None or str(value).strip() == "":
+        return default
+    import math
+    v = float(value)
+    if not math.isfinite(v):
+        raise ValueError(f"non-finite numeric cell {value!r}")
+    return v
 
 
 @dataclass(frozen=True)
@@ -71,7 +78,8 @@ class LoadoutCatalog:
 
     @classmethod
     def from_json(cls, path: str | Path) -> "LoadoutCatalog":
-        raw = json.loads(Path(path).read_text(encoding="utf-8"))
+        from .validation import read_json_file
+        raw = read_json_file(path)
         src = dict(raw.get("loadouts", raw))
         resolved: Dict[str, Dict[str, str]] = {}
 

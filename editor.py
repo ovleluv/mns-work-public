@@ -151,7 +151,7 @@ class Editor:
  def _load_default_types(self):
   toe=self.root/'config/toe_templates.json'
   if toe.exists():
-   self.type_defs=dict(json.loads(toe.read_text()).get('unit_types',{})); self._enrich_platform_metadata(); self._load_weapon_defs()
+   self.type_defs=dict(json.loads(toe.read_text(encoding='utf-8')).get('unit_types',{})); self._enrich_platform_metadata(); self._load_weapon_defs()
    self.types=list(self.type_defs.keys())
   else:
    self.type_defs={}; self.types=[]
@@ -206,6 +206,28 @@ class Editor:
   self.type_idx=min(self.type_idx,max(0,len(self.types)-1)); self.selected=None; self.comp_draft=None; self.points=[]; self.delete_undo=[]
   self.reset_camera()
   self.message='NEW blank plain | N new | O open | S save'
+
+ def _confine_terrain_path(self):
+  """Never write terrain outside the scenario's own folder tree.
+
+  ``terrain_file`` comes from the opened scenario and is untrusted: "../../x" or an absolute
+  path would otherwise make Save overwrite an arbitrary file.  Such references are redirected
+  to ``<scenario>_terrain.json`` beside the scenario.  Returns True when redirected.
+  """
+  if self.scenario_path is None:
+   return False
+  base=self.scenario_path.resolve().parent
+  target=Path(self.terrain_path).resolve() if self.terrain_path is not None else None
+  inside=False
+  if target is not None and target.suffix.lower()=='.json' and target!=self.scenario_path.resolve():
+   try:
+    target.relative_to(base); inside=True
+   except ValueError:
+    inside=False
+  if inside:
+   return False
+  self.terrain_path=self.scenario_path.with_name(self.scenario_path.stem+'_terrain.json')
+  return True
 
  def _prepare_save_references(self):
   if self.scenario_path is None or self.terrain_path is None:
@@ -296,19 +318,19 @@ class Editor:
   self.clamp_camera()
 
  def load(self,path):
-  path=Path(path); self.scenario=json.loads(path.read_text()); self.scenario_path=path
+  path=Path(path); self.scenario=json.loads(path.read_text(encoding='utf-8')); self.scenario_path=path
   tref=self.scenario.get('terrain_file'); tp=(path.parent/tref).resolve() if tref else None
-  self.terrain=json.loads(tp.read_text()) if tp and tp.exists() else {'roads':[],'rivers':[],'bridges':[],'barricades':[],'areas':[]}; self.terrain.setdefault('barricades',[]); self.terrain_path=tp or path.with_name(path.stem+'_terrain.json')
+  self.terrain=json.loads(tp.read_text(encoding='utf-8')) if tp and tp.exists() else {'roads':[],'rivers':[],'bridges':[],'barricades':[],'areas':[]}; self.terrain.setdefault('barricades',[]); self.terrain_path=tp or path.with_name(path.stem+'_terrain.json')
   uref=self.scenario.get('unit_types_file'); up=(path.parent/uref).resolve() if uref else None
   if up and up.exists():
-   self.type_defs=dict(json.loads(up.read_text()).get('unit_types',{}))
+   self.type_defs=dict(json.loads(up.read_text(encoding='utf-8')).get('unit_types',{}))
   elif self.scenario.get('unit_types'):
    self.type_defs=dict(self.scenario.get('unit_types',{}))
   else:
    # Backward compatibility: old maps often carry a version-folder-relative TO&E path.
    # If that reference is stale after the map is moved, render against this release's TO&E.
    toe=self.root/'config/toe_templates.json'
-   self.type_defs=dict(json.loads(toe.read_text()).get('unit_types',{})) if toe.exists() else {}
+   self.type_defs=dict(json.loads(toe.read_text(encoding='utf-8')).get('unit_types',{})) if toe.exists() else {}
   self._enrich_platform_metadata(); self._load_weapon_defs(); self.types=list(self.type_defs.keys())
   self.type_idx=min(self.type_idx,max(0,len(self.types)-1)); self.selected=None; self.comp_draft=None; self.points=[]; self.delete_undo=[]
   self.clamp_terrain_to_world()
@@ -340,10 +362,11 @@ class Editor:
     self.message='Save cancelled'; return
    self.scenario_path=Path(chosen)
    self.terrain_path=self.scenario_path.with_name(self.scenario_path.stem+'_terrain.json')
+  redirected=self._confine_terrain_path()
   self._prepare_save_references()
   self.clamp_terrain_to_world()
   self.scenario_path.parent.mkdir(parents=True,exist_ok=True); self.terrain_path.parent.mkdir(parents=True,exist_ok=True)
-  self.scenario_path.write_text(json.dumps(self.scenario,indent=2)+'\n'); self.terrain_path.write_text(json.dumps(self.terrain,indent=2)+'\n'); self.message=f'Saved {self.scenario_path.name} + {self.terrain_path.name}'
+  self.scenario_path.write_text(json.dumps(self.scenario,indent=2)+'\n',encoding='utf-8'); self.terrain_path.write_text(json.dumps(self.terrain,indent=2)+'\n',encoding='utf-8'); self.message=f'Saved {self.scenario_path.name} + {self.terrain_path.name}'+(' (terrain redirected into the scenario folder)' if redirected else '')
  def choose(self,save=False):
   try:
    import tkinter as tk; from tkinter import filedialog

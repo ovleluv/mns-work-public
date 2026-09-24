@@ -15,10 +15,10 @@
 
 ## 실행
 
-PowerShell에서 프로젝트 안쪽 디렉터리로 이동한다.
+PowerShell에서 저장소 루트(`README.md`가 있는 디렉터리)로 이동한다.
 
 ```powershell
-Set-Location 'C:\Users\user\Desktop\mns_v49_7_work\mns_v49_7_work'
+Set-Location <저장소 루트 경로>
 ```
 
 전체 수행 기능을 다시 검사한다. 이 명령은 `MISSION/VALIDATION_STATUS.json`을 갱신한다.

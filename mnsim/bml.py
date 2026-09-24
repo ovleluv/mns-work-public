@@ -7,7 +7,7 @@ class ConditionEvaluator:
     """Deterministic BML-lite condition language.
 
     Conditions are intentionally based on simulation state available to the commanded formation;
-    enemy ground truth is not exposed here.  Active-order ``conditions`` are reactive triggers:
+    enemy ground truth is not exposed here (enemy counts come from the unit's own Tracks).  Active-order ``conditions`` are reactive triggers:
     when all become true, ``on_true`` replaces the current order.
     """
     OPS = {
@@ -47,10 +47,21 @@ class ConditionEvaluator:
             return unit.capability_available(path.split(".", 2)[2])
         if path == "sim.time": return sim.time
         if path == "self.enemy_count_near":
+            # Perceived enemy formations only: current (non-LOST, non-DESTROYED) tracks whose
+            # *estimated* position lies within the radius.  Never counts ground-truth units.
             r = float(unit.metadata.get("condition_radius_m", 800.0))
-            # This coarse count is a legacy condition helper. It should eventually be track-based;
-            # do not use it for firing-quality decisions.
-            return sum(1 for x in sim.units.values() if x.alive and x.side != unit.side and unit.distance_to(x) <= r)
+            max_age = float(sim.combat_config.get("track_lost_s", 45.0))
+            count = 0
+            for tid, tr in unit.local_tracks.items():
+                tgt = sim.units.get(tid)
+                if tgt is None or tgt.side == unit.side or tr.state in ("LOST", "DESTROYED"):
+                    continue
+                if sim.time - tr.last_seen_time > max_age:
+                    continue
+                dx = tr.estimated_pos[0] - unit.pos[0]; dy = tr.estimated_pos[1] - unit.pos[1]
+                if (dx*dx + dy*dy) ** 0.5 <= r:
+                    count += 1
+            return count
         if path in ("self.distance_to_objective", "self.at_objective"):
             obj = unit.metadata.get("objective")
             if not obj:
@@ -293,6 +304,8 @@ def apply_bml_document(sim, raw: Dict[str, Any], expected_side: str | None = Non
     simulation engine.  Without ``start_at_s`` each unit proceeds to its next queued phase when its
     previous mission completes; ``start_at_s`` provides an absolute scenario-time gate.
     """
+    from .validation import validate_bml_document
+    validate_bml_document(raw, getattr(sim, "world", None))
     declared = str(raw.get("side", expected_side or "")).upper()
     if expected_side and declared and declared != str(expected_side).upper():
         raise ValueError(f"BML side mismatch: expected {expected_side}, file declares {declared}")

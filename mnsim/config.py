@@ -14,4 +14,6 @@ def deep_update(dst: Dict[str, Any], src: Dict[str, Any]) -> Dict[str, Any]:
     return dst
 
 def load_json_config(path: Path) -> Dict[str, Any]:
-    return json.loads(path.read_text(encoding="utf-8"))
+    """Load a JSON document, rejecting NaN/Infinity and oversize files."""
+    from .validation import read_json_file
+    return read_json_file(path)

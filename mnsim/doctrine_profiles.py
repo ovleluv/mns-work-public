@@ -17,7 +17,8 @@ class DoctrineProfileCatalog:
 
     @classmethod
     def from_json(cls, path: str | Path) -> "DoctrineProfileCatalog":
-        raw=json.loads(Path(path).read_text(encoding="utf-8"))
+        from .validation import read_json_file
+        raw=read_json_file(path)
         profiles=dict(raw.get("profiles", raw))
         return cls({str(k):dict(v) for k,v in profiles.items()})
 

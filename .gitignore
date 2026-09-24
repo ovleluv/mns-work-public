@@ -22,3 +22,11 @@ tmp/
 
 # 구버전 백업
 /main_v07_backup.py
+
+# OS 메타데이터
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 실행 중 생성되는 리플레이 로그
+*.jsonl

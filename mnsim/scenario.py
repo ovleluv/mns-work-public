@@ -11,21 +11,28 @@ from .catalog import UnitTypeCatalog
 from .database import WeaponCatalog, LoadoutCatalog, PlatformCatalog
 from .doctrine_profiles import DoctrineProfileCatalog
 from .mounted import initialize_transport_metadata
+from . import validation as V
 
 
 
-def _project_resource(scenario_path: str, ref, default_relative: str | None = None) -> Path | None:
+def _project_resource(scenario_path: str, ref, default_relative: str | None = None,
+                      roots=None) -> Path | None:
     """Resolve scenario resources without tying saved maps to a versioned project folder.
 
-    Explicit scenario-relative/absolute references still win when they exist.  Standard
-    engine resources transparently fall back to the currently running project so maps
-    copied out of an older release remain loadable.
+    Explicit scenario-relative/absolute references win when they exist and lie inside an
+    allowed root (the scenario's folder tree or the project tree).  Standard engine resources
+    transparently fall back to the currently running project so maps copied out of an older
+    release remain loadable.  A reference outside the allowed roots is never read.
     """
     root = Path(__file__).resolve().parent.parent
+    roots = roots if roots is not None else V.allowed_resource_roots(scenario_path)
     if ref:
         rp = Path(str(ref))
         candidate = rp.resolve() if rp.is_absolute() else (Path(scenario_path).parent / rp).resolve()
-        if candidate.exists():
+        if not V.is_within(candidate, roots):
+            if not default_relative:
+                raise V.ValidationError(f"resource {ref!r} resolves outside the allowed folders")
+        elif candidate.exists():
             return candidate
     if default_relative:
         fallback = (root / default_relative).resolve()
@@ -34,24 +41,45 @@ def _project_resource(scenario_path: str, ref, default_relative: str | None = No
     return None
 
 
+def _explicit_resource(ref, base: Path, roots, field: str) -> Path:
+    """Resolve a required reference relative to *base*, confined to the allowed roots."""
+    rp = Path(str(ref))
+    resolved = rp.resolve() if rp.is_absolute() else (base / rp).resolve()
+    if not V.is_within(resolved, roots):
+        raise V.ValidationError(f"{field}: {ref!r} resolves outside the allowed folders")
+    return resolved
+
+
 def load_scenario(path: str, bml_files: dict | None = None) -> Simulation:
-    raw = json.loads(Path(path).read_text(encoding="utf-8"))
-    sim = Simulation(seed=int(raw.get("seed", 7)))
+    """Build a Simulation from a scenario file.
+
+    ``bml_files`` are run-time selections made by the operator (file picker / CLI) and are
+    trusted paths; every reference *inside* the scenario is confined to the scenario's folder
+    tree or the project tree.
+    """
+    raw = V.read_json_file(path)
+    if not isinstance(raw, dict):
+        raise V.ValidationError(f"{path}: scenario must be a JSON object")
+    roots = V.allowed_resource_roots(path)
+    sim = Simulation(seed=int(V.finite_number(raw.get("seed", 7), "seed")))
     sim.objectives = raw.get("objectives", {})
-    sim.world = dict(raw.get("world", {"width_m": 4000, "height_m": 4000}))
+    sim.world = V.validate_world(raw.get("world", {"width_m": 4000, "height_m": 4000}))
+    for name, pos in dict(sim.objectives).items():
+        V.point(pos, f"objectives.{name}", sim.world)
+    V.validate_scenario_units(raw.get("units", []), sim.world)
 
     # Configuration precedence:
     # built-in engine fallbacks < external JSON config < scenario-local combat overrides.
     cfg_ref = raw.get("config_file")
-    cfg_path = _project_resource(path, cfg_ref, "config/defaults.json")
+    cfg_path = _project_resource(path, cfg_ref, "config/defaults.json", roots)
     if cfg_path:
         cfg = load_json_config(cfg_path)
         deep_update(sim.combat_config, dict(cfg.get("combat", {})))
     deep_update(sim.combat_config, dict(raw.get("combat", {})))
 
     terrain_ref = raw.get("terrain_file")
-    terrain_path = (Path(path).parent / terrain_ref).resolve() if terrain_ref else None
-    terrain_data = load_json_config(terrain_path) if terrain_path else {}
+    terrain_path = _explicit_resource(terrain_ref, Path(path).parent, roots, "terrain_file") if terrain_ref else None
+    terrain_data = V.validate_terrain(load_json_config(terrain_path), "terrain") if terrain_path else {}
     sim.terrain = TerrainModel(terrain_data, sim.combat_config.get("navigation", {}))
     sim.terrain.world = sim.world
     sim.terrain._units_provider = lambda: sim.units.values()
@@ -60,13 +88,13 @@ def load_scenario(path: str, bml_files: dict | None = None) -> Simulation:
     doctrine_ref = raw.get("artillery_doctrine_file")
     sim.artillery_doctrine_profiles = {}
     sim.targeting_doctrine = {}
-    doctrine_path = _project_resource(path, doctrine_ref, "config/artillery_doctrine.json")
+    doctrine_path = _project_resource(path, doctrine_ref, "config/artillery_doctrine.json", roots)
     if doctrine_path:
         doctrine_data = load_json_config(doctrine_path)
         sim.artillery_doctrine_profiles = dict(doctrine_data.get("profiles", {}))
 
     targeting_ref = raw.get("targeting_doctrine_file")
-    targeting_path = _project_resource(path, targeting_ref, "config/targeting_doctrine.json")
+    targeting_path = _project_resource(path, targeting_ref, "config/targeting_doctrine.json", roots)
     if targeting_path:
         targeting_data = load_json_config(targeting_path)
         profiles = dict(targeting_data.get("profiles", {}))
@@ -80,7 +108,7 @@ def load_scenario(path: str, bml_files: dict | None = None) -> Simulation:
     unit_type_lib_path = None
     if unit_type_raw is None:
         ref = raw.get("unit_types_file")
-        unit_type_lib_path = _project_resource(path, ref, "config/toe_templates.json")
+        unit_type_lib_path = _project_resource(path, ref, "config/toe_templates.json", roots)
         if unit_type_lib_path is None:
             raise ValueError("Scenario requires unit_types or an available project TO&E library")
         unit_type_lib = load_json_config(unit_type_lib_path)
@@ -94,7 +122,7 @@ def load_scenario(path: str, bml_files: dict | None = None) -> Simulation:
     if doctrine_profiles_ref:
         ref_path = Path(str(doctrine_profiles_ref))
         base = unit_type_lib_path.parent if raw.get("doctrine_profiles_file") is None and unit_type_lib_path else Path(path).parent
-        doctrine_profiles_path = ref_path.resolve() if ref_path.is_absolute() else (base / ref_path).resolve()
+        doctrine_profiles_path = _explicit_resource(ref_path, base, roots, "doctrine_profiles_file")
         sim.doctrine_profiles = DoctrineProfileCatalog.from_json(doctrine_profiles_path).profiles
         sim.doctrine_profiles_file = str(doctrine_profiles_path)
 
@@ -106,7 +134,7 @@ def load_scenario(path: str, bml_files: dict | None = None) -> Simulation:
     if weapon_db_ref:
         ref_path = Path(str(weapon_db_ref))
         base = unit_type_lib_path.parent if raw.get("weapon_database_file") is None and unit_type_lib_path else Path(path).parent
-        weapon_db_path = ref_path.resolve() if ref_path.is_absolute() else (base / ref_path).resolve()
+        weapon_db_path = _explicit_resource(ref_path, base, roots, "weapon_database_file")
         weapon_catalog = WeaponCatalog.from_csv(weapon_db_path)
 
     platform_catalog = None
@@ -114,7 +142,7 @@ def load_scenario(path: str, bml_files: dict | None = None) -> Simulation:
     if platform_ref:
         ref_path = Path(str(platform_ref))
         base = unit_type_lib_path.parent if raw.get("platform_database_file") is None and unit_type_lib_path else Path(path).parent
-        platform_path = ref_path.resolve() if ref_path.is_absolute() else (base / ref_path).resolve()
+        platform_path = _explicit_resource(ref_path, base, roots, "platform_database_file")
         platform_catalog = PlatformCatalog.from_csv(platform_path)
 
     loadout_catalog = None
@@ -122,7 +150,7 @@ def load_scenario(path: str, bml_files: dict | None = None) -> Simulation:
     if loadout_ref:
         ref_path = Path(str(loadout_ref))
         base = unit_type_lib_path.parent if raw.get("loadouts_file") is None and unit_type_lib_path else Path(path).parent
-        loadout_path = ref_path.resolve() if ref_path.is_absolute() else (base / ref_path).resolve()
+        loadout_path = _explicit_resource(ref_path, base, roots, "loadouts_file")
         loadout_catalog = LoadoutCatalog.from_json(loadout_path)
 
     # Data-definition construction is isolated from scenario orchestration.
@@ -237,11 +265,12 @@ def load_scenario(path: str, bml_files: dict | None = None) -> Simulation:
         if runtime_bml_selection:
             bml_path = ref_path.resolve()
         else:
-            bml_path = ref_path.resolve() if ref_path.is_absolute() else (Path(path).parent / ref_path).resolve()
+            bml_path = _explicit_resource(ref_path, Path(path).parent, roots, f"bml_files.{side}")
         bml_raw = load_json_config(bml_path)
         apply_bml_document(sim, bml_raw, expected_side=str(side).upper())
         sim.bml_files[str(side).upper()] = str(bml_path)
-        sim.log("BML_LOADED", side=str(side).upper(), file=str(bml_path))
+        # Replays are shared artefacts: record a project-relative name, not the absolute path.
+        sim.log("BML_LOADED", side=str(side).upper(), file=V.display_path(bml_path))
 
     # Optional load-time aggregation, e.g. three platoons displayed/fought as one company.
     for a in raw.get("aggregations", []):
