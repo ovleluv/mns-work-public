@@ -45,7 +45,10 @@ A future developer or LLM should preserve these boundaries unless there is a str
 ```text
 main.py                 Pygame tactical UI only
 mnsim/model.py          Core data model: Unit, FormationElement, WeaponModel, Track, Order
-mnsim/simulation.py     Orchestrator, time loop, movement, engagements, FoW/C2/event integration
+mnsim/simulation.py     Orchestrator, time loop, order execution, movement, engagements, events
+mnsim/perception.py     (mixin) sensing, watch orientation, cues, counter-battery, tracks, C2 receive, BDA
+mnsim/composition.py    (mixin) aggregation/deaggregation, vehicle detachment, stable item lookup
+mnsim/validation.py     Load-time validation of untrusted scenario/terrain/BML input
 mnsim/combat.py         Direct-fire compatibility, target choice, ammunition use, fire resolution
 mnsim/indirect_fire.py  Artillery launch/impact model, CEP/dispersion, spatial area effects
 mnsim/fire_control.py    Delayed fire-request/FDC/gun-preparation/reload pipeline
