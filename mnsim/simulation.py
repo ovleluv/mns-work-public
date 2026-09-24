@@ -146,6 +146,8 @@ class Simulation(PerceptionMixin, CompositionMixin):
         if not math.isfinite(sim_dt) or sim_dt<0.0:
             raise ValueError(f"simulation step must be finite and non-negative: {sim_dt!r}")
         start=self.time; end=start+sim_dt
+        # Positions at the start of the step, used only for render interpolation between steps.
+        self._step_start_pos={uid:u.pos for uid,u in self.units.items()}
         # Each event is handled at its own timestamp, so follow-on delays (C2 hops, FDC, damage)
         # accumulate from the true event time instead of being rounded up to the tick boundary.
         for ev in self.events.pop_due(end):
@@ -164,6 +166,19 @@ class Simulation(PerceptionMixin, CompositionMixin):
             if self._next_sensor_update <= self.time:
                 self._next_sensor_update = self.time + interval
         self._combat_step()
+
+    def realtime_alpha(self, max_sim_step_s: float = 0.25) -> float:
+        """Fraction of the next fixed step already accumulated (0..1), for render interpolation."""
+        fixed=max(float(max_sim_step_s),0.01)
+        return max(0.0,min(1.0,getattr(self,"_realtime_accumulator",0.0)/fixed))
+
+    def display_position(self, unit: Unit, alpha: float):
+        """Position interpolated between the last two fixed steps (presentation only)."""
+        prev=getattr(self,"_step_start_pos",{}).get(unit.uid)
+        if prev is None or not unit.active:
+            return unit.pos
+        a=max(0.0,min(1.0,float(alpha)))
+        return (prev[0]+(unit.pos[0]-prev[0])*a, prev[1]+(unit.pos[1]-prev[1])*a)
 
     def advance_realtime(self, wall_dt: float, max_sim_step_s: float = 0.25):
         """Advance from UI wall-clock time with a fixed simulation step.
@@ -564,10 +579,16 @@ class Simulation(PerceptionMixin, CompositionMixin):
             self.log("BML_TARGET_DESTROYED",unit=u.uid,target=target_uid,order=o.kind,
                      bda_source=getattr(known,"source",None))
             self._complete_order(u); return
+        if not tgt.active and tgt.state!=UnitState.DESTROYED:
+            # Administrative identity change (aggregated into a parent, emptied by detachment,
+            # embarked): the commanded entity no longer exists as an addressable formation.
+            self.log("BML_TARGET_MISSING",unit=u.uid,target=target_uid,order=o.kind,reason="NOT_ADDRESSABLE")
+            self._complete_order(u); return
 
         # Explicit mission target gets priority when it is perceived.
         contact=self._specific_target_track(u,target_uid,include_lost=True)
         if contact:
+            u.metadata.pop("_target_search_since",None)
             _,tr,actionable=contact
             u.metadata["last_contact_id"]=target_uid
             u.metadata["last_contact_pos"]=tuple(tr.estimated_pos)
@@ -588,6 +609,14 @@ class Simulation(PerceptionMixin, CompositionMixin):
             u.state=UnitState.SEARCHING
             u.metadata["tactical_reason"]=f"{o.kind} / SEARCH TARGET LAST KNOWN"
             self._move_toward(u,tuple(tr.estimated_pos),dt); return
+
+        # No usable track on the mission target.  A search that finds nothing within the timeout
+        # ends the mission (target not found) instead of waiting forever for an unobserved kill.
+        since=u.metadata.setdefault("_target_search_since",self.time)
+        timeout=float(o.params.get("search_timeout_s",self.combat_config.get("entity_attack_search_timeout_s",600.0)))
+        if timeout>=0 and self.time-since>=timeout:
+            self.log("BML_TARGET_NOT_FOUND",unit=u.uid,target=target_uid,order=o.kind,searched_s=round(self.time-since,1))
+            self._complete_order(u); return
 
         # En route, fight actionable intervening contacts rather than ignoring them.
         other=self._best_attack_track(u,include_lost=False)
@@ -710,7 +739,7 @@ class Simulation(PerceptionMixin, CompositionMixin):
         o=u.current_order
         self.log("ORDER_COMPLETE",unit=u.uid,order=o.kind,order_id=o.order_id)
         u.current_order=None
-        for key in ("order_started_t","search_arrived_t","objective","mounted_action_started_t","barricade_build_started_t","_building_access_id"):
+        for key in ("order_started_t","search_arrived_t","objective","mounted_action_started_t","barricade_build_started_t","_building_access_id","_target_search_since"):
             u.metadata.pop(key,None)
         self._clear_navigation_state(u)
         apply_branch(self,u,o)

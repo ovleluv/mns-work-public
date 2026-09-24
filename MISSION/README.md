@@ -9,6 +9,7 @@
 - `MISSION_FEASIBILITY.md`: 작전별 판정, BLUE 계획, RED 역할, 미지원 원인과 해결 방향, 소스 근거.
 - `MISSION_MANIFEST.json`: 8개 케이스의 입력 파일 연결과 검증 시간 설정.
 - `VALIDATION_STATUS.json`: 수행 기능의 검증 여부와 입력·엔진 해시. 전투 승패·손실 통계 없음.
+  검증은 여러 시드(기본: manifest `seed`부터 5개, `validation_seeds`로 변경 가능)로 실행한다. 불변 조건(BML 유효성, 명령 오류 없음 등)은 모든 시드에서, 수행 기능 시연 항목은 한 시드 이상에서 성립해야 PASS다. 시드별 실패 항목은 `failed_checks_by_seed`에 남는다.
 - `validate_missions.py`: 정상 엔진을 사용한 headless 기능 확인.
 - `run_case.py`: 시나리오와 BLUE/RED BML을 명시적으로 선택해 기존 GUI 실행.
 - 각 작전 폴더: `<작전>_SCENARIO.json`, `<작전>_BLUE_BML.json`, `<작전>_RED_BML.json`, `<작전>_TERRAIN.json`.

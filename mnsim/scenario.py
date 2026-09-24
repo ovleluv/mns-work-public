@@ -16,7 +16,7 @@ from . import validation as V
 
 
 def _project_resource(scenario_path: str, ref, default_relative: str | None = None,
-                      roots=None) -> Path | None:
+                      roots=None, warnings: list | None = None) -> Path | None:
     """Resolve scenario resources without tying saved maps to a versioned project folder.
 
     Explicit scenario-relative/absolute references win when they exist and lie inside an
@@ -32,6 +32,10 @@ def _project_resource(scenario_path: str, ref, default_relative: str | None = No
         if not V.is_within(candidate, roots):
             if not default_relative:
                 raise V.ValidationError(f"resource {ref!r} resolves outside the allowed folders")
+            msg = f"resource {ref!r} is outside the allowed folders; using project default {default_relative}"
+            if warnings is not None:
+                warnings.append(msg)
+            print(f"WARNING: {msg}")
         elif candidate.exists():
             return candidate
     if default_relative:
@@ -61,6 +65,7 @@ def load_scenario(path: str, bml_files: dict | None = None) -> Simulation:
     if not isinstance(raw, dict):
         raise V.ValidationError(f"{path}: scenario must be a JSON object")
     roots = V.allowed_resource_roots(path)
+    load_warnings: list = []
     sim = Simulation(seed=int(V.finite_number(raw.get("seed", 7), "seed")))
     sim.objectives = raw.get("objectives", {})
     sim.world = V.validate_world(raw.get("world", {"width_m": 4000, "height_m": 4000}))
@@ -71,7 +76,7 @@ def load_scenario(path: str, bml_files: dict | None = None) -> Simulation:
     # Configuration precedence:
     # built-in engine fallbacks < external JSON config < scenario-local combat overrides.
     cfg_ref = raw.get("config_file")
-    cfg_path = _project_resource(path, cfg_ref, "config/defaults.json", roots)
+    cfg_path = _project_resource(path, cfg_ref, "config/defaults.json", roots, load_warnings)
     if cfg_path:
         cfg = load_json_config(cfg_path)
         deep_update(sim.combat_config, dict(cfg.get("combat", {})))
@@ -88,13 +93,13 @@ def load_scenario(path: str, bml_files: dict | None = None) -> Simulation:
     doctrine_ref = raw.get("artillery_doctrine_file")
     sim.artillery_doctrine_profiles = {}
     sim.targeting_doctrine = {}
-    doctrine_path = _project_resource(path, doctrine_ref, "config/artillery_doctrine.json", roots)
+    doctrine_path = _project_resource(path, doctrine_ref, "config/artillery_doctrine.json", roots, load_warnings)
     if doctrine_path:
         doctrine_data = load_json_config(doctrine_path)
         sim.artillery_doctrine_profiles = dict(doctrine_data.get("profiles", {}))
 
     targeting_ref = raw.get("targeting_doctrine_file")
-    targeting_path = _project_resource(path, targeting_ref, "config/targeting_doctrine.json", roots)
+    targeting_path = _project_resource(path, targeting_ref, "config/targeting_doctrine.json", roots, load_warnings)
     if targeting_path:
         targeting_data = load_json_config(targeting_path)
         profiles = dict(targeting_data.get("profiles", {}))
@@ -108,7 +113,7 @@ def load_scenario(path: str, bml_files: dict | None = None) -> Simulation:
     unit_type_lib_path = None
     if unit_type_raw is None:
         ref = raw.get("unit_types_file")
-        unit_type_lib_path = _project_resource(path, ref, "config/toe_templates.json", roots)
+        unit_type_lib_path = _project_resource(path, ref, "config/toe_templates.json", roots, load_warnings)
         if unit_type_lib_path is None:
             raise ValueError("Scenario requires unit_types or an available project TO&E library")
         unit_type_lib = load_json_config(unit_type_lib_path)
@@ -271,6 +276,10 @@ def load_scenario(path: str, bml_files: dict | None = None) -> Simulation:
         sim.bml_files[str(side).upper()] = str(bml_path)
         # Replays are shared artefacts: record a project-relative name, not the absolute path.
         sim.log("BML_LOADED", side=str(side).upper(), file=V.display_path(bml_path))
+
+    sim.load_warnings = load_warnings
+    for msg in load_warnings:
+        sim.log("LOAD_WARNING", message=msg)
 
     # Optional load-time aggregation, e.g. three platoons displayed/fought as one company.
     for a in raw.get("aggregations", []):

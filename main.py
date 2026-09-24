@@ -1285,22 +1285,28 @@ def main():
                 sim_error=f"SIMULATION HALTED at T={sim.time:.1f}s: {type(ex).__name__}: {ex}"
 
         screen.fill(PANEL)
-        draw_terrain(screen,cam,map_tiny,layout,sim)
-        draw_orders_and_engagements(screen,cam,sim,view_mode,layout)
-        draw_objectives(screen,cam,sim,map_font,layout)
-        draw_recent_artillery(screen,cam,sim,layout)
-        draw_ranges(screen,cam,selected,layout,fonts[3],sim)
-        if view_mode == "GOD":
-            for u in sim.units.values():
-                if u.active: draw_nato_symbol(screen,cam,map_font,map_tiny,sim,u,selected is u,layout)
-        else:
-            viewer=Side(view_mode)
-            for u in sim.units.values():
-                if u.active and u.side == viewer: draw_nato_symbol(screen,cam,map_font,map_tiny,sim,u,selected is u,layout)
-            for tr in sim.side_tracks(viewer).values(): draw_contact(screen,cam,map_font,map_tiny,tr,sim,viewer,layout)
-        draw_map_buttons(screen,map_tiny,sim,cam,layout)
-        badge=map_tiny.render(f"VIEW {view_mode}   [B] BLUE  [R] RED  [G] GOD   [F1] HELP",True,(45,48,45)); screen.blit(badge,(layout.map_rect.left+12,layout.map_rect.top+12))
-        draw_bottom(screen,fonts,sim,selected,layout)
+        # The engine advances in fixed 0.25 s steps; draw units between the last two steps so
+        # 1x/2x motion stays smooth.  Positions are restored right after drawing.
+        _saved_pos=_apply_display_positions(sim)
+        try:
+            draw_terrain(screen,cam,map_tiny,layout,sim)
+            draw_orders_and_engagements(screen,cam,sim,view_mode,layout)
+            draw_objectives(screen,cam,sim,map_font,layout)
+            draw_recent_artillery(screen,cam,sim,layout)
+            draw_ranges(screen,cam,selected,layout,fonts[3],sim)
+            if view_mode == "GOD":
+                for u in sim.units.values():
+                    if u.active: draw_nato_symbol(screen,cam,map_font,map_tiny,sim,u,selected is u,layout)
+            else:
+                viewer=Side(view_mode)
+                for u in sim.units.values():
+                    if u.active and u.side == viewer: draw_nato_symbol(screen,cam,map_font,map_tiny,sim,u,selected is u,layout)
+                for tr in sim.side_tracks(viewer).values(): draw_contact(screen,cam,map_font,map_tiny,tr,sim,viewer,layout)
+            draw_map_buttons(screen,map_tiny,sim,cam,layout)
+            badge=map_tiny.render(f"VIEW {view_mode}   [B] BLUE  [R] RED  [G] GOD   [F1] HELP",True,(45,48,45)); screen.blit(badge,(layout.map_rect.left+12,layout.map_rect.top+12))
+            draw_bottom(screen,fonts,sim,selected,layout)
+        finally:
+            _restore_positions(sim,_saved_pos)
 
         bml_b=os.path.basename(sim.bml_files.get("BLUE","-")) if getattr(sim,"bml_files",None) else "-"
         bml_r=os.path.basename(sim.bml_files.get("RED","-")) if getattr(sim,"bml_files",None) else "-"
@@ -1316,6 +1322,21 @@ def main():
         pygame.display.flip()
 
     pygame.quit()
+
+
+def _apply_display_positions(sim):
+    alpha=sim.realtime_alpha() if hasattr(sim,"realtime_alpha") else 1.0
+    saved={}
+    for u in sim.units.values():
+        shown=sim.display_position(u,alpha) if hasattr(sim,"display_position") else u.pos
+        if shown!=u.pos:
+            saved[u.uid]=u.pos; u.pos=shown
+    return saved
+
+
+def _restore_positions(sim,saved):
+    for uid,pos in saved.items():
+        sim.units[uid].pos=pos
 
 
 def _replay_log_path(directory="logs"):

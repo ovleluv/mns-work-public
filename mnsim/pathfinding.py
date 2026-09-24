@@ -287,15 +287,13 @@ class NavigationPlanner:
         parent: Dict[int, int] = {}
         heap = [(self._heuristic(unit, start, destination), 0.0, start_i)]
         closed = set()
-        max_expansions = int(self.config.get("max_astar_expansions", 4000))
+        # Each node is expanded at most once, so effort is bounded by the node count; terrain
+        # complexity itself is capped at load time (mnsim/validation.py).
         while heap:
             _, cur_g, i = heapq.heappop(heap)
             if i in closed:
                 continue
             closed.add(i)
-            if len(closed) > max_expansions:
-                # Bounded planning effort: a pathological terrain file must not freeze the sim.
-                return [start]
             if i == dest_i:
                 break
             for j, edge_cost in neighbors(i):

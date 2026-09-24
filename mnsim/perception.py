@@ -82,6 +82,8 @@ class PerceptionMixin:
                 raw.update(dict(ov))
             for k in ("range_factor","awareness_factor"):
                 bound=max(bound,float(raw.get(k,1.0)))
+            if str(z.get("type","")).upper()=="BUILDING":
+                bound=max(bound,float(z.get("external_range_factor",0.82)))
         env=dict(self.combat_config.get("environment",{}))
         for table in ("weather_observation_modifiers","illumination_observation_modifiers"):
             for raw in dict(env.get(table,{})).values():
@@ -325,7 +327,10 @@ class PerceptionMixin:
                          observations=n,source="LOCAL",observation_zone=("CLOSE" if in_all_round else "FORWARD"),state=state,
                          belief_confidence=max(prev.belief_confidence if prev else 0.0,conf),
                          existence_confirmed=True,last_confirmed_time=self.time,
-                         perceived_tags=self.combat.observed_target_tags(tgt))
+                         # Composition is only discerned once the contact is classified; a bare
+                         # detection falls back to the (UNKNOWN) classification.
+                         perceived_tags=(self.combat.observed_target_tags(tgt) if state!="DETECTED"
+                                         else (prev.perceived_tags if prev else None)))
                 self.belief.on_observation(tr,cls)
                 obs.local_tracks[tgt.uid]=tr
                 if prev is None or prev.state in ("STALE","LOST"):
@@ -573,8 +578,10 @@ class PerceptionMixin:
             tr=obs.local_tracks.get(target.uid)
             if tr is None or tr.state in ("LOST","DESTROYED"):
                 continue
+            # The shooter is held to the same rule: firing on a radar fix or a shared report is
+            # not the same as watching the target die.
             fresh=str(tr.source).upper() in ("LOCAL","PROXIMITY") and self.time-tr.last_seen_time<=window
-            if fresh or obs.uid==source_uid:
+            if fresh:
                 witnesses.append(obs)
         for obs in witnesses:
             self._apply_bda(obs,target.uid,{"estimated_pos":obs.local_tracks[target.uid].estimated_pos},

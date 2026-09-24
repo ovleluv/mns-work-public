@@ -124,20 +124,48 @@ class CompositionMixin:
             c.pos = self._deaggregated_position(p, c)
             # Orders and perception from before aggregation are stale: children continue the
             # aggregate's mission with the aggregate's (newer) picture of the enemy.
-            c.current_order = copy.deepcopy(p.current_order)
-            c.order_queue = copy.deepcopy(p.order_queue)
+            lead = not restored
+            offset = dict(p.metadata.get("child_offsets", {})).get(cid, (0.0, 0.0))
+            c.current_order = self._split_order_for_child(p.current_order, cid, offset, lead)
+            c.order_queue = [o for o in (self._split_order_for_child(q, cid, offset, lead)
+                                         for q in p.order_queue) if o is not None]
             c.local_tracks = self._merge_tracks([c.local_tracks, p.local_tracks])
             c.target_id = None
             self._clear_navigation_state(c)
-            for key in ("order_started_t","search_arrived_t","target_acquired_t","_direct_fire_state",
+            for key in ("search_arrived_t","target_acquired_t","_direct_fire_state",
                         "_local_direct_target_locks","_direct_fire_cycle_state"):
                 c.metadata.pop(key, None)
+            # Keep the aggregate's order clock so HOLD durations/conditions do not restart.
+            if "order_started_t" in p.metadata and c.current_order is not None:
+                c.metadata["order_started_t"] = p.metadata["order_started_t"]
+            else:
+                c.metadata.pop("order_started_t", None)
             restored.append(cid)
         p.active = False
         p.state = UnitState.AGGREGATED
         p.metadata["deaggregated"] = True
         self.log("DEAGGREGATE", parent=parent_uid, children=restored)
         return restored
+
+    #: Orders that describe one shared physical action; only the lead subordinate inherits them.
+    _INDIVISIBLE_ORDERS = frozenset({"BUILD_BARRICADE", "BOARD", "DISEMBARK", "MOUNT", "DISMOUNT",
+                                     "STRIKE_INFRASTRUCTURE", "ENTER_BUILDING", "EXIT_BUILDING"})
+
+    def _split_order_for_child(self, order, child_uid, offset, lead):
+        """Per-subordinate copy of an aggregate order: unique id, destination shifted by the
+        subordinate's formation offset; indivisible actions go to the lead subordinate only."""
+        if order is None:
+            return None
+        if str(order.kind).upper() in self._INDIVISIBLE_ORDERS and not lead:
+            return None
+        out = copy.deepcopy(order)
+        out.order_id = f"{order.order_id}@{child_uid}"
+        dx, dy = float(offset[0]), float(offset[1])
+        for key in ("destination", "center", "search_reference"):
+            v = out.params.get(key)
+            if isinstance(v, (list, tuple)) and len(v) >= 2 and str(order.kind).upper() not in self._INDIVISIBLE_ORDERS:
+                out.params[key] = [float(v[0]) + dx, float(v[1]) + dy]
+        return out
 
     @staticmethod
     def _merge_tracks(track_maps):

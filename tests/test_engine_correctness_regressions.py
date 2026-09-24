@@ -136,3 +136,46 @@ def test_delayed_artillery_effect_follows_the_physical_item_after_detachment():
     assert el.item_states[el.index_of_item(third_id)] == "DESTROYED"
     others = [s for i, s in enumerate(el.item_states) if el.item_ids[i] != third_id]
     assert all(s == "OPERATIONAL" for s in others)
+
+
+def test_attack_unit_ends_when_target_is_not_found():
+    from mnsim.model import Order
+    sim = load_scenario(str(ROOT / "scenarios" / "demo.json"))
+    b = sim.units["B-TK-1"]
+    b.order_queue.clear(); b.local_tracks.clear()
+    b.current_order = Order(order_id="kill", kind="ATTACK_UNIT",
+                            params={"target_unit": "R-INF-1", "search_timeout_s": 5.0})
+    sim.units["R-INF-1"].state = UnitState.DESTROYED   # killed out of view
+    for _ in range(30):
+        b.local_tracks.clear()
+        sim._step_entity_attack_order(b, b.current_order, 0.25) if b.current_order else None
+        sim.time += 0.25
+    assert b.current_order is None
+    assert any(e["kind"] == "BML_TARGET_NOT_FOUND" for e in sim.logs)
+
+
+def test_shooter_without_a_fresh_local_track_gets_no_bda():
+    sim = load_scenario(str(ROOT / "scenarios" / "demo.json"))
+    arty = sim.units["B-ART-1"]
+    target = sim.units["R-ART-1"]
+    tr = _local_track(target, sim.time - 100.0, "ARTILLERY")
+    tr.source = "COUNTER_BATTERY"
+    arty.local_tracks[target.uid] = tr
+    sim._on_unit_destroyed(target, source_uid=arty.uid)
+    assert arty.local_tracks[target.uid].state != "DESTROYED"
+
+
+def test_deaggregated_children_get_distinct_offset_orders():
+    from mnsim.model import Order
+    sim = load_scenario(str(ROOT / "scenarios" / "demo.json"))
+    kids = ["B-INF-2", "B-INF-3"]
+    before = {k: sim.units[k].pos for k in kids}
+    parent = sim.aggregate_units("B-COY", "coy", kids)
+    parent.current_order = Order(order_id="adv", kind="MOVE", params={"destination": [2000.0, 2000.0]})
+    sim.deaggregate_unit("B-COY")
+    orders = [sim.units[k].current_order for k in kids]
+    assert len({o.order_id for o in orders}) == 2
+    dests = [tuple(o.params["destination"]) for o in orders]
+    assert dests[0] != dests[1]
+    for k in kids:
+        assert sim.units[k].pos == before[k]
