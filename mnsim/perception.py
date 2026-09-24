@@ -341,6 +341,11 @@ class PerceptionMixin:
                 self.belief.age(tr)
 
         self._refresh_sensor_boost_bound()
+        # Observation time actually elapsed since the previous scan: the hazard integrates the
+        # past interval, so the first scan (t=0) cannot front-load a whole interval of looking.
+        last=getattr(self,"_last_sensor_scan_t",None)
+        exposure_dt=0.0 if last is None else max(0.0,min(4.0*sensor_dt,self.time-last))
+        self._last_sensor_scan_t=self.time
         live_targets=[u for u in self.units.values() if u.alive]
         for obs in [u for u in self.units.values() if u.can_observe]:
             self._update_watch_heading(obs,sensor_dt)
@@ -386,7 +391,7 @@ class PerceptionMixin:
                 max_p=float(self.combat_config.get("visual_detection_max_p_per_scan",0.55))
                 p1=max(0.001,min(0.98,(edge_p+max_p*range_factor*self._target_signature(tgt))*angular_factor
                                   *self.stress.detection_factor(obs)))
-                p=1.0-(1.0-p1)**sensor_dt
+                p=1.0-(1.0-p1)**exposure_dt
                 if self.rng.random() > p: continue
                 n=(prev.observations+1) if prev else 1
                 conf=min(0.98,(prev.confidence if prev else 0.18)+0.16+0.16*range_factor)
@@ -412,7 +417,7 @@ class PerceptionMixin:
                     self.log("TRACK_UPDATE",observer=obs.uid,target=tgt.uid,state=state,confidence=round(conf,2),source="LOCAL")
                 # Local observation is not instantly available to every friendly unit.
                 # First, the observer must report it; only then can C2 disseminate the report.
-                report_p=1.0-(1.0-float(self.combat_config.get("report_probability_per_observation",0.42)))**sensor_dt
+                report_p=1.0-(1.0-float(self.combat_config.get("report_probability_per_observation",0.42)))**max(exposure_dt,1e-6)
                 report_key=(obs.uid,tgt.uid)
                 min_report_interval=float(self.combat_config.get("observer_report_min_interval_s",12.0))
                 can_report=(self.time-self._last_report_sent.get(report_key,-1e9))>=min_report_interval

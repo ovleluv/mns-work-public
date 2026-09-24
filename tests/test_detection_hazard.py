@@ -7,16 +7,17 @@ from mnsim.scenario import load_scenario
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def _mean_time_to_detect(interval, seeds=12):
+def _mean_time_to_detect(interval, seeds=30):
     ts = []
     for seed in range(seeds):
         sim = load_scenario(str(ROOT / "scenarios" / "demo.json"), bml_files={})
         sim.rng.seed(seed)
         sim.combat_config["sensor_update_s"] = interval
+        sim.combat_config["watch_sweep"] = {"enabled": False}   # isolate the hazard from scanning
         for u in sim.units.values():
             u.order_queue = []; u.current_order = None
         b, r = sim.units["B-TK-1"], sim.units["R-TK-1"]
-        b.pos = (r.pos[0] - 900, r.pos[1])
+        b.pos = (r.pos[0] - 900, r.pos[1]); b.watch_heading_deg = 0.0
         hit = 300.0
         while sim.time < 300.0:
             sim.step(0.25)
