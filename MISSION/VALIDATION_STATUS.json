@@ -1,5 +1,5 @@
 {
-  "checked_at_utc": "2026-09-24T05:04:34.888024+00:00",
+  "checked_at_utc": "2026-09-24T07:02:31.849136+00:00",
   "python": "3.12.13",
   "seed": 7,
   "validation_seeds": [
@@ -243,11 +243,11 @@
           "retreat_completed": false,
           "rally_hold_entered": false
         },
-        "10": {},
-        "11": {
+        "10": {
           "retreat_completed": false,
           "rally_hold_entered": false
-        }
+        },
+        "11": {}
       }
     }
   ],
@@ -260,7 +260,7 @@
   },
   "sha256": {
     "config/artillery_doctrine.json": "bd35ded04bdd1eeeae330a015cb855795242c09e7769ea6b6311f560f92030d5",
-    "config/defaults.json": "0325dd05f8eb4b20ef2f00b449478ef65e88cb92ce1be2466586f98d40b1ef34",
+    "config/defaults.json": "65c669766bc27d5c265bc73227037bfcbc699121cfc835ec90fc9991a425a16b",
     "config/doctrine_profiles.json": "b34d4ddc6feb093826b17e5a418e2e06c3433dbcfc9d68ac1a8af2e56a718201",
     "config/targeting_doctrine.json": "f620bb67826f8db80a7b8c2ee7390ee8d04198670489ef09fd2ce147f0e5ecb8",
     "config/terrain_demo.json": "acee5f91dce1cade1125691adfa9b4c13a7945339ecc077b1f491adb44028596",
@@ -270,12 +270,13 @@
     "database/weapons.csv": "5d02ef6a4882d0d416a73b03a10a77afe6cf29e6891b0106ef136b82d9fbf3bf",
     "mnsim/__init__.py": "91447944015cec709e8aa7655f7e9d64e1e4508e7023a57fe3746911c0fc6fed",
     "mnsim/application.py": "ac5ed22632090a6b157793f982c2d1188f05a16f5e9afc35755e63967e4d7fb0",
+    "mnsim/assault.py": "f15898e64a31c269e2784415bef9354666cd02ebaab6319f132a417f0603c440",
     "mnsim/batch.py": "e05e14ed1f07416f2d79baefccd0b672300dd1b73b35017f23e7fc89991e9614",
     "mnsim/belief.py": "a06e86c8cf5d08f20abdfb78c7b05d959d986bb7e4a09bc0b1d25f45c96daf97",
-    "mnsim/bml.py": "ca7697ae8549d80d85df449d2c5549f3071b5629f7954b359e72e062a15868dd",
+    "mnsim/bml.py": "3a060b61f72ba4301775ac9e555f1f7ddaae452e191675f1252654e1d586068a",
     "mnsim/cartography.py": "6cc388f312cfd2578d49b69d0e5bea5f205ef6faacf061fa0da98d120f162aa9",
     "mnsim/catalog.py": "08914245ff2c365eef104ee40955da555acfb1855c5d5a00ecca57c74293e611",
-    "mnsim/combat.py": "cd798898de2fadd8c5e97b1c667f43cf17b97861d6d7e72a68ed25cbdc10855b",
+    "mnsim/combat.py": "cc642e25e313c1d0f276b7646e0d1d8f7ca021d2bcf3b7527de0145ce81fb281",
     "mnsim/communications.py": "c8962adcd024497a0568940b9952674c4245886fad0e53fd72042b372cf46844",
     "mnsim/composition.py": "8c673a63fa4d75784932c434c708d216fb6a63fe973a54de78c37c872817a20f",
     "mnsim/config.py": "8320a9f0f5f984a29b0900cc9bb918fb04b862b7d4bad9a1dac805377a728cbf",
@@ -283,7 +284,7 @@
     "mnsim/damage.py": "76fe9c95f7a7b6ae3e0add0f752ee646269b5efdd1e9169a7b11299175cb64a3",
     "mnsim/database.py": "048a9ae98d94a5a89f980304dbedcfa6b5de6a96c627eac5581ab402e0bfe85b",
     "mnsim/definitions.py": "5f5b7ea1862672916c99672c1b6d136c5769e8927dd4b4c092ceff3b6e05f853",
-    "mnsim/doctrine.py": "a3856c99f36f108bf101134512b6ccd56445cdc811247f2ad67d7f147fb7a5d6",
+    "mnsim/doctrine.py": "f9399288de4cba3ec8fb226f51f05af221a47c4d374ff71279a2e69da4872cd5",
     "mnsim/doctrine_profiles.py": "68577050abd04f6e19cd648ded7f3279c4c3bdd18d35aeba0996f9389f26ee4b",
     "mnsim/environment.py": "d43aeccf00e4614ff57f658f744706735cb273c8b7139f2be6287005beaeac3e",
     "mnsim/events.py": "7c7393533b3f849d7c0e17e70d3b1b697b5957feb5f2f766117b0da06e2e80aa",
@@ -296,10 +297,10 @@
     "mnsim/mounted.py": "7062b304095fb16118e899e778d09a54f524f4ef3e2c8f743ce27c65ac7585c9",
     "mnsim/ownership.py": "d0a9784af5efbfb476d91f2758e9a2b064597025884150f0b5bcb447210b1a49",
     "mnsim/pathfinding.py": "2be061deba940a21b778181c6ca106b5d7f14216e0ffdf12e975821b3bd0d782",
-    "mnsim/perception.py": "3e58816d84c65ef2d0c3857d579a31a84a1aaa06d7c5ccbb73bdfb719d36bee7",
+    "mnsim/perception.py": "28646948e237e402d2d4f39abfeb98d3166e16a656be663379d52d3fd9d23dbe",
     "mnsim/replay.py": "7362a37b8f3540be31b70e5109f831e8fe8420ee4444f2fee2aeec094f620089",
     "mnsim/scenario.py": "4ff5fab30228f292630dea751f4632a8b5e0300a4382a7a2ee006b39c03b6420",
-    "mnsim/simulation.py": "7391b3e7be98040d140009b4337591d99c1ee854dc28947c1a99233b742ff9cb",
+    "mnsim/simulation.py": "18ec810662342e1851cfbf40ff34a42b0f3aab3906033f1058e48246949b2f4c",
     "mnsim/stress.py": "4a2b4c3c1d23a25079bdc59dd74f0e26815ba87440f5661944383999b9cd000e",
     "mnsim/symbology.py": "10bc56adf33ee1f447536a930ca1fe293ac480555b9dcf338dab5c27fc199c41",
     "mnsim/terrain.py": "d3e5b0a2383dd944e8545977b998a1463d7223c06174a5fbcb09c05dfcee4082",

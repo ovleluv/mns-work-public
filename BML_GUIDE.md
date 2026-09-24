@@ -176,6 +176,8 @@ Supported local-reaction directives currently include:
 - `allow_break_contact`
 - `allow_artillery_displacement`
 - `allow_indirect_fire_dispersion`
+- `assault` — `false` keeps an ATTACK / ATTACK_UNIT / DESTROY_UNIT order at its stand-off line
+  (support by fire only); by default the formation assaults once it has fire superiority
 
 These directives override normal local reaction policy, not physical reality. A unit with no usable
 weapon can be ordered not to withdraw, but it does not magically regain firepower.

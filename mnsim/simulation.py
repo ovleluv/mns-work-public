@@ -111,6 +111,8 @@ class Simulation(PerceptionMixin, CompositionMixin):
         self.communications = CommunicationNetwork(self)
         from .stress import CombatStressModel
         self.stress = CombatStressModel(self)
+        from .assault import AssaultModel
+        self.assault = AssaultModel(self)
 
     def set_formation_posture(self, unit_or_uid, posture: str) -> bool:
         """Set spatial dispersion/shape posture without changing the unit's operational order.
@@ -170,6 +172,7 @@ class Simulation(PerceptionMixin, CompositionMixin):
         self.time=end
         self._resolve_collapsed_bridges()
         self.stress.update(sim_dt)
+        self.assault.update(sim_dt)
         for u in list(self.units.values()):
             if u.alive:
                 self._step_unit(u,sim_dt)
@@ -854,7 +857,10 @@ class Simulation(PerceptionMixin, CompositionMixin):
             return math.dist(u.pos,tuple(dest))<=arrival
         # Tactical movement speed is data-driven by mobility class/terrain and current tactical state.
         # Unit max_speed_mps is a formation planning speed, not a vehicle brochure top speed.
-        speed=movement_speed_mps(u,self.terrain,u.pos,move_dest)*self.stress.movement_factor(u)
+        # The final assault is a rush at full movement speed, not the cautious ATTACKING pace.
+        rush=self.assault.enabled and self.assault.assaulting(u) and u.state in (UnitState.ATTACKING,UnitState.ENGAGING)
+        speed=(movement_speed_mps(u,self.terrain,u.pos,move_dest,state=UnitState.MOVING if rush else None)
+               *self.stress.movement_factor(u))
         step=min(d,speed*dt)
         if d>0:
             candidate=(u.pos[0]+dx/d*step,u.pos[1]+dy/d*step)

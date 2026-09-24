@@ -58,6 +58,11 @@ class DoctrineEngine:
         the longest usable envelope.  COMBINED_ARMS closes until even the shortest relevant weapon
         can participate, allowing longer-ranged systems to fire while the formation advances.
         """
+        assault=getattr(self.sim,"assault",None)
+        if assault is not None:
+            closing=assault.desired_range(unit,target)
+            if closing is not None:
+                return closing      # assaulting: close to contact distance
         if track is None:
             track=unit.local_tracks.get(target.uid)
         if track is None:

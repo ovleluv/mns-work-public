@@ -42,11 +42,12 @@ A future developer or LLM should preserve these boundaries unless there is a str
 
 ## Combat realism layer (v50)
 
-Suppression/morale (`mnsim/stress.py`), prepared positions, sector scanning, terrain LOS, a
-per-second detection hazard, armor protection classes, outranged withdrawal and artillery
-shoot-and-scoot sit on top of the compositional attrition kernel. All coefficients are in
+Suppression/morale (`mnsim/stress.py`), fire and movement with assault and close combat
+(`mnsim/assault.py`), prepared positions, sector scanning, terrain LOS, a per-second detection
+hazard, armor protection classes, outranged withdrawal and artillery shoot-and-scoot sit on top of
+the compositional attrition kernel. All coefficients are in
 `config/defaults.json` (`stress_model`, `watch_sweep`, `fire_motion`, `armor_vulnerability`,
-`outranged_reaction`, `classification_error`, `target_signature`, `dig_in_time_s`, ...). Each block has
+`outranged_reaction`, `classification_error`, `target_signature`, `assault`, `dig_in_time_s`, ...). Each block has
 an `enabled` switch so calibration studies can isolate the kernel. See [CHANGELOG.md](CHANGELOG.md) (v50).
 
 ## Current module responsibilities
@@ -59,6 +60,7 @@ mnsim/perception.py     (mixin) sensing, watch orientation, cues, counter-batter
 mnsim/composition.py    (mixin) aggregation/deaggregation, vehicle detachment, stable item lookup
 mnsim/validation.py     Load-time validation of untrusted scenario/terrain/BML input
 mnsim/stress.py         Suppression and morale/cohesion (combat stress)
+mnsim/assault.py        Fire and movement: support by fire, assault, close combat
 mnsim/batch.py          Independent scenario/seed runs using worker processes
 mnsim/combat.py         Direct-fire compatibility, target choice, ammunition use, fire resolution
 mnsim/indirect_fire.py  Artillery launch/impact model, CEP/dispersion, spatial area effects
@@ -1193,6 +1195,7 @@ Changes relative to v49.11.
 - Combat stress: suppression and morale/cohesion in `mnsim/stress.py`. Suppressed formations fire less often and less accurately, move and observe worse; SHAKEN/PINNED formations stop advancing, BROKEN formations fall back and rally. `hold_at_all_costs` lowers the break point.
 - Observation: halted formations sweep their sector (all round without an assigned sector), large formations observe from their footprint, ridges and crests block observation and fire through a DEM line-of-sight check, detection is a per-second hazard with size/firing signature, and classification can be wrong until a contact is IDENTIFIED.
 - Fire effects: firing on the move and at moving targets, kill probabilities by weapon penetration class and target `protection_class`, protection that builds from a hasty to a prepared position over `dig_in_time_s`, artillery time of flight from range, and one aiming bias per fire mission.
+- Fire and movement (`mnsim/assault.py`): an attacking formation no longer stops at its stand-off range. After supporting by fire it assaults once it has fire superiority (or has supported for `commit_after_s`) and is steady and not taking heavy losses, closes on the perceived position at full movement speed, and resolves close combat at `contact_m` with casualties and a morale shock driven by the fighting-power ratio. Failed assaults revert to support by fire. The `assault` directive or `assault.enabled` can switch it off.
 - Doctrine: formations under fire they cannot answer withdraw (`outranged_reaction`), batteries under counter-battery fire displace (shoot and scoot), and formations on a collapsing bridge are moved to the nearest bank.
 - Input validation (`mnsim/validation.py`): JSON `NaN`/`Infinity` are rejected, coordinates and conditions are checked at load time, scenario file references are confined to the scenario folder and the project, the editor never writes terrain outside the scenario folder, and the UI pauses on engine errors instead of exiting.
 - Engine structure and performance: perception and composition code moved from `simulation.py` into `mnsim/perception.py` and `mnsim/composition.py`; exact-interval passability and cached planner edges make `scenarios/demo.json` about 2.3x faster.

@@ -94,7 +94,7 @@
 
 ## 5. 지원 directive와 인식 정보
 
-`directives`에서 허용되는 키는 `hold_at_all_costs`, `allow_withdrawal`, `allow_break_contact`, `allow_artillery_displacement`, `allow_indirect_fire_dispersion`(불리언), `engagement_range_policy`(`STANDOFF`/`BALANCED`/`COMBINED_ARMS` 등), `engagement_range_fraction`(양의 수)이다. 이 값은 현지 반응·교전 거리 정책을 조정한다. 예를 들어 `hold_at_all_costs`는 물리적 능력을 되살리거나 사격을 금지하지 않는다. `hold_fire: true`처럼 지원되지 않는 키는 로드 오류다.
+`directives`에서 허용되는 키는 `hold_at_all_costs`, `allow_withdrawal`, `allow_break_contact`, `allow_artillery_displacement`, `allow_indirect_fire_dispersion`, `assault`(불리언, `false`면 돌격 없이 지원사격만 수행), `engagement_range_policy`(`STANDOFF`/`BALANCED`/`COMBINED_ARMS` 등), `engagement_range_fraction`(양의 수)이다. 이 값은 현지 반응·교전 거리 정책을 조정한다. 예를 들어 `hold_at_all_costs`는 물리적 능력을 되살리거나 사격을 금지하지 않는다. `hold_fire: true`처럼 지원되지 않는 키는 로드 오류다.
 
 `ATTACK_UNIT`/`DESTROY_UNIT`의 `target_position`은 지휘관이 제공한 **고정된 추정 좌표**다. 엔진이 실제 적 위치를 채워 주지 않는다. 표적의 실제 소멸도 자동으로 명령을 완료시키지 않는다. 현재는 명시적 종말 증거/BDA를 자동 생성하지 않으므로, 그런 완료를 전제로 후속 명령을 설계하지 않는다. 적 ID가 없거나 불확실하면 `ATTACK_POSITION`을 사용한다.
 

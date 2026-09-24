@@ -114,7 +114,7 @@ ENGINE_ORDER_KINDS = {
 
 SUPPORTED_DIRECTIVES = {
     "hold_at_all_costs", "allow_withdrawal", "allow_break_contact",
-    "allow_artillery_displacement", "allow_indirect_fire_dispersion",
+    "allow_artillery_displacement", "allow_indirect_fire_dispersion", "assault",
     "engagement_range_policy", "engagement_range_fraction",
 }
 BOOLEAN_DIRECTIVES = SUPPORTED_DIRECTIVES-{"engagement_range_policy","engagement_range_fraction"}

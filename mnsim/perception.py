@@ -150,6 +150,7 @@ class PerceptionMixin:
         unit.metadata["threat_cue_heading_deg"]=bearing
         unit.metadata["threat_cue_source_uid"]=source.uid
         unit.metadata["threat_cue_until_t"]=self.time+max(0.0,memory)
+        unit.metadata["_last_incoming_fire_t"]=self.time
         unit.metadata["threat_cue_type"]=cue
         self.log("THREAT_CUE",unit=unit.uid,cue_type=cue,bearing_deg=round(bearing,1),memory_s=round(memory,1))
 

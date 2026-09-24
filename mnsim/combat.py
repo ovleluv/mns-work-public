@@ -614,6 +614,7 @@ class CombatResolver:
         self.sim.publish_engagement_contact(shooter,tr)
         self.sim._register_threat_cue(target,shooter.uid,"DIRECT_FIRE")
         self.sim.stress.on_direct_fire(target,shooter,weapon,math.dist(shooter.pos,target.pos),hit)
+        self.sim.assault.record_fire(shooter,target)
         if hit:
             # If the target occupies a building, structure-capable weapons may attack the cover
             # itself. This keeps occupants hard to hit without making buildings invulnerable.

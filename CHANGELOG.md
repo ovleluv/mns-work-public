@@ -25,6 +25,13 @@ direct-fire rounds 648 -> 311 (suppressed formations fire less).
   signature, range-proportional position error and classification error below IDENTIFIED.
 - **Direct fire**: firing on the move / at moving targets; kill probabilities by weapon
   penetration class x target protection class (`combat.armor_vulnerability`).
+- **Fire and movement** (`mnsim/assault.py`, `combat.assault`): support by fire, then an assault
+  once the attacker has fire superiority (or after `commit_after_s`) and is steady; closing at full
+  movement speed; close combat at `contact_m` with casualties and morale shock by fighting-power
+  ratio; failed assaults revert to support by fire. Duel probe (infantry platoon attacking a
+  hold-at-all-costs platoon across 700 m of open ground, 5 seeds): at 3:1 the attacker now takes
+  the objective in 5/5 runs (stand-off only: stops 120-240 m short in 4/5); at 1:1 against a
+  prepared position the assault fails in 4/5.
 - **Doctrine**: formations under fire they cannot answer withdraw (`outranged_reaction`); batteries
   under counter-battery fire displace (shoot and scoot).
 - **Artillery**: time of flight from range; one aim bias per mission plus per-round dispersion.
