@@ -24,7 +24,7 @@ class CombatResolver:
     """Weapon/target compatibility, target selection, and fire resolution.
 
     This module owns combat resolution mechanics. Formation composition lives in model.py,
-    tactical behavior in doctrine.py, perception in Simulation's track subsystem, and UI in main.py.
+    tactical behavior in doctrine.py, perception in Simulation's track subsystem, and UI in main.py + ui/.
 
     Demo weapon probabilities are abstract tuning parameters. They are intentionally not calibrated
     to a particular real weapon system.

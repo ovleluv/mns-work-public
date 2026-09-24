@@ -18,7 +18,7 @@ def test_loader_preserves_non_square_custom_world_size(tmp_path):
 
 def test_metric_grid_and_scale_ui_contract():
     editor=(ROOT/"editor.py").read_text(encoding="utf-8")
-    main=(ROOT/"main.py").read_text(encoding="utf-8")
+    main=(ROOT/"ui"/"render.py").read_text(encoding="utf-8")
     assert "set_map_size_dialog" in editor
     assert "Grid {format_metric(step)}" in editor
     assert "_draw_scale_bar" in main

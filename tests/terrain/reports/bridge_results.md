@@ -2,7 +2,7 @@
 
 통과 216 / 실패 0 / 오류 0 / 건너뜀 0
 
-실행 종료 코드: 0. 원본: [로그](results/bridge.log), [JUnit](results/bridge.xml)
+실행 종료 코드: 0. 원본: [로그](../results/bridge.log), [JUnit](../results/bridge.xml)
 
 | 테스트 | 결과 | 이동 결과 |
 |---|---|---|

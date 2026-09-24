@@ -19,6 +19,6 @@
 
 실패는 xfail 처리 없이 집계합니다. 숲·도로 수정 전 결과는 results/before_forest_road_fix/results.json에 보존했습니다. 실행 오류는 로그와 종료 코드를 확인하세요.
 
-원시 좌표 궤적, 계획 경로, 도착 시간, 잔여 거리, 입력·코드 SHA-256: [results.json](results/results.json).
+원시 좌표 궤적, 계획 경로, 도착 시간, 잔여 거리, 입력·코드 SHA-256: [results.json](../results/results.json).
 
-검증 범위와 재현 방법은 [README](README.md), 원인 분석은 [findings](findings.md)를 참고하세요.
+검증 범위와 재현 방법은 [README](../README.md), 원인 분석은 [findings](findings.md)를 참고하세요.

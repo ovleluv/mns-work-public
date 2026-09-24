@@ -1,6 +1,6 @@
 # 지형 이동 테스트
 
-지형별 테스트 코드와 실제 실행 결과를 함께 보관합니다. 전체 24종에 경로·규칙 검사를 확장하여 1,272건(유닛별 53건)이 모두 통과했습니다. 기존 7종 대비 추가된 17종의 901건도 모두 통과했습니다. 수정 전 12건 실패 결과는 results/before_forest_road_fix에 보존했습니다. 먼저 [종합 결과](summary.md)와 [결함 분석](findings.md)을 확인하세요.
+지형별 테스트 코드와 실제 실행 결과를 함께 보관합니다. 전체 24종에 경로·규칙 검사를 확장하여 1,272건(유닛별 53건)이 모두 통과했습니다. 기존 7종 대비 추가된 17종의 901건도 모두 통과했습니다. 수정 전 12건 실패 결과는 results/before_forest_road_fix에 보존했습니다. 먼저 [종합 결과](reports/summary.md)와 [결함 분석](reports/findings.md)을 확인하세요.
 
 ## 실행
 
@@ -36,7 +36,7 @@ python -m pytest -q tests/terrain/test_river.py
 | test_elevation.py | 완만한 고도 변화의 도착, 급경사 선분의 경로 계획 차단 |
 | test_woods.py | 이동 배율 0.5의 성긴 숲에서 도착과 시간 증가 |
 | support.py / conftest.py | 실제 시나리오 로더·이동 함수를 사용하는 공통 실험 구성 |
-| *_results.md / summary.md | 지형별 결과 / 종합 결과 |
+| reports/*_results.md / reports/summary.md | 지형별 결과 / 종합 결과 |
 | results/results.json | 케이스별 경로·전체 이동 좌표·지표·코드와 설정 해시 |
 
 ## 유닛과 판정 기준
@@ -51,7 +51,7 @@ config/toe_templates.json에 등록된 24종 전체를 검사합니다. 대상 �
 
 ## 유닛별 상세 보고서
 
-[24개 유닛별 통행 가능 지형·이동 속도·실측 시간](unit_mobility_report.md). 전체 24종의 실제 이동 검사와 지점 통행·속도 계산을 함께 정리했습니다. 각 유닛에 같은 구조의 실측 표를 제공합니다.
+[24개 유닛별 통행 가능 지형·이동 속도·실측 시간](reports/unit_mobility_report.md). 전체 24종의 실제 이동 검사와 지점 통행·속도 계산을 함께 정리했습니다. 각 유닛에 같은 구조의 실측 표를 제공합니다.
 
 확장 전 대표 7종의 371건과 당시 상세 보고서는 results/before_all_units_paths에 보존했습니다.
 

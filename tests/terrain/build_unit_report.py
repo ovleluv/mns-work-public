@@ -173,13 +173,13 @@ def render(data):
     "5. 큰 dt에서는 한 틱에 여러 지형을 지나가므로 평균 시간 차이가 생길 수 있습니다. 국소 속도와 경로 평균을 구분하고 0.25초 기록을 우선 비교했습니다.","",
     "## 5. 근거 파일 및 재생성","",
     "- [기존 이동 테스트 종합 결과](summary.md), [수정 내역](findings.md)",
-    "- [실제 이동 원시 결과](results/results.json): 경로·궤적·시간·실패 여부·원본 해시",
-    "- [유닛별 지점 검사와 보고서 수치](results/unit_mobility_profiles.json)",
-    "- [유닛 기본 설정](../../config/toe_templates.json)",
-    "- [지형 속도와 통행 규칙](../../mnsim/terrain.py), [실제 이동 함수](../../mnsim/simulation.py), [경로·경사 제한](../../mnsim/pathfinding.py)","",
+    "- [실제 이동 원시 결과](../results/results.json): 경로·궤적·시간·실패 여부·원본 해시",
+    "- [유닛별 지점 검사와 보고서 수치](../results/unit_mobility_profiles.json)",
+    "- [유닛 기본 설정](../../../config/toe_templates.json)",
+    "- [지형 속도와 통행 규칙](../../../mnsim/terrain.py), [실제 이동 함수](../../../mnsim/orders.py), [경로·경사 제한](../../../mnsim/pathfinding.py)","",
     f"원본 이동 결과에 저장된 엔진·설정·데이터 파일 {data['source_files_verified']}개의 SHA-256이 현재 파일과 일치함을 확인했습니다. 보고서는 현재 공통 이동속도 함수의 계산과 재실행한 이동 검사를 반영합니다.","",
     "~~~powershell","python tests/terrain/build_unit_report.py","~~~","",
     "설정이나 엔진 코드가 원본 이동 결과와 달라지면 보고서 생성기는 중단합니다. 이때 이동 테스트를 재실행해 근거 결과부터 갱신해야 합니다."])
-    (HERE/"unit_mobility_report.md").write_text("\n".join(lines)+"\n",encoding="utf-8")
+    (HERE/"reports"/"unit_mobility_report.md").write_text("\n".join(lines)+"\n",encoding="utf-8")
 
 if __name__=="__main__":main()

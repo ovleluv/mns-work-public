@@ -76,7 +76,7 @@ python -X utf8 -B tests/terrain/build_unit_report.py
 ~~~
 
 build_unit_report.py는 앞 단계가 생성한 results/results.json을 읽으므로 단독으로 먼저 실행하지 않습니다.
-보고서 생성 명령은 results뿐 아니라 지형별 *_results.md, summary.md 등도 갱신합니다.
+보고서 생성 명령은 results뿐 아니라 terrain/reports/ 아래의 지형별 *_results.md, summary.md 등도 갱신합니다.
 자세한 조건은 [terrain/README.md](terrain/README.md)에 있습니다.
 
 ### 4. 장시간 교전 실험

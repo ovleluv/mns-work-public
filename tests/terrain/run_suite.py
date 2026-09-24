@@ -18,6 +18,8 @@ TERRAINS={"open":"평지","river":"강","ford":"도하","bridge":"다리","road"
 def main():
     results=HERE/"results"
     results.mkdir(exist_ok=True)
+    reports=HERE/"reports"
+    reports.mkdir(exist_ok=True)
     all_cases=[]; summaries=[]; exits=[]
     for key,label in TERRAINS.items():
         xml=results/(key+".xml")
@@ -38,7 +40,7 @@ def main():
         counts=collections.Counter(c["status"] for c in cases)
         summaries.append(dict(terrain=key,label=label,counts=dict(counts),exit_code=proc.returncode))
         all_cases.extend(cases)
-        lines=[f"# {label} 이동 테스트 결과", "", f"통과 {counts['passed']} / 실패 {counts['failed']} / 오류 {counts['error']} / 건너뜀 {counts['skipped']}","",f"실행 종료 코드: {proc.returncode}. 원본: [로그](results/{key}.log), [JUnit](results/{key}.xml)","","| 테스트 | 결과 | 이동 결과 |","|---|---|---|"]
+        lines=[f"# {label} 이동 테스트 결과", "", f"통과 {counts['passed']} / 실패 {counts['failed']} / 오류 {counts['error']} / 건너뜀 {counts['skipped']}","",f"실행 종료 코드: {proc.returncode}. 원본: [로그](../results/{key}.log), [JUnit](../results/{key}.xml)","","| 테스트 | 결과 | 이동 결과 |","|---|---|---|"]
         for c in cases:
             metrics=[]
             for m in c["movement"]:
@@ -46,7 +48,7 @@ def main():
             lines.append(f"| {c['name']} | {c['status']} | {'; '.join(metrics)} |")
         for c in cases:
             if c["failure"]: lines.extend(["", "## "+c["name"],"", "~~~~text",c["failure"],"~~~~"])
-        (HERE/(key+"_results.md")).write_text("\n".join(lines)+"\n",encoding="utf-8")
+        (reports/(key+"_results.md")).write_text("\n".join(lines)+"\n",encoding="utf-8")
         print(label,dict(counts),flush=True)
     hashes={str(p.relative_to(ROOT)):hashlib.sha256(p.read_bytes()).hexdigest() for p in sorted(list((ROOT/"mnsim").rglob("*.py"))+list((ROOT/"config").glob("*.json"))+list((ROOT/"database").rglob("*"))+list(HERE.glob("*.py"))) if p.is_file()}
     output=dict(created_at=datetime.datetime.now().astimezone().isoformat(),python=platform.python_version(),platform=platform.platform(),seed=7,dt_s=[0.25,1,20],summaries=summaries,cases=all_cases,sha256=hashes)
@@ -56,8 +58,8 @@ def main():
     for s in summaries:
         c=s["counts"]
         lines.append(f"| {s['label']} | {c.get('passed',0)} | {c.get('failed',0)} | {c.get('error',0)} | [{s['terrain']}]({s['terrain']}_results.md) |")
-    lines.extend(["","실패는 xfail 처리 없이 집계합니다. 숲·도로 수정 전 결과는 results/before_forest_road_fix/results.json에 보존했습니다. 실행 오류는 로그와 종료 코드를 확인하세요.","","원시 좌표 궤적, 계획 경로, 도착 시간, 잔여 거리, 입력·코드 SHA-256: [results.json](results/results.json).", "", "검증 범위와 재현 방법은 [README](README.md), 원인 분석은 [findings](findings.md)를 참고하세요."])
-    (HERE/"summary.md").write_text("\n".join(lines)+"\n",encoding="utf-8")
+    lines.extend(["","실패는 xfail 처리 없이 집계합니다. 숲·도로 수정 전 결과는 results/before_forest_road_fix/results.json에 보존했습니다. 실행 오류는 로그와 종료 코드를 확인하세요.","","원시 좌표 궤적, 계획 경로, 도착 시간, 잔여 거리, 입력·코드 SHA-256: [results.json](results/results.json).", "", "검증 범위와 재현 방법은 [README](../README.md), 원인 분석은 [findings](findings.md)를 참고하세요."])
+    (reports/"summary.md").write_text("\n".join(lines)+"\n",encoding="utf-8")
     return 1 if any(exits) else 0
 
 if __name__=="__main__":

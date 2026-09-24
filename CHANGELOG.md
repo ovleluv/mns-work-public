@@ -68,6 +68,19 @@ after): formations wiped out 1.8 -> 1.2, artillery crew surviving 47.6 -> 81.4 o
 ### Tooling
 - `pyproject.toml` (pytest/ruff/mypy settings), `constraints.txt`, GitHub Actions CI.
 
+### Project layout
+- Documentation moved to `docs/`: `ARCHITECTURE.md` (now also holding the README's UI-seam and
+  extensibility sections), `DATA_MODEL.md`, `BML_GUIDE.md` (the former `BML_GENERATION_GUIDE.md`
+  as part 1 and `BML_GUIDE.md` as part 2) and `MODEL_REFERENCE.md` (the README's per-version model
+  notes v0.2–v49.11, unchanged). README keeps the overview, usage, a documentation index and v50.
+- `mnsim/simulation.py` split into `orders.py` (order execution, movement) and `engagement.py`
+  (engagement grouping, combat pass) mixins; `main.py` drawing split into the `ui/` package
+  (`theme`, `view`, `render`, `panels`, `dialogs`). Behaviour-neutral: identical event logs for
+  demo/tdg1/tdg3 and pixel-identical UI frames.
+- `CHANGELOG_v49_11.md` merged into this file; `tests/TERRAIN_TRAVERSAL.md` merged into
+  `tests/TDG3_TESTING.md`; terrain suite reports moved to `tests/terrain/reports/`; stale
+  2026-09-07 test report snapshots and regenerable analysis outputs removed.
+
 ## v49.11 — BML generation and simulator consistency
 
 ### Scope
@@ -93,7 +106,7 @@ This release records the simulator repair sequence following v49.10 and adds a p
 
 ### BML authoring
 
-[BML_GENERATION_GUIDE.md](BML_GENERATION_GUIDE.md) is the concise creation checklist. [BML_GUIDE.md](BML_GUIDE.md) remains the detailed behavior reference. Generate separate BLUE/RED plans from the scenario's active IDs, map bounds, structure IDs, and available information. A target ID alone grants no live enemy position or death confirmation. Unsupported `hold_fire` directives and unrecognized branch tasks fail at load time.
+[BML_GENERATION_GUIDE.md](docs/BML_GUIDE.md#part-1--authoring-checklist) is the concise creation checklist. [BML_GUIDE.md](docs/BML_GUIDE.md#part-2--execution-reference) remains the detailed behavior reference (both now merged into `docs/BML_GUIDE.md`). Generate separate BLUE/RED plans from the scenario's active IDs, map bounds, structure IDs, and available information. A target ID alone grants no live enemy position or death confirmation. Unsupported `hold_fire` directives and unrecognized branch tasks fail at load time.
 
 ### Verification
 

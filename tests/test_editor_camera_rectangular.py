@@ -12,7 +12,7 @@ def test_editor_has_independent_width_height_and_camera_zoom_pan():
     assert "min(MAP.w/max(1.0,ww),MAP.h/max(1.0,wh))" in text
 
 def test_main_camera_uses_independent_world_dimensions():
-    text=(ROOT/"main.py").read_text(encoding="utf-8")
+    text=(ROOT/"ui"/"view.py").read_text(encoding="utf-8")
     assert 'WORLD_W = float(sim.world.get("width_m", 4000))' in text
     assert 'WORLD_H = float(sim.world.get("height_m", 4000))' in text
     assert 'min(map_rect.w / WORLD_W, map_rect.h / WORLD_H)' in text

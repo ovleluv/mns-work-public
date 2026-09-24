@@ -6,12 +6,12 @@
 
 - 수정 전: 지형 검사 **364건 중 352 통과, 12 실패**.
 - 수정 후: 기존 364건과 적용 범위 검사 7건, **371건 모두 통과**.
-- 기존 이동 회귀 검사: **43건 모두 통과** (pytest 6.24초). [JUnit](results/existing_regressions.xml).
-- 수정 전 원시 결과는 [보존 파일](results/before_forest_road_fix/results.json), 당시 수정 후 371건 결과는 [보존 파일](results/before_all_units_paths/results.json)에 기록했습니다. 전체 유닛 확장 이후 결과는 [현재 파일](results/results.json)에서 확인합니다.
+- 기존 이동 회귀 검사: **43건 모두 통과** (pytest 6.24초). [JUnit](../results/existing_regressions.xml).
+- 수정 전 원시 결과는 [보존 파일](../results/before_forest_road_fix/results.json), 당시 수정 후 371건 결과는 [보존 파일](../results/before_all_units_paths/results.json)에 기록했습니다. 전체 유닛 확장 이후 결과는 [현재 파일](../results/results.json)에서 확인합니다.
 
 ## 원인과 수정 범위
 
-[terrain.py](../../mnsim/terrain.py)의 passable()은 도로 위에서 숲의 차량 통행 제한을 해제하지만 speed_factor()가 숲의 차량 이동 배율 0을 다시 곱하여 실제 이동이 정지했습니다.
+[terrain.py](../../../mnsim/terrain.py)의 passable()은 도로 위에서 숲의 차량 통행 제한을 해제하지만 speed_factor()가 숲의 차량 이동 배율 0을 다시 곱하여 실제 이동이 정지했습니다.
 
 선택한 1안에 따라 speed_factor()에만 제한된 예외를 추가했습니다. FOREST 내부의 도로 위에서 TRACKED, WHEELED, WHEELED_TOWED 유닛이 해당 숲의 금지 목록에 있거나 이동 분류별 배율이 0 이하인 경우에만 그 숲의 배율을 제외합니다. 따라서 다른 효과가 없으면 해당 유닛의 도로 배율로 이동합니다. 교량이 겹친 곳에서는 기존 교량 우선 배율을 유지합니다.
 

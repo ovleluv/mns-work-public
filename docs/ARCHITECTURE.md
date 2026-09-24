@@ -25,7 +25,7 @@ The registry is an extension seam, not a second combat engine. Combat, sensing, 
 ## 2. Current layers
 
 ```text
-main.py / editor.py                     UI layer (currently Pygame)
+main.py + ui/ / editor.py               UI layer (currently Pygame)
         ↓
 mnsim/application.py                    UI-neutral session/controller layer
         ↓
@@ -38,7 +38,9 @@ mnsim/scenario.py                       scenario orchestration
         ↓
 mnsim/model.py                           core runtime data model
         ↓
-mnsim/simulation.py + combat/doctrine/... simulation behavior
+mnsim/simulation.py + orders/engagement/  simulation behavior
+  perception/composition mixins,
+  combat/doctrine/...
 ```
 
 ## 3. Definition boundary
@@ -122,7 +124,7 @@ For a new system that uses existing mechanisms, prefer:
 3. select that loadout/override in the scenario;
 4. modify engine code only when the system requires a genuinely new simulation mechanism.
 
-See `DATA_MODEL.md` for the authoring contract.
+See [DATA_MODEL.md](DATA_MODEL.md) for the authoring contract.
 
 ## Command / doctrine separation (v44)
 
@@ -168,3 +170,46 @@ Contour caption placement is shared by editor and simulator through `mnsim/carto
 Operational BUILDING polygons are hard navigation obstacles. Temporary per-order access is granted only while `ENTER_BUILDING` or `EXIT_BUILDING` executes; ordinary movement pathfinding uses building-corner visibility nodes to route around footprints. Engine-level occupancy capacity is intentionally unlimited and higher-level BML/COA policy owns any force-to-building sizing constraint.
 
 Terrain LOS no longer estimates polygon crossing length by fixed-distance marching. It uses segment/polygon intersection intervals with AABB broad-phase rejection, making cost primarily depend on polygon edge count rather than ray length. Selected-unit LOS rendering uses `TerrainModel.approx_visual_limit()` as a UI-only approximation so visualization cannot multiply full simulation LOS queries across dozens of radial samples. Simulation sensing still uses `observation_modifier()` as truth.
+
+## UI migration seam (v41 refactor)
+
+The Pygame frontend remains the current operational UI, but generic application/session controls
+now live in `mnsim/application.py` and contain **no Pygame, Qt, or Tk imports**.  This is an
+intentional migration seam for a later PySide6 frontend rather than a functional change to the
+simulator.
+
+Frontend responsibilities should remain split as follows:
+
+```text
+framework UI (Pygame now / PySide6 later)
+    keyboard, mouse, widgets, drawing, dialogs
+             |
+             v
+mnsim.application.SimulationController
+    pause/speed/realtime advancement, view/selection session state
+             |
+             v
+mnsim.simulation.Simulation
+    movement, sensing, FoW/C2, doctrine, combat, events, pathfinding integration
+```
+
+Migration rules:
+
+- Do not add Pygame/Qt imports to `mnsim/` engine modules.
+- Do not move combat, sensing, doctrine, mobility, FoW, or order rules into a GUI controller.
+- A future Qt frontend should translate Qt signals/events into `SimulationController` operations
+  and render/query `controller.sim`; it should not duplicate simulation rules.
+- Keep scenario/BML JSON and headless tests as the behavioral contract across frontend migrations.
+- Refactors intended only for UI migration must preserve deterministic engine behavior for the
+  same scenario, BML inputs, seed, and simulation-time stepping.
+
+## Architecture for future model extensibility
+
+The v42 extensibility refactor adds two behavior-neutral boundaries:
+
+- `mnsim/definitions.py`: `DefinitionRegistry` and default factories for `WeaponModel`, `FormationElement`, and `UnitType`.
+- `mnsim/catalog.py`: `UnitTypeCatalog`, including the existing echelon/formation-family resolution rule.
+
+`scenario.py` remains the scenario orchestrator but no longer owns concrete model-object construction. Existing scenario/TO&E JSON follows the `DEFAULT` registry path and retains v42 semantics. This boundary is intended for future LLM-assisted structured model authoring and plugin/adaptor definitions; it does **not** change combat, sensing, doctrine, damage, movement, or BML behavior.
+
+See the sections above for extension rules. In particular, prefer adding reusable capability primitives and data definitions over adding new named-platform `if/elif` branches throughout the engine.
