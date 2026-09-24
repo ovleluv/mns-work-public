@@ -119,7 +119,21 @@ class DoctrineEngine:
         )
 
     def _move_away(self, unit: Unit, tr: Track, distance_m: float, dt: float) -> None:
-        self.sim._move_toward(unit, self._retreat_destination(unit, tr, distance_m), dt)
+        latched=unit.metadata.get("_doctrine_withdraw_dest")
+        dest=tuple(latched) if latched else self._retreat_destination(unit, tr, distance_m)
+        self.sim._move_toward(unit, dest, dt)
+        if unit.metadata.get("_nav_no_path"):
+            # The straight-away point is unreachable (building, lake, river): pick a reachable
+            # withdrawal bearing once and keep it, instead of pushing into the obstacle.
+            dx=unit.pos[0]-tr.estimated_pos[0]; dy=unit.pos[1]-tr.estimated_pos[1]
+            away=math.degrees(math.atan2(dy,dx)) if abs(dx)+abs(dy)>1e-9 else unit.heading_deg+180.0
+            alt=self._reachable_retreat_destination(unit, away, distance_m)
+            unit.metadata.pop("_nav_no_path",None); unit.metadata.pop("_nav_no_path_destination",None)
+            if alt is not None:
+                unit.metadata["_doctrine_withdraw_dest"]=tuple(alt)
+                self.sim._move_toward(unit, tuple(alt), dt)
+        elif latched and math.dist(unit.pos,dest)<=float(self.sim.combat_config.get("order_arrival_m",3.0)):
+            unit.metadata.pop("_doctrine_withdraw_dest",None)
 
     @staticmethod
     def _has_operational_weapon(unit: Unit) -> bool:

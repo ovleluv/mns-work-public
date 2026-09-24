@@ -179,3 +179,53 @@ def test_deaggregated_children_get_distinct_offset_orders():
     assert dests[0] != dests[1]
     for k in kids:
         assert sim.units[k].pos == before[k]
+
+
+def test_scheduled_infrastructure_strike_waits_for_start_time():
+    from mnsim.model import Order
+    sim = load_scenario(str(ROOT / "scenarios" / "demo.json"), bml_files={})
+    arty = sim.units["B-ART-2"]
+    arty.order_queue.clear()
+    arty.current_order = Order(order_id="S", kind="STRIKE_INFRASTRUCTURE",
+                               params={"targets": ["BR1"]}, start_at_s=600.0)
+    for _ in range(200):
+        sim.step(0.25)
+    assert not any(e["kind"] == "FIRE_MISSION_REQUEST" and e.get("mode") == "INFRASTRUCTURE_STRIKE"
+                   for e in sim.logs)
+
+
+def test_damage_does_not_fire_branch_of_a_gated_order():
+    from mnsim.model import Order
+    sim = load_scenario(str(ROOT / "scenarios" / "demo.json"), bml_files={})
+    u = sim.units["B-INF-2"]
+    u.order_queue.clear()
+    u.current_order = Order(order_id="P2", kind="HOLD", params={}, start_at_s=600.0,
+                            conditions=[{"lhs": "self.loss_ratio", "op": ">=", "rhs": 0.0}],
+                            on_true={"task": "WITHDRAW", "destination": [100.0, 100.0]})
+    sim._check_reactive_branches(u)
+    assert u.current_order.order_id == "P2"
+
+
+def test_shared_report_never_rolls_back_a_fresher_close_track():
+    sim = load_scenario(str(ROOT / "scenarios" / "demo.json"), bml_files={})
+    recv = sim.units["B-INF-2"]; tgt = sim.units["R-INF-1"]
+    sim.time = 100.0
+    close = _local_track(tgt, 100.0, "INFANTRY"); close.source = "PROXIMITY"; close.confidence = 0.88
+    recv.local_tracks[tgt.uid] = close
+    sim._receive_comm_message(recv, {"message_type": "TRACK_REPORT", "sender_uid": "B-TK-1", "payload": {
+        "target": tgt.uid, "estimated_pos": [0.0, 0.0], "confidence": 0.99, "observation_time": 70.0,
+        "classification": "INFANTRY", "state": "IDENTIFIED"}})
+    assert recv.local_tracks[tgt.uid].last_seen_time == 100.0
+
+
+def test_unit_on_collapsing_bridge_is_moved_to_a_bank():
+    sim = load_scenario(str(ROOT / "scenarios" / "demo.json"), bml_files={})
+    br = sim.terrain.bridge_by_id("BR1")
+    tank = sim.units["B-TK-1"]
+    tank.order_queue.clear(); tank.current_order = None
+    tank.pos = tuple(sim.terrain.bridge_center(br))
+    sim.step(0.25)
+    br["integrity"] = 0.0; br["destroyed"] = True
+    sim.step(0.25)
+    assert sim.terrain.passable(tank, tank.pos)
+    assert any(e["kind"] == "BRIDGE_COLLAPSE_UNIT_DISPLACED" for e in sim.logs)

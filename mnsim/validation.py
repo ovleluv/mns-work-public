@@ -235,10 +235,11 @@ def validate_order_like(raw: Any, field: str, world: dict | None = None, depth: 
     if not isinstance(raw, dict):
         raise ValidationError(f"{field}: expected an object")
     _validate_geometry_fields(raw, field, world)
+    for key in ("params", "directives"):
+        if key in raw and not isinstance(raw[key], dict):
+            raise ValidationError(f"{field}.{key}: expected an object")
     params = raw.get("params")
     if params is not None:
-        if not isinstance(params, dict):
-            raise ValidationError(f"{field}.params: expected an object")
         _validate_geometry_fields(params, f"{field}.params", world)
     conditions = raw.get("conditions", [])
     if not isinstance(conditions, list):

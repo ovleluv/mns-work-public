@@ -314,6 +314,19 @@ class CompositionMixin:
         self.log("DEAGGREGATE_DAMAGED_ITEM",parent=unit.uid,child=new_uid,element=element.eid,
                  source_item_index=item_index,state=state,parent_remaining=element.count)
 
+        # Observers that were tracking the formation still see the stranded vehicle: give them a
+        # track on the new vehicle entity (same estimate), so a split is not mistaken for a kill
+        # and the vehicle does not vanish from their picture.
+        for obs in self.units.values():
+            if obs.side==unit.side:
+                continue
+            tr=obs.local_tracks.get(unit.uid)
+            if tr is None or tr.state in ("LOST","DESTROYED") or new_uid in obs.local_tracks:
+                continue
+            ct=copy.deepcopy(tr)
+            ct.track_id=f"{obs.uid}:{new_uid}"; ct.target_id=new_uid
+            obs.local_tracks[new_uid]=ct
+
         # If every physical item has been transferred out, there is no residual aggregate entity.
         if unit.current_strength<=0:
             unit.active=False

@@ -154,6 +154,7 @@ class Simulation(PerceptionMixin, CompositionMixin):
             self.time=max(start,float(ev.time))
             self._handle_event(ev.kind, ev.payload)
         self.time=end
+        self._resolve_collapsed_bridges()
         for u in list(self.units.values()):
             if u.alive:
                 self._step_unit(u,sim_dt)
@@ -228,6 +229,9 @@ class Simulation(PerceptionMixin, CompositionMixin):
         return False
 
     def _step_unit(self,u:Unit,dt:float):
+        # "No route" describes the movement attempted in *this* step.  A flag left by an earlier
+        # doctrine withdrawal must not make a later HOLD/DEFEND look unreachable.
+        u.metadata.pop("_nav_no_path",None)
         if self._update_crew_readiness(u):
             return
         if u.current_order is None and u.order_queue:
@@ -396,7 +400,7 @@ class Simulation(PerceptionMixin, CompositionMixin):
             if self.time-started < float(carrier.metadata.get("embark_time_s",20.0)):
                 u.metadata["tactical_reason"]="BOARDING FRIENDLY TRANSPORT"; return
             if board_external(self,u,carrier):
-                u.metadata.pop("mounted_action_started_t",None); u.current_order=None
+                u.metadata.pop("mounted_action_started_t",None); self._complete_order(u)
             return
         if kind=="DISEMBARK":
             u.state=UnitState.DISMOUNTING; started=u.metadata.setdefault("mounted_action_started_t",self.time)
@@ -808,6 +812,58 @@ class Simulation(PerceptionMixin, CompositionMixin):
             u.heading_deg=math.degrees(math.atan2(dy,dx))
         return math.dist(u.pos,tuple(dest))<=arrival
 
+    def _resolve_collapsed_bridges(self):
+        """Detect bridges that became non-operational by any path (impact, script, editor)."""
+        if not self.terrain or not self.terrain.bridges:
+            return
+        known=getattr(self,"_bridge_state",None)
+        state={str(b.get("id")):self.terrain.bridge_operational(b) for b in self.terrain.bridges}
+        self._bridge_state=state
+        # First call: a bridge already down means any formation placed on its deck is stranded.
+        known=known if known is not None else {}
+        for bid,ok in state.items():
+            if known.get(bid,True) and not ok:
+                self._handle_destroyed_bridge(bid)
+
+    def _handle_destroyed_bridge(self, bridge_id: str, source: str = ""):
+        """Resolve formations standing on a bridge deck when it collapses.
+
+        Without this a unit on the deck is left on water it cannot traverse and every movement
+        leg out is rejected forever.  The formation is displaced to the nearest passable bank
+        point along the bridge axis (the formation-scale abstraction of units crowding the
+        approaches); casualties from the collapse itself are not invented here.
+        """
+        br=self.terrain.bridge_by_id(bridge_id) if self.terrain else None
+        if br is None:
+            return
+        pts=self.terrain.bridge_points(br)
+        if len(pts)<2:
+            return
+        def outward(p0,p1):
+            dx,dy=p0[0]-p1[0],p0[1]-p1[1]; d=max(math.hypot(dx,dy),1e-9); return dx/d,dy/d
+        ends=[(pts[0],outward(pts[0],pts[1])),(pts[-1],outward(pts[-1],pts[-2]))]
+        for u in list(self.units.values()):
+            if not u.alive or self.terrain._distance_to_bridge_deck(u.pos,br)>1e-6:
+                continue
+            if self.terrain.passable(u,u.pos):
+                continue   # amphibious/ford-capable formations simply stay
+            best=None
+            for end,(ux,uy) in ends:
+                for step in range(0,121,4):
+                    cand=(end[0]+ux*step,end[1]+uy*step)
+                    if self.terrain.passable(u,cand):
+                        d=math.dist(u.pos,cand)
+                        if best is None or d<best[0]:
+                            best=(d,cand)
+                        break
+            if best is None:
+                self.log("BRIDGE_COLLAPSE_UNIT_STRANDED",unit=u.uid,bridge=bridge_id,source=source)
+                continue
+            old=u.pos; u.pos=best[1]
+            self._clear_navigation_state(u)
+            self.log("BRIDGE_COLLAPSE_UNIT_DISPLACED",unit=u.uid,bridge=bridge_id,source=source,
+                     from_pos=[round(old[0],1),round(old[1],1)],to_pos=[round(u.pos[0],1),round(u.pos[1],1)])
+
     def _handle_destroyed_building(self,building,source="",weapon=""):
         if not building or not bool(building.get("destroyed",False)):return
         bid=str(building.get("id","BUILDING"))
@@ -917,6 +973,10 @@ class Simulation(PerceptionMixin, CompositionMixin):
     def _execute_infrastructure_strike(self, arty:Unit) -> bool:
         o=arty.current_order
         if not o or o.kind!="STRIKE_INFRASTRUCTURE": return False
+        # A scheduled strike cannot fire before its start time, nor while orders are suspended
+        # for crew loss; the battery simply holds (and skips autonomous fire) meanwhile.
+        if (o.start_at_s is not None and self.time<o.start_at_s) or arty.state==UnitState.COMBAT_INEFFECTIVE:
+            return True
         targets=list(o.params.get("targets",[]))
         idx=self._advance_infrastructure_index(arty,targets,log_completed=True)
         if idx>=len(targets):return True
@@ -1081,6 +1141,10 @@ class Simulation(PerceptionMixin, CompositionMixin):
                                                source=p.get("source",""),weapon=p.get("weapon",""),
                                                reason=reason,item_index=item_index)
             if not t.alive:
+                if t.metadata.get("depleted_by_detachment"):
+                    return  # every vehicle moved to a detached child; nothing was killed
+                if t.state!=UnitState.DESTROYED:
+                    t.state=UnitState.DESTROYED; self.log("DESTROYED",unit=t.uid,source=p.get("source"))
                 self._on_unit_destroyed(t,p.get("source"))
                 return
             self._check_reactive_branches(t)
@@ -1113,6 +1177,8 @@ class Simulation(PerceptionMixin, CompositionMixin):
         o=u.current_order
         if not o or not o.conditions or not o.on_true:
             return False
+        if o.start_at_s is not None and self.time<o.start_at_s:
+            return False    # a gated phase order is not active yet
         if not ConditionEvaluator.eval_all(self,u,o.conditions):
             return False
         branched=compile_order_fragment(self,u,o.on_true)

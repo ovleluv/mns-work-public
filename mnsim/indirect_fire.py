@@ -3,6 +3,7 @@ from __future__ import annotations
 import math
 from typing import Tuple
 from .model import Unit, UnitState, FormationElement, WeaponModel
+from .combat import CombatResolver
 from .formation_geometry import footprint_for, sample_person_position, equipment_item_position, normalized_ellipse_radius
 
 
@@ -152,7 +153,10 @@ class IndirectFireResolver:
             return
 
         shooter.weapon_last_fire[f"{source_element.eid}:{weapon.name}"]=self.sim.time
-        shooter.target_id=target_id
+        if CombatResolver._lock_slot(shooter,"INDIRECT_FIRE")=="PRIMARY":
+            shooter.target_id=target_id
+        else:
+            shooter.metadata["indirect_target_id"]=target_id
         self.sim.notify_indirect_fire_launch(shooter,weapon.name,mode,projectile_count=rounds)
         if weapon.ammo_remaining==0:
             self.sim.log("AMMO_DEPLETED",unit=shooter.uid,source_element=source_element.eid,weapon=weapon.name)

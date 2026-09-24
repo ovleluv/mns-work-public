@@ -96,7 +96,9 @@ def dismount_organic(sim, parent: Unit) -> Optional[Unit]:
     child=Unit(uid=uid,name=f"{parent.name} dismounts",side=parent.side,echelon=parent.echelon,
                unit_type=typ,pos=tuple(parent.pos),heading_deg=parent.heading_deg,
                watch_heading_deg=parent.watch_heading_deg,parent_id=parent.uid,
-               metadata={"dismounted_from":parent.uid,"organic_dismount":True},elements=moved)
+               # The child *is* the dismounted infantry: without mount_state its dismountable
+               # personnel would be treated as still embarked and could not fire.
+               metadata={"dismounted_from":parent.uid,"organic_dismount":True,"mount_state":DISMOUNTED},elements=moved)
     sim.add_unit(child); parent.children.append(uid)
     parent.metadata["dismount_child_id"]=uid; parent.metadata["mount_state"]=DISMOUNTED
     sim.log("DISMOUNT_COMPLETE",unit=parent.uid,dismount=uid,personnel=child.personnel)

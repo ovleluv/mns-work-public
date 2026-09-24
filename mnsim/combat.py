@@ -160,31 +160,29 @@ class CombatResolver:
         the score/threshold configuration.
         """
         cand = [e for e in enemies if self.unit_can_affect(shooter, e, mode)]
+        slot = self._lock_slot(shooter, mode)
         if not cand:
-            shooter.target_id = None
-            shooter.metadata.pop("target_acquired_t", None)
+            self._set_lock(shooter, slot, None)
             return None
 
         by_id = {e.uid:e for e in cand}
         forced = shooter.metadata.pop("force_target_id", None)
         if forced in by_id:
-            shooter.target_id = forced
-            shooter.metadata["target_acquired_t"] = self.sim.time
+            self._set_lock(shooter, slot, forced)
             self.sim.log("TARGET_SWITCH", unit=shooter.uid, target=forced, reason="DOCTRINE_FORCED")
             return by_id[forced]
 
-        current = by_id.get(shooter.target_id)
+        current_id, acquired = self._get_lock(shooter, slot)
+        current = by_id.get(current_id)
         if current is None:
             # Deterministic best-score acquisition avoids gratuitous random target churn.
             chosen = max(cand, key=lambda e:self.target_score(shooter,e,mode))
-            shooter.target_id = chosen.uid
-            shooter.metadata["target_acquired_t"] = self.sim.time
+            self._set_lock(shooter, slot, chosen.uid)
             self.sim.log("TARGET_ACQUIRED", unit=shooter.uid, target=chosen.uid,
                          score=round(self.target_score(shooter,chosen,mode),4), mode=mode)
             return chosen
 
-        acquired = float(shooter.metadata.get("target_acquired_t", self.sim.time))
-        dwell = self.sim.time - acquired
+        dwell = self.sim.time - (self.sim.time if acquired is None else float(acquired))
         if str(mode).upper() in ("COUNTER_BATTERY","FIRE_SUPPORT","INDIRECT_FIRE"):
             min_lock=float(getattr(self.sim,"targeting_doctrine",{}).get("indirect_target_lock_min_s",12.0))
         else:
@@ -202,12 +200,42 @@ class CombatResolver:
 
         if best.uid != current.uid and best_score >= current_score * ratio:
             old = current.uid
-            shooter.target_id = best.uid
-            shooter.metadata["target_acquired_t"] = self.sim.time
+            self._set_lock(shooter, slot, best.uid)
             self.sim.log("TARGET_SWITCH", unit=shooter.uid, old_target=old, target=best.uid,
                          reason="SUPERIOR_TARGET", score_ratio=round(best_score/current_score,2))
             return best
         return current
+
+    # A formation that owns both direct and indirect weapons (e.g. infantry with a mortar
+    # section) keeps separate target locks per fire type; otherwise the indirect pass would
+    # reset the direct-fire acquisition timer every step.  Pure indirect-fire units keep using
+    # the primary ``target_id`` (as the UI and existing scenarios expect).
+    @staticmethod
+    def _lock_slot(shooter: Unit, mode: str) -> str:
+        if str(mode).upper() in ("COUNTER_BATTERY","FIRE_SUPPORT","INDIRECT_FIRE"):
+            has_direct=any(str(w.capability).upper()!="INDIRECT_FIRE" for e in shooter.elements.values() for w in e.weapons)
+            if has_direct:
+                return "INDIRECT"
+        return "PRIMARY"
+
+    @staticmethod
+    def _get_lock(shooter: Unit, slot: str):
+        if slot=="INDIRECT":
+            return shooter.metadata.get("indirect_target_id"), shooter.metadata.get("indirect_target_acquired_t")
+        return shooter.target_id, shooter.metadata.get("target_acquired_t")
+
+    def _set_lock(self, shooter: Unit, slot: str, target_uid):
+        if slot=="INDIRECT":
+            if target_uid is None:
+                shooter.metadata.pop("indirect_target_id",None); shooter.metadata.pop("indirect_target_acquired_t",None)
+            else:
+                shooter.metadata["indirect_target_id"]=target_uid; shooter.metadata["indirect_target_acquired_t"]=self.sim.time
+            return
+        shooter.target_id=target_uid
+        if target_uid is None:
+            shooter.metadata.pop("target_acquired_t",None)
+        else:
+            shooter.metadata["target_acquired_t"]=self.sim.time
 
 
     def _mission_target_id(self, shooter: Unit):

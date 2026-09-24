@@ -557,8 +557,12 @@ class PerceptionMixin:
             if old is not None and old.state=="DESTROYED":
                 return
             incoming_conf=float(q.get("confidence",.3))*0.92
-            # A better fresh local observation is never overwritten by weaker shared SA.
-            if not (old and old.source=="LOCAL" and old.confidence>=incoming_conf):
+            # A better fresh local observation is never overwritten by weaker shared SA, and a
+            # report can never roll a track back to an older observation.
+            obs_t=float(q.get("observation_time",self.time))
+            keep_old=bool(old and ((str(old.source).upper() in ("LOCAL","PROXIMITY") and old.confidence>=incoming_conf)
+                                   or old.last_seen_time>obs_t))
+            if not keep_old:
                 tr=Track(track_id=f"{recv.uid}:{target}",target_id=target,
                     estimated_pos=tuple(q["estimated_pos"]),position_error_m=float(q.get("position_error_m",100))*1.12,
                     classification=q.get("classification","UNKNOWN"),confidence=incoming_conf,
