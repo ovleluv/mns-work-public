@@ -1,0 +1,7 @@
+# Exact versions the test suite was last verified with (pip install -r requirements-dev.txt -c constraints.txt).
+pygame==2.6.1
+pytest==9.1.1
+iniconfig==2.3.0
+packaging==26.3
+pluggy==1.6.0
+Pygments==2.21.0

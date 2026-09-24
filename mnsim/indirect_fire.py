@@ -1,7 +1,7 @@
 
 from __future__ import annotations
 import math
-from typing import Iterable, Tuple
+from typing import Tuple
 from .model import Unit, UnitState, FormationElement, WeaponModel
 from .formation_geometry import footprint_for, sample_person_position, equipment_item_position, normalized_ellipse_radius
 

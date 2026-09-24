@@ -1,6 +1,6 @@
 from __future__ import annotations
 import math
-from typing import Iterable, List, Sequence, Tuple
+from typing import Iterable, Sequence, Tuple
 
 Pt = Tuple[float, float]
 Rect = Tuple[float, float, float, float]

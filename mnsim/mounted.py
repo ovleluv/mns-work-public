@@ -5,8 +5,7 @@ The module is deliberately simulation/UI neutral.  It treats transport as a capa
 platform metadata (crew/passengers) rather than by vehicle names, so IFV/APC/utility transports can
 reuse the same primitive.
 """
-from dataclasses import replace
-from typing import Iterable, Optional
+from typing import Optional
 import copy, math
 from .model import Unit, UnitType, UnitState
 

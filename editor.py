@@ -827,9 +827,10 @@ class Editor:
    wh=float(u.get('watch_heading_deg',u.get('heading_deg',0.0)))%360.0
    screen.blit(tiny.render(self.fit_text(tiny,f'Watch / engagement bearing: {wh:.0f} deg  [Ctrl+Left/Right]',content_w),True,(110,205,220)),(x,y)); y+=line_h
    screen.blit(tiny.render('Draft only until SAVE CHANGES',True,MUTED),(x,y)); y+=line_h+4
-   screen.blit(tiny.render(self.fit_text(tiny,'Barricade capacity (10m MIL1 sections)',label_w if 'label_w' in locals() else content_w),True,MUTED),(x,y))
    # Capacity is an allocation ceiling, not dedicated engineer manpower. Default remains zero.
    cap_ctrl_w=max(86,min(118,int(content_w*0.34)));cap_x=right-cap_ctrl_w;cap_btn=max(23,min(28,line_h+5))
+   # The label shares the row with the -/+ control; keep it clear of that control.
+   screen.blit(tiny.render(self.fit_text(tiny,'Barricade capacity (10m MIL1 sections)',max(40,content_w-cap_ctrl_w-8)),True,MUTED),(x,y))
    m=pygame.Rect(cap_x,y-2,cap_btn,cap_btn);a=pygame.Rect(right-cap_btn,y-2,cap_btn,cap_btn)
    pygame.draw.rect(screen,(67,75,81),m,border_radius=4);pygame.draw.rect(screen,(67,75,81),a,border_radius=4)
    screen.blit(tiny.render('-',True,TEXT),(m.centerx-tiny.size('-')[0]//2,m.centery-tiny.size('-')[1]//2));screen.blit(tiny.render('+',True,TEXT),(a.centerx-tiny.size('+')[0]//2,a.centery-tiny.size('+')[1]//2))

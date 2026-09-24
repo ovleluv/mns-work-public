@@ -1,5 +1,5 @@
 from __future__ import annotations
-import copy, json
+import copy
 from pathlib import Path
 from .model import Side, Unit
 from .simulation import Simulation

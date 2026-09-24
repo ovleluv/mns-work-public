@@ -8,10 +8,9 @@ CSV directly; all references are resolved during scenario loading.
 """
 
 import csv
-import json
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, Mapping
+from typing import Any, Dict
 
 
 def _json_cell(value: str, default):

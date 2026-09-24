@@ -94,6 +94,19 @@ pip install -r requirements.txt
 python main.py scenarios/demo.json
 ```
 
+Development / tests (the exact versions verified by CI are pinned in `constraints.txt`):
+
+```bash
+pip install -r requirements-dev.txt -c constraints.txt
+SDL_VIDEODRIVER=dummy python -m pytest -q      # headless; long TDG3/engagement matrices are opt-in
+ruff check .                                    # defect-level lint configured in pyproject.toml
+```
+
+Scenario, terrain and BML files are treated as untrusted data and validated at load time
+(`mnsim/validation.py`): JSON `NaN`/`Infinity` are rejected, coordinates must be finite and inside
+the world (plus a 25% margin), conditions are type-checked, and file references must stay inside
+the scenario's folder tree or this project (extra roots: `MNSIM_RESOURCE_ROOTS`).
+
 Controls: `SPACE` pause/resume; top-right buttons select `1x/2x/4x/8x/16x/32x`; `1/2/4/8` remain direct keyboard shortcuts and `[` / `]` step slower/faster; click a unit to inspect it; `L` writes a timestamped `logs/replay-YYYYMMDD-HHMMSS.jsonl` (never overwriting an earlier log). If the engine raises during a run, the view pauses and shows the error instead of exiting.
 
 ## Architecture

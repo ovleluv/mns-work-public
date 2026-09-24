@@ -9,7 +9,7 @@ or plugins provide new definition syntaxes without changing combat/sensing/doctr
 """
 
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, Iterable, Mapping, MutableMapping, Tuple
+from typing import Any, Callable, Mapping, MutableMapping
 
 from .model import FormationElement, UnitType, WeaponModel
 from .database import WeaponCatalog, PlatformCatalog

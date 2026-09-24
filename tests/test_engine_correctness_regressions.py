@@ -1,0 +1,138 @@
+"""Regression tests for determinism, timestep independence, FoW and stable item identity."""
+import hashlib
+import json
+import os
+import subprocess
+import sys
+from pathlib import Path
+
+from mnsim.model import Track, UnitState
+from mnsim.scenario import load_scenario
+
+ROOT = Path(__file__).resolve().parents[1]
+
+_RUN = r"""
+import hashlib, json, sys
+sys.path.insert(0, sys.argv[1])
+from mnsim.scenario import load_scenario
+sim = load_scenario(sys.argv[1] + "/scenarios/demo.json")
+for _ in range(480):
+    sim.tick(0.25)
+print(hashlib.sha256(json.dumps(sim.logs, sort_keys=True, default=str).encode()).hexdigest())
+"""
+
+
+def test_same_seed_is_reproducible_across_hash_seeds():
+    """Set iteration order must never reach the RNG draw sequence."""
+    digests = set()
+    for hash_seed in ("1", "2"):
+        env = dict(os.environ, PYTHONHASHSEED=hash_seed, PYTHONDONTWRITEBYTECODE="1")
+        out = subprocess.run([sys.executable, "-c", _RUN, str(ROOT)], env=env,
+                             capture_output=True, text=True, check=True, timeout=300)
+        digests.add(out.stdout.strip())
+    assert len(digests) == 1
+
+
+def test_sensor_scan_count_does_not_depend_on_step_size():
+    counts = []
+    for dt in (0.25, 0.2286, 0.1):
+        sim = load_scenario(str(ROOT / "scenarios" / "demo.json"))
+        calls = []
+        original = sim._sensor_step
+        sim._sensor_step = lambda: (calls.append(sim.time), original())[1]
+        steps = int(round(120.0 / dt))
+        for _ in range(steps):
+            sim.step(dt)
+        counts.append(len(calls))
+    assert max(counts) - min(counts) <= 1, counts
+
+
+def test_events_are_handled_at_their_own_timestamp():
+    sim = load_scenario(str(ROOT / "scenarios" / "demo.json"))
+    seen = []
+    original = sim._handle_event
+    sim._handle_event = lambda kind, p: (seen.append((kind, sim.time)), original(kind, p))[1]
+    sim.events.push(0.10, "TRACK_SHARE", source=None)
+    sim.step(0.25)
+    assert ("TRACK_SHARE", 0.10) in seen
+    assert sim.time == 0.25
+
+
+def _local_track(target, now, cls, tags=None):
+    return Track(track_id=f"x:{target.uid}", target_id=target.uid, estimated_pos=target.pos,
+                 position_error_m=5.0, classification=cls, confidence=0.9, last_seen_time=now,
+                 observations=4, source="LOCAL", observation_zone="FORWARD", state="IDENTIFIED",
+                 perceived_tags=tags)
+
+
+def test_weapon_choice_uses_perceived_composition_snapshot():
+    sim = load_scenario(str(ROOT / "scenarios" / "demo.json"))
+    shooter = sim.units["B-INF-2"]
+    target = sim.units["R-INF-1"]
+    rifle = next(w for _, w in shooter.operational_weapons() if "PERSONNEL" in [t.upper() for t in w.target_tags])
+    snapshot = sim.combat.observed_target_tags(target)
+    tr = _local_track(target, sim.time, "INFANTRY", snapshot)
+    assert sim.combat.weapon_can_affect_perceived(rifle, tr)
+    # Kill every exposed person in ground truth: the shooter has not observed that yet.
+    for e in target.elements.values():
+        if e.category.upper() == "PERSONNEL":
+            e.count = 0
+    assert not sim.combat.weapon_can_affect(rifle, target)          # physics
+    assert sim.combat.weapon_can_affect_perceived(rifle, tr)         # belief (unchanged)
+
+
+def test_infantry_break_contact_uses_classification_not_true_branch():
+    sim = load_scenario(str(ROOT / "scenarios" / "demo.json"))
+    inf = sim.units["B-INF-2"]
+    tank = next(u for u in sim.units.values() if u.side.value == "RED" and u.branch == "ARMOR")
+    tr = _local_track(tank, sim.time, "INFANTRY")   # misclassified contact
+    assert not sim.combat.track_indicates_armor(tr)
+    tr.classification = "ARMOR"
+    assert sim.combat.track_indicates_armor(tr)
+
+
+def test_attack_unit_completes_only_after_battle_damage_information():
+    sim = load_scenario(str(ROOT / "scenarios" / "demo.json"))
+    b = sim.units["B-TK-1"]
+    target = sim.units["R-INF-1"]
+    from mnsim.model import Order
+    b.order_queue.clear(); b.current_order = Order(order_id="kill", kind="ATTACK_UNIT",
+                                                   params={"target_unit": target.uid})
+    b.local_tracks.clear()
+    target.state = UnitState.DESTROYED          # ground truth only
+    sim._step_entity_attack_order(b, b.current_order, 0.25)
+    assert b.current_order is not None, "must not learn the kill from ground truth"
+    sim._apply_bda(b, target.uid, {"estimated_pos": target.pos}, source="TEST")
+    sim._step_entity_attack_order(b, b.current_order, 0.25)
+    assert b.current_order is None
+
+
+def test_witness_of_a_kill_gets_bda_and_unobserved_kill_stays_unknown():
+    sim = load_scenario(str(ROOT / "scenarios" / "demo.json"))
+    target = sim.units["R-INF-1"]
+    watcher = sim.units["B-INF-2"]
+    blind = sim.units["B-TK-1"]
+    watcher.local_tracks[target.uid] = _local_track(target, sim.time, "INFANTRY")
+    blind.local_tracks.pop(target.uid, None)
+    sim._on_unit_destroyed(target, source_uid=None)
+    assert watcher.local_tracks[target.uid].state == "DESTROYED"
+    assert blind.local_tracks.get(target.uid) is None or blind.local_tracks[target.uid].state != "DESTROYED"
+    assert any(e["kind"] == "BDA_REPORT" for e in sim.logs)
+
+
+def test_delayed_artillery_effect_follows_the_physical_item_after_detachment():
+    sim = load_scenario(str(ROOT / "scenarios" / "demo.json"))
+    tank = next(u for u in sim.units.values() if u.branch == "ARMOR" and u.side.value == "RED")
+    el = next(e for e in tank.elements.values() if e.category.upper() == "EQUIPMENT" and "ARMOR" in e.tags)
+    el.ensure_item_states()
+    assert len(el.item_states) >= 3
+    third_id = el.item_id_at(2)
+    # Artillery addresses items 0 and 2 in the same impact; item 0 is detached first.
+    sim.damage.apply_equipment_effect(tank, el, "MOBILITY_KILL", item_index=0)
+    assert el.index_of_item(third_id) == 1        # list shifted
+    sim._handle_event("EQUIPMENT_EFFECT", {"target": tank.uid, "element": el.eid, "item_index": 2,
+                                           "item_id": third_id, "effect": "DESTROYED",
+                                           "source": "", "weapon": "TEST", "reason": "ARTILLERY_DIRECT"})
+    assert el.item_states[el.index_of_item(third_id)] == "DESTROYED"
+    others = [s for i, s in enumerate(el.item_states) if el.item_ids[i] != third_id]
+    assert all(s == "OPERATIONAL" for s in others)
