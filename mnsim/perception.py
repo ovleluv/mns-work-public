@@ -73,6 +73,10 @@ class PerceptionMixin:
         return max(forward,close,prox)*boost+1.0
 
     def _refresh_sensor_boost_bound(self):
+        key=(self.terrain.revision() if self.terrain else None, repr(self.combat_config.get("environment",{})))
+        if getattr(self,"_sensor_boost_key",None)==key:
+            return
+        self._sensor_boost_key=key
         bound=1.0
         zones=list(self.terrain.data.get("observation_zones",[])) if self.terrain else []
         zones+=list(self.terrain.areas) if self.terrain else []
@@ -80,7 +84,7 @@ class PerceptionMixin:
             raw=dict(z.get("observation_modifier",{}))
             for ov in dict(z.get("sensor_overrides",{})).values():
                 raw.update(dict(ov))
-            for k in ("range_factor","awareness_factor"):
+            for k in ("range_factor","awareness_factor","fov_factor"):
                 bound=max(bound,float(raw.get(k,1.0)))
             if str(z.get("type","")).upper()=="BUILDING":
                 bound=max(bound,float(z.get("external_range_factor",0.82)))
@@ -90,7 +94,7 @@ class PerceptionMixin:
                 raw=dict(raw)
                 for ov in dict(raw.get("sensor_overrides",{})).values():
                     raw.update(dict(ov))
-                for k in ("range_factor","awareness_factor"):
+                for k in ("range_factor","awareness_factor","fov_factor"):
                     bound=max(bound,float(raw.get(k,1.0)))
         self._sensor_boost_bound=float("inf") if bound>1.0 else 1.0
 
@@ -230,8 +234,20 @@ class PerceptionMixin:
 
     def _visual_target_geometry(self, obs: Unit, tgt: Unit):
         """Return (eligible, range_limit, angular_factor, in_all_round_zone)."""
-        forward,fov,close,_,env_detection=self._visual_sensor_profile(obs,tgt)
         d=obs.distance_to(tgt)
+        # Cheap rejection with the undegraded profile first; environment/terrain modifiers can
+        # only shrink it unless an authored factor exceeds 1 (then the bound is infinite).
+        self._refresh_sensor_boost_bound()
+        boost=float(self._sensor_boost_bound)
+        if boost<float("inf"):
+            _,f0,fov0,c0,_=self._visual_sensor_base(obs)
+            if d>c0*boost:
+                if d>f0*boost:
+                    return False, f0, 0.0, False
+                b0=math.degrees(math.atan2(tgt.pos[1]-obs.pos[1],tgt.pos[0]-obs.pos[0]))
+                if abs(self._angle_delta_deg(b0,obs.watch_heading_deg))>min(180.0,fov0*boost*0.5):
+                    return False, f0, 0.0, False
+        forward,fov,close,_,env_detection=self._visual_sensor_profile(obs,tgt)
         if d<=close:
             return True, max(close,1.0), float(self.combat_config.get("visual_all_round_detection_factor",0.72))*env_detection, True
         if d>forward:

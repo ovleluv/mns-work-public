@@ -317,7 +317,11 @@ def apply_bml_document(sim, raw: Dict[str, Any], expected_side: str | None = Non
         if replace_existing and uid not in replaced:
             sim.units[uid].order_queue.clear()
             sim.units[uid].current_order=None
-            sim.units[uid].metadata.pop("order_started_t",None)
+            # Mid-run re-tasking must not inherit the old order's route, timers or permissions.
+            if hasattr(sim,"reset_order_execution_state"):
+                sim.reset_order_execution_state(sim.units[uid])
+            else:
+                sim.units[uid].metadata.pop("order_started_t",None)
             replaced.add(uid)
 
     for uid, raw_orders in dict(raw.get("orders_by_unit", {})).items():

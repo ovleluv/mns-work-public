@@ -277,8 +277,8 @@ class Simulation(PerceptionMixin, CompositionMixin):
             if o.on_deadline:
                 branched=compile_order_fragment(self,u,o.on_deadline)
                 self.log("DEADLINE_BRANCH",unit=u.uid,from_order=o.order_id,to_order=branched.kind,phase=o.phase_id)
+                self.reset_order_execution_state(u)
                 u.current_order=branched
-                u.metadata.pop("order_started_t",None)
                 return
 
         if self._doctrine_override(u,dt):
@@ -735,13 +735,22 @@ class Simulation(PerceptionMixin, CompositionMixin):
         u.state=UnitState.DEFENDING
         u.metadata["tactical_reason"]="NO ROUTE / AUTONOMOUS HOLD"
 
+    #: Per-order execution state that must not leak into the next order.
+    ORDER_EXECUTION_KEYS=("order_started_t","search_arrived_t","objective","mounted_action_started_t",
+                          "barricade_build_started_t","_building_access_id","_target_search_since",
+                          "infrastructure_strike_index")
+
+    def reset_order_execution_state(self, u: Unit):
+        """Forget timers, routes and temporary permissions of the order being replaced."""
+        for key in self.ORDER_EXECUTION_KEYS:
+            u.metadata.pop(key,None)
+        self._clear_navigation_state(u)
+
     def _complete_order(self,u):
         o=u.current_order
         self.log("ORDER_COMPLETE",unit=u.uid,order=o.kind,order_id=o.order_id)
         u.current_order=None
-        for key in ("order_started_t","search_arrived_t","objective","mounted_action_started_t","barricade_build_started_t","_building_access_id","_target_search_since"):
-            u.metadata.pop(key,None)
-        self._clear_navigation_state(u)
+        self.reset_order_execution_state(u)
         apply_branch(self,u,o)
 
     def _handle_terrain_transition(self,u,old_pos,new_pos):
@@ -936,18 +945,19 @@ class Simulation(PerceptionMixin, CompositionMixin):
             # counters add diminishing returns so multiple friendly formations do not all pile every
             # eligible stream onto the same enemy formation when alternatives are available.
             blue_alloc={}; red_alloc={}
-            for s in blue:
-                if not self._has_direct_weapon(s):continue
-                t=self._select_target(s,red)
-                if t:
-                    if s.current_order and s.current_order.kind=="ATTACK": s.state=UnitState.ENGAGING
-                    self.combat.fire_hybrid(s,red,t,blue_alloc)
-            for s in red:
-                if not self._has_direct_weapon(s):continue
-                t=self._select_target(s,blue)
-                if t:
-                    if s.current_order and s.current_order.kind=="ATTACK": s.state=UnitState.ENGAGING
-                    self.combat.fire_hybrid(s,blue,t,red_alloc)
+            passes=[(blue,red,blue_alloc),(red,blue,red_alloc)]
+            # Alternate which side resolves first each step so neither side systematically gets
+            # the first RNG draws or the first immediate side effects (cues, structure damage).
+            self._combat_step_index=getattr(self,"_combat_step_index",0)+1
+            if self._combat_step_index%2==0:
+                passes.reverse()
+            for shooters,enemies,alloc in passes:
+                for s in shooters:
+                    if not self._has_direct_weapon(s):continue
+                    t=self._select_target(s,enemies)
+                    if t:
+                        if s.current_order and s.current_order.kind=="ATTACK": s.state=UnitState.ENGAGING
+                        self.combat.fire_hybrid(s,enemies,t,alloc)
 
         # Artillery targeting is perception/doctrine driven. Enemy artillery is treated as a
         # high-payoff counterfire target whenever a credible ARTILLERY track exists, regardless
@@ -1107,8 +1117,8 @@ class Simulation(PerceptionMixin, CompositionMixin):
             return False
         branched=compile_order_fragment(self,u,o.on_true)
         self.log("CONDITION_BRANCH",unit=u.uid,from_order=o.order_id,to_order=branched.kind,phase=o.phase_id)
+        self.reset_order_execution_state(u)
         u.current_order=branched
-        u.metadata.pop("order_started_t",None)
         return True
 
     def save_log(self,path):

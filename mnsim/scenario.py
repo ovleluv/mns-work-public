@@ -87,7 +87,6 @@ def load_scenario(path: str, bml_files: dict | None = None) -> Simulation:
     terrain_data = V.validate_terrain(load_json_config(terrain_path), "terrain") if terrain_path else {}
     sim.terrain = TerrainModel(terrain_data, sim.combat_config.get("navigation", {}))
     sim.terrain.world = sim.world
-    sim.terrain._units_provider = lambda: sim.units.values()
     sim.terrain_file = str(terrain_path) if terrain_path else ""
 
     doctrine_ref = raw.get("artillery_doctrine_file")

@@ -2,7 +2,6 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from heapq import heappush, heappop
 from typing import Any, Dict, List
-import itertools
 
 @dataclass(order=True)
 class SimEvent:
@@ -14,10 +13,13 @@ class SimEvent:
 class EventQueue:
     def __init__(self):
         self._q: List[SimEvent] = []
-        self._seq = itertools.count()
+        # Plain int (not itertools.count) so a Simulation can be pickled/deep-copied for
+        # snapshots and COA branching.
+        self._seq = 0
 
     def push(self, time: float, kind: str, **payload):
-        heappush(self._q, SimEvent(time, next(self._seq), kind, payload))
+        self._seq += 1
+        heappush(self._q, SimEvent(time, self._seq, kind, payload))
 
     def pop_due(self, now: float):
         while self._q and self._q[0].time <= now:
