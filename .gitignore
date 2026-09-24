@@ -2,6 +2,8 @@
 __pycache__/
 *.py[cod]
 .pytest_cache/
+.ruff_cache/
+.mypy_cache/
 .venv/
 venv/
 .coverage
@@ -11,6 +13,8 @@ htmlcov/
 logs/
 results/
 tmp/
+*.trace.json
+tests/upate/analysis/analysis.log
 
 # 로컬 작업 환경
 .agents/
@@ -19,9 +23,6 @@ tmp/
 .env
 .env.*
 !.env.example
-
-# 구버전 백업
-/main_v07_backup.py
 
 # OS 메타데이터
 .DS_Store

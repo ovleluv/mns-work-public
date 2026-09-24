@@ -111,7 +111,7 @@ python -X utf8 -B -m pytest tests/test_tdg3_replay.py --tdg3-replay logs/replay.
 - error: 수집·초기화·실행 과정에서 문제가 발생했습니다. 파일 누락이나 의존성 문제도 확인합니다.
 - skipped: 옵션·입력·환경 조건에 따라 실행하지 않았습니다. 통과로 집계하지 않습니다.
 
-기존 문서의 통과 건수와 *_report.txt, summary.md는 특정 시점의 기록입니다.
+기존 문서의 통과 건수와 summary.md는 특정 시점의 기록입니다.
 results/tmp를 제외하면 그 안의 원시 결과 링크가 열리지 않을 수 있습니다.
 이전 전체 실행에서는 기존 코드에서도 재현되는 실패 7개가 있었으며,
 시나리오 ID·기준값 불일치와 Windows 인코딩 문제가 포함됩니다.
