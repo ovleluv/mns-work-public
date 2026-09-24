@@ -1,10 +1,12 @@
 # Changelog
 
 Newest first. Earlier per-version files (v49.8–v49.10) were merged here unchanged. The v49.11
-consistency release is documented in [CHANGELOG_v49_11.md](CHANGELOG_v49_11.md); v49.12 and v50.0
-were developed in parallel with it and merged on top.
+consistency release is documented in [CHANGELOG_v49_11.md](CHANGELOG_v49_11.md); v50 was
+developed in parallel with it and merged on top.
 
-## v50.0 — combat realism model
+## v50 — review fixes and combat realism model
+
+### Combat realism model
 
 Measured on `scenarios/demo.json`, 1800 s, 5 seeds (mean, before -> after): formations wiped out
 1.8 -> 1.2, artillery crew surviving 47.6 -> 81.4 of 87, personnel lost 141.6 -> 110.4,
@@ -26,8 +28,6 @@ direct-fire rounds 648 -> 311 (suppressed formations fire less).
 - **Doctrine**: formations under fire they cannot answer withdraw (`outranged_reaction`); batteries
   under counter-battery fire displace (shoot and scoot).
 - **Artillery**: time of flight from range; one aim bias per mission plus per-round dispersion.
-
-## v49.12 — review fixes (branch `fix/review-findings`)
 
 ### Correctness
 - Same seed now gives the same run regardless of `PYTHONHASHSEED` (engagement grouping is sorted).

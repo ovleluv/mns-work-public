@@ -47,7 +47,7 @@ per-second detection hazard, armor protection classes, outranged withdrawal and 
 shoot-and-scoot sit on top of the compositional attrition kernel. All coefficients are in
 `config/defaults.json` (`stress_model`, `watch_sweep`, `fire_motion`, `armor_vulnerability`,
 `outranged_reaction`, `classification_error`, `target_signature`, `dig_in_time_s`, ...). Each block has
-an `enabled` switch so calibration studies can isolate the kernel. See CHANGELOG.md (v50.0).
+an `enabled` switch so calibration studies can isolate the kernel. See [CHANGELOG.md](CHANGELOG.md) (v50).
 
 ## Current module responsibilities
 
@@ -1174,7 +1174,7 @@ The transient suppression mechanic introduced in v49.5 was removed. Machine guns
 
 ## v49.10 building-corner navigation correction
 
-- Continuous passability checks and safer waypoint advancement prevent ordinary movement routes from clipping narrow operational BUILDING corners. See [CHANGELOG_v49_10.md](CHANGELOG_v49_10.md).
+- Continuous passability checks and safer waypoint advancement prevent ordinary movement routes from clipping narrow operational BUILDING corners. See [CHANGELOG.md](CHANGELOG.md) (v49.10).
 
 ## v49.11 BML generation and simulator consistency
 
@@ -1184,13 +1184,17 @@ The transient suppression mechanic introduced in v49.5 was removed. Machine guns
 - Preserved queued personnel/equipment damage across aggregation and deaggregation, and corrected completion-time BML branches and per-order deadline reporting. Updated terrain fallback values and synthetic weapon-performance wording in the documentation.
 - Independent scenario/seed runs use the multicore batch API; a single live simulation remains sequential. The detailed implementation and verification record is in [CHANGELOG_v49_11.md](CHANGELOG_v49_11.md).
 
-### v49.11 work log
+## v50 review fixes and combat realism model
 
-| Date (KST) | Commit or artifact | Work |
-|---|---|---|
-| 2026-09-24 | `de91c6f` | Optimized simulator hot paths and repaired engine consistency cases. |
-| 2026-09-24 | `f817a33` | Added deterministic multicore execution for independent scenario/seed batches. |
-| 2026-09-24 | `23b51aa` | Fixed the audited belief, FoW, aggregation, BML, and bounds defects; added regression tests and refreshed the eight-mission validation status. |
-| 2026-09-24 | This documentation update | Added the BML authoring guide, this version summary, and [CHANGELOG_v49_11.md](CHANGELOG_v49_11.md). Use `git log --oneline -- README.md BML_GENERATION_GUIDE.md CHANGELOG_v49_11.md` for the exact documentation commit. |
+Changes relative to v49.11.
 
-The v49.11 engine verification at `23b51aa` was 1,700 passed and 323 opt-in tests skipped in the default suite, 14 passed in the full TDG3 integration run, and eight mission checks passed. These checks validate the implemented behaviors; they do not establish real-world weapon calibration or full support for the partially supported operations listed in [MISSION/MISSION_FEASIBILITY.md](MISSION/MISSION_FEASIBILITY.md).
+- Reproducibility: engagement grouping is ordered, so the same seed gives the same run regardless of `PYTHONHASHSEED`. Sensor scans run on a fixed `k * sensor_update_s` grid, events are handled at their own timestamps, and the UI advances in fixed 0.25 s steps with render interpolation, so results no longer depend on frame rate or the 1x–32x speed setting.
+- Fog of war: direct-fire decisions use the composition seen at the last observation (`Track.perceived_tags`). Kills become known only to formations that watched them and through their reports (battle-damage assessment); `ATTACK_UNIT` / `DESTROY_UNIT` complete on that evidence or end after `search_timeout_s` without a track.
+- Combat stress: suppression and morale/cohesion in `mnsim/stress.py`. Suppressed formations fire less often and less accurately, move and observe worse; SHAKEN/PINNED formations stop advancing, BROKEN formations fall back and rally. `hold_at_all_costs` lowers the break point.
+- Observation: halted formations sweep their sector (all round without an assigned sector), large formations observe from their footprint, ridges and crests block observation and fire through a DEM line-of-sight check, detection is a per-second hazard with size/firing signature, and classification can be wrong until a contact is IDENTIFIED.
+- Fire effects: firing on the move and at moving targets, kill probabilities by weapon penetration class and target `protection_class`, protection that builds from a hasty to a prepared position over `dig_in_time_s`, artillery time of flight from range, and one aiming bias per fire mission.
+- Doctrine: formations under fire they cannot answer withdraw (`outranged_reaction`), batteries under counter-battery fire displace (shoot and scoot), and formations on a collapsing bridge are moved to the nearest bank.
+- Input validation (`mnsim/validation.py`): JSON `NaN`/`Infinity` are rejected, coordinates and conditions are checked at load time, scenario file references are confined to the scenario folder and the project, the editor never writes terrain outside the scenario folder, and the UI pauses on engine errors instead of exiting.
+- Engine structure and performance: perception and composition code moved from `simulation.py` into `mnsim/perception.py` and `mnsim/composition.py`; exact-interval passability and cached planner edges make `scenarios/demo.json` about 2.3x faster.
+- Tooling: `pyproject.toml`, `constraints.txt`, GitHub Actions CI, and `MISSION/validate_missions.py` validation over several seeds.
+- All new model blocks can be disabled in `config/defaults.json`. Details and measured before/after results are in [CHANGELOG.md](CHANGELOG.md).
