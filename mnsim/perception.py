@@ -13,12 +13,25 @@ from .model import FormationElement, Side, Track, Unit, UnitState
 
 
 class PerceptionMixin:
+    DEFAULT_BRANCH_SIGNATURE = {"INFANTRY":0.72, "MECH_INFANTRY":1.05, "MOTORIZED_INFANTRY":0.95,
+                                "RECON":0.60, "SPECIAL_OPERATIONS":0.55, "ARMOR":1.25, "ARTILLERY":1.00}
+
     def _target_signature(self, target: Unit) -> float:
-        base = {"INFANTRY":0.72, "ARMOR":1.25, "ARTILLERY":1.00}.get(target.branch,0.85)
+        cfg=dict(self.combat_config.get("target_signature",{}) or {})
+        table=dict(self.DEFAULT_BRANCH_SIGNATURE); table.update(dict(cfg.get("branch",{})))
+        base = float(table.get(target.branch, cfg.get("default",0.85)))
         if target.state == UnitState.DEFENDING:
             base *= 0.82
         if target.state in (UnitState.MOVING, UnitState.ATTACKING, UnitState.RETREATING):
             base *= 1.08
+        # Bigger formations present more to see (reference = a ~30-strong platoon).
+        ref=max(1.0,float(cfg.get("reference_size",30.0)))
+        size=max(1.0,target.personnel+4.0*target.equipment)
+        base *= max(float(cfg.get("size_factor_min",0.6)),min(float(cfg.get("size_factor_max",1.8)),(size/ref)**0.25))
+        # Firing gives a unit away (muzzle flash, dust, noise) for a short time.
+        last_fire=max(target.weapon_last_fire.values(),default=-1e9)
+        if self.time-last_fire<=float(cfg.get("firing_window_s",10.0)):
+            base *= float(cfg.get("firing_factor",1.6))
         return base
 
     @staticmethod
@@ -366,14 +379,19 @@ class PerceptionMixin:
                 # Detection probability falls sharply toward the edge and is re-evaluated each sensor scan.
                 exp=float(self.combat_config.get("visual_detection_range_exponent",2.0))
                 range_factor=max(0.0,1.0-(d/r)**exp)
+                # The *_per_scan coefficients are calibrated per second of observation.  Convert
+                # them to a detection hazard so the chance of acquiring a target in a given time
+                # does not depend on how often the sensor model runs (p = 1 - exp(-lambda*dt)).
                 edge_p=float(self.combat_config.get("visual_detection_edge_p_per_scan",0.01))
                 max_p=float(self.combat_config.get("visual_detection_max_p_per_scan",0.55))
-                p=max(0.001,min(0.98,(edge_p+max_p*range_factor*self._target_signature(tgt))*angular_factor
-                                 *self.stress.detection_factor(obs)))
+                p1=max(0.001,min(0.98,(edge_p+max_p*range_factor*self._target_signature(tgt))*angular_factor
+                                  *self.stress.detection_factor(obs)))
+                p=1.0-(1.0-p1)**sensor_dt
                 if self.rng.random() > p: continue
                 n=(prev.observations+1) if prev else 1
                 conf=min(0.98,(prev.confidence if prev else 0.18)+0.16+0.16*range_factor)
-                err=max(8.0,(1.0-conf)*180.0)
+                # Location error also grows with range (angular error of the observer's fix).
+                err=max(8.0,(1.0-conf)*180.0,d*float(self.combat_config.get("visual_angular_error_rad",0.01)))
                 ang=self.rng.random()*math.tau; mag=abs(self.rng.gauss(0,err*0.45))
                 est=(tgt.pos[0]+math.cos(ang)*mag,tgt.pos[1]+math.sin(ang)*mag)
                 state="DETECTED"; cls="UNKNOWN"
@@ -394,7 +412,7 @@ class PerceptionMixin:
                     self.log("TRACK_UPDATE",observer=obs.uid,target=tgt.uid,state=state,confidence=round(conf,2),source="LOCAL")
                 # Local observation is not instantly available to every friendly unit.
                 # First, the observer must report it; only then can C2 disseminate the report.
-                report_p=float(self.combat_config.get("report_probability_per_observation",0.42))
+                report_p=1.0-(1.0-float(self.combat_config.get("report_probability_per_observation",0.42)))**sensor_dt
                 report_key=(obs.uid,tgt.uid)
                 min_report_interval=float(self.combat_config.get("observer_report_min_interval_s",12.0))
                 can_report=(self.time-self._last_report_sent.get(report_key,-1e9))>=min_report_interval
