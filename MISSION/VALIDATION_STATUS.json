@@ -1,5 +1,5 @@
 {
-  "checked_at_utc": "2026-09-24T01:46:44.834936+00:00",
+  "checked_at_utc": "2026-09-24T05:04:34.888024+00:00",
   "python": "3.12.13",
   "seed": 7,
   "validation_seeds": [
@@ -168,7 +168,9 @@
         11
       ],
       "failed_checks_by_seed": {
-        "7": {},
+        "7": {
+          "reserve_engaged": false
+        },
         "8": {
           "reserve_engaged": false
         },
@@ -268,38 +270,39 @@
     "database/weapons.csv": "5d02ef6a4882d0d416a73b03a10a77afe6cf29e6891b0106ef136b82d9fbf3bf",
     "mnsim/__init__.py": "91447944015cec709e8aa7655f7e9d64e1e4508e7023a57fe3746911c0fc6fed",
     "mnsim/application.py": "ac5ed22632090a6b157793f982c2d1188f05a16f5e9afc35755e63967e4d7fb0",
-    "mnsim/belief.py": "0a8dc777eb0789cf099a3577eea235d080c9a419700581f16ea9be7dc1783b08",
-    "mnsim/bml.py": "99a54f044c89c2fded177213ab8b5cba8451d4fb9cf3cd5d4a19f31eef9bbed6",
+    "mnsim/batch.py": "e05e14ed1f07416f2d79baefccd0b672300dd1b73b35017f23e7fc89991e9614",
+    "mnsim/belief.py": "a06e86c8cf5d08f20abdfb78c7b05d959d986bb7e4a09bc0b1d25f45c96daf97",
+    "mnsim/bml.py": "ca7697ae8549d80d85df449d2c5549f3071b5629f7954b359e72e062a15868dd",
     "mnsim/cartography.py": "6cc388f312cfd2578d49b69d0e5bea5f205ef6faacf061fa0da98d120f162aa9",
     "mnsim/catalog.py": "08914245ff2c365eef104ee40955da555acfb1855c5d5a00ecca57c74293e611",
-    "mnsim/combat.py": "971598656154c4bcf1879f4def1f43f24d3d159a2a746b9ee3ec795c6230a2e7",
-    "mnsim/communications.py": "620914c350edbe9e4eb1c9f6bcf03dfc3dfb4c62ad18b3a0ef0a0877d50279bd",
-    "mnsim/composition.py": "0b2218bc45f5f043e72cdc9a57563977e5edc3897937b4a3496cf125ae4744ff",
+    "mnsim/combat.py": "cd798898de2fadd8c5e97b1c667f43cf17b97861d6d7e72a68ed25cbdc10855b",
+    "mnsim/communications.py": "c8962adcd024497a0568940b9952674c4245886fad0e53fd72042b372cf46844",
+    "mnsim/composition.py": "8c673a63fa4d75784932c434c708d216fb6a63fe973a54de78c37c872817a20f",
     "mnsim/config.py": "8320a9f0f5f984a29b0900cc9bb918fb04b862b7d4bad9a1dac805377a728cbf",
     "mnsim/crew.py": "3ac621b0bc8342f0816d0ddf23de9b64addc1e5852e28cb37192c563c28c7e87",
-    "mnsim/damage.py": "e184d680a9f28a4d4de705c1ac8d035e62d06b0a8c27f67b7b31d504eefbec50",
+    "mnsim/damage.py": "76fe9c95f7a7b6ae3e0add0f752ee646269b5efdd1e9169a7b11299175cb64a3",
     "mnsim/database.py": "048a9ae98d94a5a89f980304dbedcfa6b5de6a96c627eac5581ab402e0bfe85b",
     "mnsim/definitions.py": "5f5b7ea1862672916c99672c1b6d136c5769e8927dd4b4c092ceff3b6e05f853",
-    "mnsim/doctrine.py": "aa476186e326567c415094357fe899ac4c63ce9ce7fc109712aa23b7fa1939c7",
+    "mnsim/doctrine.py": "a3856c99f36f108bf101134512b6ccd56445cdc811247f2ad67d7f147fb7a5d6",
     "mnsim/doctrine_profiles.py": "68577050abd04f6e19cd648ded7f3279c4c3bdd18d35aeba0996f9389f26ee4b",
     "mnsim/environment.py": "d43aeccf00e4614ff57f658f744706735cb273c8b7139f2be6287005beaeac3e",
-    "mnsim/events.py": "8d41468815c4ee71a83a9e2ec3a05890e89386b47fdba69e7c6d3542e6ede709",
-    "mnsim/fire_control.py": "77316544ecb74c3c1b06ede44cb7832365bad0cc213ba3ee829a7663ce013ba8",
+    "mnsim/events.py": "7c7393533b3f849d7c0e17e70d3b1b697b5957feb5f2f766117b0da06e2e80aa",
+    "mnsim/fire_control.py": "d07e882501176784221d18a0ca6c1fff20da79968e9f81960a87b7e3ba0b3beb",
     "mnsim/firepower.py": "92aa5de4325178ee4eac693081f5ee76b32e6519f2746984de96da208a84620a",
     "mnsim/formation_geometry.py": "f08e657eeed7f13e11bdd5253d658fdc624a8417ed82d7dab19dbb8cf293f436",
-    "mnsim/indirect_fire.py": "e4905825bf5b4f12dbe1c7aae5ec7b96b59debce1a3ffef6f590015209fffd9a",
+    "mnsim/indirect_fire.py": "e8f19327d50d204d4ed8306bacd8c5656211a5105dce33a374b9003fb5659290",
     "mnsim/mobility.py": "5b35b3287fbc4a3eb51ee54fa703ca404c7963fc547cd1e78e402eb3562c5a93",
-    "mnsim/model.py": "fe0847b4889a5d4ec79d6c629be05947aade7ec49710bb03372a252c617bc2a4",
+    "mnsim/model.py": "de6884769c1ca39ea4a60e9c9fad224934ff1da437a66dfc0e8687bc206fe3c1",
     "mnsim/mounted.py": "7062b304095fb16118e899e778d09a54f524f4ef3e2c8f743ce27c65ac7585c9",
     "mnsim/ownership.py": "d0a9784af5efbfb476d91f2758e9a2b064597025884150f0b5bcb447210b1a49",
     "mnsim/pathfinding.py": "2be061deba940a21b778181c6ca106b5d7f14216e0ffdf12e975821b3bd0d782",
-    "mnsim/perception.py": "e462d19f014df51dfd41f7bc44220617a2b1633ef70d69e7e9d8acd26b895c2e",
+    "mnsim/perception.py": "3e58816d84c65ef2d0c3857d579a31a84a1aaa06d7c5ccbb73bdfb719d36bee7",
     "mnsim/replay.py": "7362a37b8f3540be31b70e5109f831e8fe8420ee4444f2fee2aeec094f620089",
-    "mnsim/scenario.py": "7be9609a5602352ece6e8b55a73780a5f2f7710f2889980b0c1abe2ee70d36fa",
-    "mnsim/simulation.py": "070875b8d17859e5fe89109f092789b9587cc0e369657b4d3da5ee8bcfc0d2bf",
+    "mnsim/scenario.py": "4ff5fab30228f292630dea751f4632a8b5e0300a4382a7a2ee006b39c03b6420",
+    "mnsim/simulation.py": "7391b3e7be98040d140009b4337591d99c1ee854dc28947c1a99233b742ff9cb",
     "mnsim/stress.py": "4a2b4c3c1d23a25079bdc59dd74f0e26815ba87440f5661944383999b9cd000e",
     "mnsim/symbology.py": "10bc56adf33ee1f447536a930ca1fe293ac480555b9dcf338dab5c27fc199c41",
-    "mnsim/terrain.py": "575f4d1e01299197ae7b6cf93667f34a6b1d8c88ef13dd0c4344a80ea8457eac",
+    "mnsim/terrain.py": "d3e5b0a2383dd944e8545977b998a1463d7223c06174a5fbcb09c05dfcee4082",
     "mnsim/traversal.py": "0033f8d8ff9482af20b1019aa343644da6c862d1cc413cdd9ba091d39e0efdea",
     "mnsim/validation.py": "3ea76c7f022026ec0fc4dab8d7a84e78565629a3a65c7d6f9e86bcb9727b2665",
     "MISSION/AMBUSH/AMBUSH_BLUE_BML.json": "0f2e24a15a8bc1422fd6f7ea2f9450c684afd78ec0502aa66509a355bd5e440e",
@@ -335,6 +338,6 @@
     "MISSION/WITHDRAWAL/WITHDRAWAL_RED_BML.json": "1996d29e8d8217e0dfec7bec4f7b6f358b0b50dfddb272ce0e496144ce974394",
     "MISSION/WITHDRAWAL/WITHDRAWAL_SCENARIO.json": "f570b60b6fbadf15d8ed99729bedad7b4b7beba3e7c494ebdd024026793c0802",
     "MISSION/WITHDRAWAL/WITHDRAWAL_TERRAIN.json": "72a7587ceb229e88fe4bad539452add51417b81b8e5eb8ab44dfe874581b9939",
-    "MISSION/validate_missions.py": "8d760f000b5931384b3afc021357e950fda59c396ab6b363ad5a1b829f2030a3"
+    "MISSION/validate_missions.py": "c314904fad9eec8dbfa18c4aaebd0c443d2b8df2edddcfe61da50dba360866d6"
   }
 }

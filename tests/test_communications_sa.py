@@ -48,3 +48,12 @@ def test_engaged_shared_cue_has_hysteresis_and_does_not_create_order():
     sim._register_shared_situational_cue(b,(-500,100),.50,'A','CONTACT')
     assert b.metadata['shared_cue_heading_deg']==first
     assert b.current_order is None
+
+
+def test_observer_with_dead_radio_cannot_report_to_hq():
+    from mnsim.scenario import load_scenario
+    sim = load_scenario("scenarios/demo.json", bml_files={})
+    obs = sim.units["B-INF-2"]
+    obs.metadata["communications"] = {"tx_profile": {"reliability": 0.0, "max_range_m": 0.0}}
+    assert not sim.communications.transmitter_operational(obs)
+    assert sim.communications.transmitter_operational(sim.units["B-INF-3"])

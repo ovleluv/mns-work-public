@@ -24,6 +24,7 @@ from .composition import CompositionMixin
 class Simulation(PerceptionMixin, CompositionMixin):
     def __init__(self, seed=7):
         self.time = 0.0
+        self.seed = seed
         self.units: Dict[str, Unit] = {}
         # Ordinary individual-infantry observation fallback for programmatic simulations.
         # Scenario loading replaces this with the local INF_IND template.
@@ -129,6 +130,8 @@ class Simulation(PerceptionMixin, CompositionMixin):
         return True
 
     def add_unit(self, unit: Unit):
+        if unit.uid in self.units:
+            raise ValueError(f"Unit ID already exists: {unit.uid}")
         self.units[unit.uid] = unit
         self.log("UNIT_ADD", unit=unit.uid, side=unit.side.value, pos=unit.pos,
                  personnel=unit.personnel, equipment=unit.equipment)
@@ -136,11 +139,18 @@ class Simulation(PerceptionMixin, CompositionMixin):
     def log(self, kind: str, **data): self.logs.append({"t": round(self.time,3), "kind":kind, **data})
 
     def issue_order(self, uid: str, order: Order):
+        order.deadline_reported = False
         self.units[uid].order_queue.append(order); self.log("ORDER_ISSUED",unit=uid,order=order.kind,order_id=order.order_id)
 
     def tick(self, dt: float):
-        if self.paused: return
-        self.step(dt*self.speed)
+        dt=float(dt); speed=float(self.speed)
+        if not math.isfinite(dt) or dt<0.0 or not math.isfinite(speed) or speed<0.0:
+            raise ValueError("Simulation time step and speed must be finite and non-negative")
+        if self.paused or speed==0.0: return
+        scaled=dt*speed
+        if not math.isfinite(scaled) or not math.isfinite(self.time+scaled):
+            raise ValueError("Simulation time step exceeds the finite clock range")
+        self.step(scaled)
 
     def step(self, sim_dt: float):
         """Advance simulation time by ``sim_dt`` seconds (not scaled by ``speed``)."""
@@ -148,6 +158,8 @@ class Simulation(PerceptionMixin, CompositionMixin):
         if not math.isfinite(sim_dt) or sim_dt<0.0:
             raise ValueError(f"simulation step must be finite and non-negative: {sim_dt!r}")
         start=self.time; end=start+sim_dt
+        if not math.isfinite(end):
+            raise ValueError("Simulation time step exceeds the finite clock range")
         # Positions at the start of the step, used only for render interpolation between steps.
         self._step_start_pos={uid:u.pos for uid,u in self.units.items()}
         # Each event is handled at its own timestamp, so follow-on delays (C2 hops, FDC, damage)
@@ -220,12 +232,16 @@ class Simulation(PerceptionMixin, CompositionMixin):
         of ``max_sim_step_s`` are executed.  Results therefore depend on neither the render frame
         rate nor the 1x..32x speed setting, only on the fixed step.
         """
-        if self.paused or wall_dt <= 0.0:
+        wall_dt=float(wall_dt); speed=float(self.speed)
+        if not math.isfinite(wall_dt) or wall_dt<0.0 or not math.isfinite(speed) or speed<0.0:
+            raise ValueError("Wall time step and simulation speed must be finite and non-negative")
+        if self.paused or wall_dt==0.0 or speed==0.0:
             return
         fixed=max(float(max_sim_step_s),0.01)
-        speed=max(float(self.speed),1e-9)
         # Cap one call's backlog so a stalled frame cannot trigger a long catch-up freeze.
         budget=min(float(wall_dt)*speed, fixed*int(self.combat_config.get("max_steps_per_frame",256)))
+        if not math.isfinite(budget):
+            raise ValueError("Accelerated time step exceeds the finite clock range")
         self._realtime_accumulator=getattr(self,"_realtime_accumulator",0.0)+budget
         while self._realtime_accumulator >= fixed-1e-9:
             self._realtime_accumulator-=fixed
@@ -306,9 +322,8 @@ class Simulation(PerceptionMixin, CompositionMixin):
         # A deadline is a command constraint, not a physics override. Missing it is logged; an
         # explicit on_deadline branch may change the plan. Otherwise the formation keeps trying.
         if o.deadline_s is not None and self.time >= o.deadline_s:
-            deadline_key=f"_deadline_logged:{o.order_id}"
-            if not u.metadata.get(deadline_key):
-                u.metadata[deadline_key]=True
+            if not o.deadline_reported:
+                o.deadline_reported=True
                 self.log("ORDER_DEADLINE_MISSED",unit=u.uid,order=o.kind,order_id=o.order_id,deadline_s=o.deadline_s,phase=o.phase_id)
             if o.on_deadline:
                 branched=compile_order_fragment(self,u,o.on_deadline)
@@ -407,6 +422,10 @@ class Simulation(PerceptionMixin, CompositionMixin):
             cid=u.metadata.get("dismount_child_id"); child=self.units.get(cid) if cid else None
             if child is None or not child.alive:
                 self._complete_order(u); return
+            if not carrier_operable(u):
+                u.state=UnitState.DEFENDING; u.metadata["tactical_reason"]="MOUNT / CARRIER INOPERABLE (CREW SHORTAGE)"; return
+            if free_seats(self,u)<child.personnel:
+                u.state=UnitState.DEFENDING; u.metadata["tactical_reason"]="MOUNT / INSUFFICIENT EMPTY SEATS"; return
             radius=float(u.metadata.get("embark_radius_m",20.0))
             if math.dist(u.pos,child.pos)>radius:
                 u.state=UnitState.MOVING; u.metadata["tactical_reason"]="RENDEZVOUS WITH ORGANIC DISMOUNTS"
@@ -414,7 +433,9 @@ class Simulation(PerceptionMixin, CompositionMixin):
             u.state=UnitState.MOUNTING; started=u.metadata.setdefault("mounted_action_started_t",self.time)
             if self.time-started < float(u.metadata.get("embark_time_s",20.0)):
                 u.metadata["tactical_reason"]="MOUNTING ORGANIC INFANTRY"; return
-            mount_organic(self,u); u.metadata.pop("mounted_action_started_t",None); self._complete_order(u); return
+            if mount_organic(self,u):
+                u.metadata.pop("mounted_action_started_t",None); self._complete_order(u)
+            return
         if kind=="BOARD":
             carrier=self.units.get(str(o.params.get("carrier","")))
             if carrier is None or not carrier.alive or carrier.side!=u.side:
@@ -608,17 +629,16 @@ class Simulation(PerceptionMixin, CompositionMixin):
         if tgt is None:
             self.log("BML_TARGET_MISSING",unit=u.uid,target=target_uid,order=o.kind)
             self._complete_order(u); return
+        # Target existence is a belief. Physical destruction alone cannot tell the commanded
+        # formation that its mission is complete; only battle-damage information (own
+        # observation or a report) or a decayed existence belief can.
         known=u.local_tracks.get(target_uid)
         if known is not None and known.state=="DESTROYED":
-            # Completion requires battle-damage information (own observation or a report),
-            # never the live ``alive`` flag of the target.
             self.log("BML_TARGET_DESTROYED",unit=u.uid,target=target_uid,order=o.kind,
                      bda_source=getattr(known,"source",None))
             self._complete_order(u); return
-        if not tgt.active and tgt.state!=UnitState.DESTROYED:
-            # Administrative identity change (aggregated into a parent, emptied by detachment,
-            # embarked): the commanded entity no longer exists as an addressable formation.
-            self.log("BML_TARGET_MISSING",unit=u.uid,target=target_uid,order=o.kind,reason="NOT_ADDRESSABLE")
+        if known is not None and not known.existence_confirmed and known.state=="LOST":
+            self.log("BML_TARGET_DESTROYED_CONFIRMED",unit=u.uid,target=target_uid,order=o.kind)
             self._complete_order(u); return
 
         # Explicit mission target gets priority when it is perceived.
@@ -786,8 +806,9 @@ class Simulation(PerceptionMixin, CompositionMixin):
         o=u.current_order
         self.log("ORDER_COMPLETE",unit=u.uid,order=o.kind,order_id=o.order_id)
         u.current_order=None
-        self.reset_order_execution_state(u)
+        # Completion-time conditions still need this order's elapsed time and objective.
         apply_branch(self,u,o)
+        self.reset_order_execution_state(u)
 
     def _handle_terrain_transition(self,u,old_pos,new_pos):
         """Apply irreversible composition effects caused by entering special terrain."""
@@ -819,6 +840,11 @@ class Simulation(PerceptionMixin, CompositionMixin):
             u.metadata.pop("swimming",None)
 
     def _move_toward(self,u,dest,dt):
+        if not (0.0 <= float(dest[0]) <= float(self.world["width_m"])
+                and 0.0 <= float(dest[1]) <= float(self.world["height_m"])):
+            u.metadata["_nav_no_path"]=True
+            u.metadata["_nav_no_path_destination"]=tuple(dest)
+            return False
         # Terrain may redirect a non-amphibious formation to a bridge before the final destination.
         move_dest=self.terrain.movement_target(u,tuple(dest)) if self.terrain else tuple(dest)
         dx,dy=move_dest[0]-u.pos[0],move_dest[1]-u.pos[1]; d=math.hypot(dx,dy)
@@ -1102,7 +1128,7 @@ class Simulation(PerceptionMixin, CompositionMixin):
             prev_tr=radar.local_tracks.get(target.uid)
             if prev_tr is not None and prev_tr.state=="DESTROYED":
                 return
-            self.belief.on_observation(tr,"ARTILLERY")
+            self.belief.on_observation(tr,"ARTILLERY",observed_at=tr.last_seen_time)
             radar.local_tracks[target.uid]=tr
             self.log("CB_RADAR_DETECT",radar=radar.uid,source=target.uid,
                      estimated_pos=[round(tr.estimated_pos[0],1),round(tr.estimated_pos[1],1)],
@@ -1133,8 +1159,23 @@ class Simulation(PerceptionMixin, CompositionMixin):
             return
         if kind=="C2_DISSEMINATE_TRACK":
             q=dict(p.get("report",{})); source=q.get("source")
-            n=self.communications.broadcast_side(source,"TRACK_REPORT",q,priority=20)
-            self.log("TRACK_DISSEMINATION",source=source,target=q.get("target"),recipients=n,origin="C2")
+            q.setdefault("report_origin_uid",source)
+            sender=self.units.get(source)
+            relay_uid=source
+            if sender is None or not sender.can_communicate:
+                # Once HQ has the report, losing the observer must not erase the message.
+                side=sender.side.value if sender else q.get("side")
+                relay=next((u for u in self.units.values()
+                            if u.can_communicate and u.side.value==side),None)
+                if relay is not None:
+                    relay_uid=relay.uid
+                    self._receive_comm_message(relay,{"message_type":"TRACK_REPORT",
+                        "sender_uid":source,"channel":"C2_RELAY","payload":q})
+            n=self.communications.broadcast_side(relay_uid,"TRACK_REPORT",q,priority=20)
+            details={"source":source,"target":q.get("target"),"recipients":n,"origin":"C2"}
+            if relay_uid!=source:
+                details["relay"]=relay_uid
+            self.log("TRACK_DISSEMINATION",**details)
             return
         if kind=="COMM_DELIVER":
             msg=dict(p.get("message",{})); recv=self.units.get(msg.get("recipient_uid"))

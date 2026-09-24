@@ -1,6 +1,8 @@
 # Changelog
 
-Newest first. Earlier per-version files (`CHANGELOG_v49_*.md`) were merged here unchanged.
+Newest first. Earlier per-version files (v49.8–v49.10) were merged here unchanged. The v49.11
+consistency release is documented in [CHANGELOG_v49_11.md](CHANGELOG_v49_11.md); v49.12 and v50.0
+were developed in parallel with it and merged on top.
 
 ## v50.0 — combat realism model
 
@@ -25,7 +27,7 @@ direct-fire rounds 648 -> 311 (suppressed formations fire less).
   under counter-battery fire displace (shoot and scoot).
 - **Artillery**: time of flight from range; one aim bias per mission plus per-round dispersion.
 
-## v49.11 — review fixes (branch `fix/review-findings`)
+## v49.12 — review fixes (branch `fix/review-findings`)
 
 ### Correctness
 - Same seed now gives the same run regardless of `PYTHONHASHSEED` (engagement grouping is sorted).
@@ -53,6 +55,10 @@ direct-fire rounds 648 -> 311 (suppressed formations fire less).
 
 ### Tooling
 - `pyproject.toml` (pytest/ruff/mypy settings), `constraints.txt`, GitHub Actions CI.
+
+## v49.11 — BML generation and simulator consistency
+
+See [CHANGELOG_v49_11.md](CHANGELOG_v49_11.md).
 
 ## v49.10 - Building-corner navigation stall fix
 

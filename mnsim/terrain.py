@@ -409,6 +409,9 @@ class TerrainModel:
         Three representative samples per crossed interval are sufficient for the authored smooth
         contour model and make cost depend on polygon complexity rather than sight-line length.
         """
+        if (max(eye_a,eye_b)<=obstacle_height_m+0.5
+                and not any(str(a.get("type","")).upper()=="ELEVATION" for a in self.areas)):
+            return False
         poly=[tuple(x) for x in area.get("polygon",[])]
         if not poly or _point_in_poly(a,poly) or _point_in_poly(b,poly):return False
         intervals=self._line_intervals_inside_polygon(a,b,poly)
@@ -498,6 +501,30 @@ class TerrainModel:
         cache[key]=masked
         return masked
 
+    def observation_upper_bounds(self, sensor_mode:str="VISUAL") -> Dict[str,float]:
+        """Conservative terrain gains for a cheap pre-LOS sensor geometry check.
+
+        Authored modifiers may exceed 1, so a baseline range/FOV alone cannot reject a target.
+        Multiplying every possible gain is deliberately loose but never hides a detectable target.
+        This is recomputed per sensor scan because scenarios may edit terrain modifiers at runtime.
+        """
+        mode=str(sensor_mode).upper()
+        bounds={"range_factor":1.0,"fov_factor":1.0,"awareness_factor":1.0}
+        zones=list(self.data.get("observation_zones",[]))
+        zones += [a for a in self.areas if a.get("observation_modifier") or a.get("sensor_overrides")
+                  or str(a.get("type","")).upper() in ("WOODS","FOREST","BRUSH","URBAN","BUILDING")]
+        for zone in zones:
+            raw=dict(zone.get("observation_modifier",{}))
+            override=dict(zone.get("sensor_overrides",{})).get(mode)
+            if override:
+                raw.update(dict(override))
+            for key in bounds:
+                bounds[key]*=max(1.0,float(raw.get(key,1.0)))
+        for building in self.areas:
+            if str(building.get("type","")).upper()=="BUILDING" and self.building_operational(building):
+                bounds["range_factor"]*=max(1.0,float(building.get("external_range_factor",0.82)))
+        return bounds
+
     def observation_modifier(self, observer_pos:Vec2, target_pos:Vec2, sensor_mode:str="VISUAL") -> Dict[str,float]:
         """Return observation modifiers for the observer-target ray.
 
@@ -507,7 +534,9 @@ class TerrainModel:
         smoke/building/elevation LOS layers.
         """
         out={"range_factor":1.0,"fov_factor":1.0,"awareness_factor":1.0,"detection_factor":1.0}
-        if observer_pos!=target_pos and self.terrain_masks(observer_pos,target_pos,1.7,1.7):
+        if observer_pos==target_pos:
+            return out
+        if self.terrain_masks(observer_pos,target_pos,1.7,1.7):
             # A crest between observer and target: dead ground (reverse slope, defilade).
             out["range_factor"]=0.0; out["detection_factor"]=0.0
             return out
@@ -831,6 +860,10 @@ class TerrainModel:
         return sorted(t for t in cuts if 0.0<=t<=1.0)
 
     def passable(self,unit,p:Vec2)->bool:
+        world=getattr(self,"world",None)
+        if world and not (0.0<=p[0]<=float(world["width_m"])
+                          and 0.0<=p[1]<=float(world["height_m"])):
+            return False
         md=unit.unit_type.metadata
         mobility=str(md.get("mobility_class","FOOT")).upper()
         # Lakes are water bodies: foot infantry may swim, while vehicles/equipment require an
@@ -885,6 +918,10 @@ class TerrainModel:
         each resulting interval. Roads/bridges are exceptions only where their
         entire necessary corridor is present. No fixed-distance sampling.
         """
+        world=getattr(self,"world",None)
+        if world and any(not (0.0<=p[0]<=float(world["width_m"])
+                              and 0.0<=p[1]<=float(world["height_m"])) for p in (a,b)):
+            return False
         if a!=b and self.segment_crosses_barricade(a,b):return False
         areas,water_restricted=movement_regions(self,unit)
         if not areas and not water_restricted:return True

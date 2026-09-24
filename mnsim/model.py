@@ -223,6 +223,7 @@ class Order:
     start_at_s: Optional[float] = None
     deadline_s: Optional[float] = None
     on_deadline: Optional[Dict[str, Any]] = None
+    deadline_reported: bool = field(default=False, compare=False, repr=False)
 
 
 @dataclass
@@ -250,6 +251,8 @@ class Track:
     # Element tags the observer saw at the last observation (a snapshot, not live inventory).
     # ``None`` means composition unknown; decision logic then falls back to the classification.
     perceived_tags: Optional[Tuple[str, ...]] = None
+    # The confidence at the last observation anchors half-life decay across repeated scans.
+    belief_anchor_confidence: Optional[float] = None
 
     def actionable(self, now: float, max_age: float = 45.0, min_confidence: float = 0.35) -> bool:
         return self.state not in ("LOST", "DESTROYED") and (now - self.last_seen_time) <= max_age and self.confidence >= min_confidence

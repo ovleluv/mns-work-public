@@ -157,7 +157,7 @@ Weapon inventory/editing semantics are defined by weapon metadata rather than we
 
 
 ## v49.6 machine-gun lethality correction
-The transient suppression mechanic introduced in v49.5 was removed. Machine guns now differentiate themselves through calibrated burst casualty probability, multi-effect burst size, weapon-system multiplicity, engagement-cycle cadence, and periodic reload pauses. Small arms and machine guns remain in the same direct-fire pipeline; no machine-gun-only movement or accuracy debuff is applied.
+The transient suppression mechanic introduced in v49.5 was removed. Machine guns now differentiate themselves through tuned burst casualty probability, multi-effect burst size, weapon-system multiplicity, engagement-cycle cadence, and periodic reload pauses. Small arms and machine guns remain in the same direct-fire pipeline; no machine-gun-only movement or accuracy debuff is applied.
 
 ### v49.7 cartography / barricades
 

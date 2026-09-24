@@ -27,7 +27,11 @@ class DamageResolver:
             return None
         # Spatial/area-effect callers may identify the actually exposed item. Direct-fire callers
         # may omit it, in which case the existing stochastic selection is retained.
-        if item_index is not None and item_index in candidates:
+        if item_index is not None:
+            # A spatially identified item can disappear before the delayed effect arrives.
+            # Never redirect that hit onto a different vehicle in the formation.
+            if item_index not in candidates:
+                return None
             idx=item_index
         else:
             operational=[i for i in candidates if element.item_states[i]=="OPERATIONAL"]

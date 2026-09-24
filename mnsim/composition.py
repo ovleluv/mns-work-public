@@ -16,9 +16,11 @@ class CompositionMixin:
         if new_uid in self.units:
             raise ValueError("Aggregate unit ID already exists")
         child_ids = list(dict.fromkeys(child_ids))
-        children=[self.units[x] for x in child_ids if x in self.units and self.units[x].active]
-        child_ids = [c.uid for c in children]
-        if not children: raise ValueError("No active children to aggregate")
+        unavailable=[uid for uid in child_ids if uid not in self.units or not self.units[uid].active]
+        if unavailable:
+            raise ValueError(f"Unknown or inactive aggregate children: {unavailable}")
+        children=[self.units[x] for x in child_ids]
+        if not children: raise ValueError("No children to aggregate")
         side=children[0].side
         if any(c.side!=side for c in children): raise ValueError("Cannot aggregate opposing sides")
         branch=children[0].branch if len({c.branch for c in children})==1 else "COMBINED"
@@ -49,7 +51,10 @@ class CompositionMixin:
                     local_tracks=self._merge_tracks([c.local_tracks for c in children]))
         # Remember each subordinate's place in the formation so deaggregation restores the layout.
         parent.metadata["child_offsets"]={c.uid:(c.pos[0]-pos[0],c.pos[1]-pos[1]) for c in children}
-        for c in children: c.active=False; c.state=UnitState.AGGREGATED; c.parent_id=new_uid
+        for c in children:
+            # In-flight damage follows the physical elements into the aggregate.
+            self.events.remap_formation_damage(c.uid,new_uid,{eid:f"{c.uid}:{eid}" for eid in c.elements})
+            c.active=False; c.state=UnitState.AGGREGATED; c.parent_id=new_uid
         self.add_unit(parent); self.log("AGGREGATE",parent=new_uid,children=child_ids)
         return parent
 
@@ -85,6 +90,7 @@ class CompositionMixin:
             # Restore complete live state, never the stale pre-aggregation inventory.
             c.elements = {ids[eid]: restore_element(e) for eid, e in p.elements.items()
                           if e.metadata.get("source_unit") == cid}
+            self.events.remap_formation_damage(p.uid,cid,ids)
             # Children created while aggregated keep their own inventories. Move only
             # their lineage/references back to the source formation, including nested
             # detached vehicle -> escaped crew families.
@@ -306,6 +312,7 @@ class CompositionMixin:
             child.metadata["target_acquired_t"]=unit.metadata["target_acquired_t"]
 
         self.add_unit(child)
+        self.events.remap_equipment_effects(unit.uid,element.eid,item_index,child.uid)
         unit.children.append(new_uid)
         unit.metadata.setdefault("detached_items",{})[new_uid]={
             "element":element.eid,"state":state,"detached_at":self.time,

@@ -20,12 +20,16 @@ class ContactBeliefPolicy:
     def __init__(self, sim):
         self.sim=sim
 
-    def on_observation(self, tr: Track, classification: str | None = None):
+    def on_observation(self, tr: Track, classification: str | None = None,
+                       observed_at: float | None = None):
         tr.existence_confirmed=True
-        tr.last_confirmed_time=self.sim.time
+        tr.last_confirmed_time=min(self.sim.time, self.sim.time if observed_at is None else float(observed_at))
         tr.belief_confidence=max(tr.belief_confidence, tr.confidence, 0.55)
+        tr.belief_anchor_confidence=tr.belief_confidence
         if classification and classification != "UNKNOWN":
             tr.classification=classification
+        if observed_at is not None and tr.last_confirmed_time<self.sim.time:
+            self.age(tr)
 
     def age(self, tr: Track):
         if not tr.existence_confirmed:
@@ -38,7 +42,9 @@ class ContactBeliefPolicy:
         if age <= grace:
             return
         # Exponential decay toward a nonzero floor: absence of observation is not destruction evidence.
-        start=max(tr.belief_confidence,floor)
+        if tr.belief_anchor_confidence is None:
+            tr.belief_anchor_confidence=tr.belief_confidence
+        start=max(tr.belief_anchor_confidence,floor)
         decay=0.5 ** ((age-grace)/max(1.0,half))
         tr.belief_confidence=max(floor,start*decay)
 
@@ -51,4 +57,5 @@ class ContactBeliefPolicy:
         # Explicit terminal evidence path. Future BDA can call this only when confidence criteria are met.
         observer_track.existence_confirmed=False
         observer_track.belief_confidence=0.0
+        observer_track.belief_anchor_confidence=0.0
         observer_track.state="LOST"

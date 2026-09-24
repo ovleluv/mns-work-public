@@ -53,20 +53,22 @@ class DoctrineEngine:
     def desired_direct_engagement_range(self, unit: Unit, target: Unit, track: Track | None = None) -> float | None:
         """Return the doctrinal stand-off distance for the perceived target.
 
-        This is deliberately derived from the *currently operational weapons that can affect the
-        target*, rather than from branch names.  STANDOFF preserves historical behavior by using
+        This uses operational weapons and the unit's classification of the contact, never the
+        target's hidden component inventory. STANDOFF preserves historical behavior by using
         the longest usable envelope.  COMBINED_ARMS closes until even the shortest relevant weapon
         can participate, allowing longer-ranged systems to fire while the formation advances.
         """
         if track is None:
             track=unit.local_tracks.get(target.uid)
+        if track is None:
+            return None
         ranges=[]
         for _,weapon in unit.operational_weapons():
             if weapon.capability.upper()=="INDIRECT_FIRE":
                 continue
             # Perceived composition only: the formation plans stand-off against what it believes
             # the target contains, not against the live element inventory.
-            if track is None or self.sim.combat.weapon_can_affect_perceived(weapon,track):
+            if self.sim.combat.weapon_may_affect_track(weapon,track):
                 ranges.append(float(weapon.range_m))
         if not ranges:
             return None

@@ -1,4 +1,5 @@
 from __future__ import annotations
+import math
 from typing import Any, Dict, Iterable
 from .model import Order, Unit
 
@@ -50,18 +51,14 @@ class ConditionEvaluator:
             # Perceived enemy formations only: current (non-LOST, non-DESTROYED) tracks whose
             # *estimated* position lies within the radius.  Never counts ground-truth units.
             r = float(unit.metadata.get("condition_radius_m", 800.0))
-            max_age = float(sim.combat_config.get("track_lost_s", 45.0))
-            count = 0
-            for tid, tr in unit.local_tracks.items():
-                tgt = sim.units.get(tid)
-                if tgt is None or tgt.side == unit.side or tr.state in ("LOST", "DESTROYED"):
-                    continue
-                if sim.time - tr.last_seen_time > max_age:
-                    continue
-                dx = tr.estimated_pos[0] - unit.pos[0]; dy = tr.estimated_pos[1] - unit.pos[1]
-                if (dx*dx + dy*dy) ** 0.5 <= r:
-                    count += 1
-            return count
+            max_age=float(sim.combat_config.get("track_lost_s",45.0))
+            min_conf=float(sim.combat_config.get("track_action_confidence",0.35))
+            # Preserve the legacy condition name, but never inspect live enemy positions or
+            # survival. This is a count of currently usable perceived contacts, not truth.
+            return sum(1 for tid,tr in unit.local_tracks.items()
+                       if tr.actionable(sim.time,max_age,min_conf)
+                       and (sim.units.get(tid) is None or sim.units[tid].side!=unit.side)
+                       and math.dist(unit.pos,tr.estimated_pos)<=r)
         if path in ("self.distance_to_objective", "self.at_objective"):
             obj = unit.metadata.get("objective")
             if not obj:
@@ -108,6 +105,20 @@ MISSION_TASKS = {
     "ATTACK_STRUCTURE", "STRIKE_INFRASTRUCTURE", "BUILD_BARRICADE",
 }
 
+ENGINE_ORDER_KINDS = {
+    "MOVE", "ATTACK", "RETREAT", "ATTACK_UNIT", "DESTROY_UNIT", "DEFEND_AREA",
+    "DEFEND", "HOLD", "WAIT", "DISMOUNT", "MOUNT", "BOARD", "DISEMBARK",
+    "ENTER_BUILDING", "EXIT_BUILDING", "ATTACK_STRUCTURE", "STRIKE_INFRASTRUCTURE",
+    "BUILD_BARRICADE",
+}
+
+SUPPORTED_DIRECTIVES = {
+    "hold_at_all_costs", "allow_withdrawal", "allow_break_contact",
+    "allow_artillery_displacement", "allow_indirect_fire_dispersion",
+    "engagement_range_policy", "engagement_range_fraction",
+}
+BOOLEAN_DIRECTIVES = SUPPORTED_DIRECTIVES-{"engagement_range_policy","engagement_range_fraction"}
+
 
 def compile_mission(sim, mission: Dict[str, Any]) -> tuple[str, Order]:
     """Compile an external BML mission into the engine Order representation.
@@ -140,6 +151,8 @@ def compile_mission(sim, mission: Dict[str, Any]) -> tuple[str, Order]:
         target = str(mission.get("target", params.get("target_unit", "")))
         if target not in sim.units:
             raise KeyError(f"BML {task} references unknown target unit {target!r}")
+        if not sim.units[target].active:
+            raise ValueError(f"BML {task} targets inactive aggregated unit {target!r}")
         params["target_unit"] = target
         # IMPORTANT: target identity is not target location. Never derive a search reference from
         # sim.units[target].pos here; that is Ground Truth and would bypass Track/Belief FoW.
@@ -271,6 +284,74 @@ def compile_order_fragment(sim, unit: Unit, raw: Dict[str, Any]) -> Order:
     return parse_order(frag)
 
 
+def validate_order_tree(sim, unit: Unit, order: Order):
+    """Validate a complete BML order and its conditional branches before changing live queues."""
+    if order.kind not in ENGINE_ORDER_KINDS:
+        raise ValueError(f"unsupported engine order kind: {order.kind}")
+    if order.kind in {"MOVE","ATTACK","RETREAT"} and order.params.get("destination") is None:
+        raise ValueError(f"{order.kind} requires a destination")
+    if order.kind in {"ATTACK_UNIT","DESTROY_UNIT"}:
+        target=str(order.params.get("target_unit", ""))
+        if target not in sim.units:
+            raise KeyError(f"{order.kind} references unknown target unit {target!r}")
+        if not sim.units[target].active:
+            raise ValueError(f"{order.kind} targets inactive aggregated unit {target!r}")
+    unknown=set(order.directives)-SUPPORTED_DIRECTIVES
+    if unknown:
+        raise ValueError(f"unsupported BML directives: {sorted(unknown)}")
+    for key in BOOLEAN_DIRECTIVES & order.directives.keys():
+        if not isinstance(order.directives[key],bool):
+            raise ValueError(f"{key} must be a boolean")
+    if "engagement_range_fraction" in order.directives:
+        fraction=float(order.directives["engagement_range_fraction"])
+        if not math.isfinite(fraction) or fraction<=0.0:
+            raise ValueError("engagement_range_fraction must be finite and positive")
+    if "engagement_range_policy" in order.directives:
+        policy=str(order.directives["engagement_range_policy"]).upper()
+        if policy not in {"STANDOFF","BALANCED","MIDRANGE","COMBINED_ARMS","AGGRESSIVE","CLOSE_TO_ALL_WEAPONS"}:
+            raise ValueError(f"unsupported engagement_range_policy: {policy}")
+    for field_name, value in (("start_at_s",order.start_at_s),("deadline_s",order.deadline_s)):
+        if value is not None and not math.isfinite(float(value)):
+            raise ValueError(f"{field_name} must be finite")
+    for field_name in ("destination","center","position","search_reference","target_position"):
+        value=order.params.get(field_name)
+        if value is None:
+            continue
+        order.params[field_name]=list(validate_order_tree_position(sim,value,field_name))
+    polygon=order.params.get("polygon")
+    if polygon:
+        if not isinstance(polygon,(list,tuple)) or len(polygon)<3:
+            raise ValueError("polygon must contain at least three positions")
+        order.params["polygon"]=[list(validate_order_tree_position(sim,point,"polygon point"))
+                                 for point in polygon]
+    for cond in order.conditions:
+        if not isinstance(cond,dict):
+            raise ValueError("BML conditions must be objects")
+        lhs=ConditionEvaluator.resolve(sim,unit,str(cond["lhs"]))
+        op=str(cond.get("op",">="))
+        if op not in ConditionEvaluator.OPS:
+            raise ValueError(f"unsupported condition operator: {op}")
+        try:
+            ConditionEvaluator.OPS[op](lhs,cond["rhs"])
+        except TypeError as exc:
+            raise ValueError(f"incompatible condition operands for {cond['lhs']}") from exc
+    for branch in (order.on_true,order.on_false,order.on_deadline):
+        if branch is not None:
+            validate_order_tree(sim,unit,compile_order_fragment(sim,unit,branch))
+
+
+def validate_order_tree_position(sim, point, field_name: str):
+    try:
+        x,y=map(float,point)
+    except (TypeError,ValueError) as exc:
+        raise ValueError(f"{field_name} must be a two-dimensional position") from exc
+    if (not math.isfinite(x) or not math.isfinite(y)
+            or not 0.0<=x<=float(sim.world["width_m"])
+            or not 0.0<=y<=float(sim.world["height_m"])):
+        raise ValueError(f"{field_name} is outside the scenario world: {(x,y)}")
+    return x,y
+
+
 def apply_branch(sim, unit: Unit, order: Order):
     """Legacy completion-time true/false branch retained for backward compatibility."""
     if not order.conditions:
@@ -283,6 +364,8 @@ def apply_branch(sim, unit: Unit, order: Order):
 def _validate_side(sim, uid: str, expected_side: str | None):
     if expected_side and sim.units[uid].side.value != str(expected_side).upper():
         raise ValueError(f"BML for {expected_side} attempts to command {uid} ({sim.units[uid].side.value})")
+    if not sim.units[uid].active:
+        raise ValueError(f"BML cannot command inactive aggregated unit {uid!r}")
 
 
 def _inherit_phase_fields(mission: Dict[str, Any], phase: Dict[str, Any]) -> Dict[str, Any]:
@@ -311,25 +394,15 @@ def apply_bml_document(sim, raw: Dict[str, Any], expected_side: str | None = Non
     if expected_side and declared and declared != str(expected_side).upper():
         raise ValueError(f"BML side mismatch: expected {expected_side}, file declares {declared}")
 
-    replaced=set()
-    replace_existing=bool(raw.get("replace_existing_orders", True))
-    def prepare(uid):
-        if replace_existing and uid not in replaced:
-            sim.units[uid].order_queue.clear()
-            sim.units[uid].current_order=None
-            # Mid-run re-tasking must not inherit the old order's route, timers or permissions.
-            if hasattr(sim,"reset_order_execution_state"):
-                sim.reset_order_execution_state(sim.units[uid])
-            else:
-                sim.units[uid].metadata.pop("order_started_t",None)
-            replaced.add(uid)
-
+    # Compile and validate the complete document before touching any live orders. A typo in a
+    # later mission must not leave earlier formations with only half of a replacement plan.
+    compiled=[]
     for uid, raw_orders in dict(raw.get("orders_by_unit", {})).items():
         if uid not in sim.units:
             raise KeyError(f"BML references unknown unit {uid!r}")
-        _validate_side(sim,uid,expected_side); prepare(uid)
+        _validate_side(sim,uid,declared)
         for ro in raw_orders:
-            sim.issue_order(uid, parse_order(ro))
+            compiled.append((uid,parse_order(ro)))
 
     missions=list(raw.get("missions", []))
     for phase in raw.get("phases", []):
@@ -340,5 +413,22 @@ def apply_bml_document(sim, raw: Dict[str, Any], expected_side: str | None = Non
 
     for mission in missions:
         uid, order = compile_mission(sim, mission)
-        _validate_side(sim,uid,expected_side); prepare(uid)
+        _validate_side(sim,uid,declared)
+        compiled.append((uid,order))
+
+    for uid, order in compiled:
+        validate_order_tree(sim,sim.units[uid],order)
+
+    replaced=set()
+    replace_existing=bool(raw.get("replace_existing_orders", True))
+    for uid, order in compiled:
+        if replace_existing and uid not in replaced:
+            sim.units[uid].order_queue.clear()
+            sim.units[uid].current_order=None
+            # Mid-run re-tasking must not inherit the old order's route, timers or permissions.
+            if hasattr(sim,"reset_order_execution_state"):
+                sim.reset_order_execution_state(sim.units[uid])
+            else:
+                sim.units[uid].metadata.pop("order_started_t",None)
+            replaced.add(uid)
         sim.issue_order(uid, order)

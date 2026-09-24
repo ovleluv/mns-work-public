@@ -169,13 +169,14 @@ class FireControlEngine:
         reload_delay=self._uniform("artillery_reload_delay_min_s","artillery_reload_delay_max_s")
         cycle_floor=60.0/max(float(w.shots_per_min),0.01)
         cycle_delay=max(reload_delay,cycle_floor)
-        self.next_available[weapon_key]=self.sim.time+cycle_delay
-        self.last_fired[weapon_key]={"target":payload.get("target"),"mode":payload.get("mode","FIRE_SUPPORT"),"time":self.sim.time}
         self.pending.pop(key,None)
 
-        self.sim.indirect_fire.launch_prepared_mission(
+        rounds=self.sim.indirect_fire.launch_prepared_mission(
             shooter=shooter,source_element=el,weapon=w,target_id=payload["target"],
             aim=tuple(payload["aim"]),track_error_m=float(payload["track_error_m"]),
             track_confidence=float(payload["track_confidence"]),observation_time=float(payload["observation_time"]),
             mode=payload.get("mode","FIRE_SUPPORT"),request_time=float(payload.get("request_time",self.sim.time)),
         )
+        if rounds:
+            self.next_available[weapon_key]=self.sim.time+cycle_delay
+            self.last_fired[weapon_key]={"target":payload.get("target"),"mode":payload.get("mode","FIRE_SUPPORT"),"time":self.sim.time}

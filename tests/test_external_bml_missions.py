@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 import pytest
 from mnsim.scenario import load_scenario
-from mnsim.model import UnitState
+from mnsim.model import Track, UnitState
 from mnsim.bml import apply_bml_document
 
 
@@ -93,8 +93,14 @@ def test_four_sequential_entity_missions_use_each_orders_own_reference(tmp_path)
         b.metadata['last_contact_id']='STALE-'+tid
         b.metadata['last_contact_pos']=(999.0,999.0)
         sim.units[tid].state=UnitState.DESTROYED
-        # Completion needs battle-damage information, not the target's live flag.
-        sim._apply_bda(b,tid,{"estimated_pos":refs[tid]},source="TEST")
+        # A real loss is not automatically known to the commander.
+        sim.tick(0.1)
+        assert b.current_order.params['target_unit']==tid
+        observed=Track(f"B1:{tid}",tid,tuple(refs[tid]),5.0,
+                       classification="INFANTRY",confidence=.9,last_seen_time=sim.time,
+                       source="LOCAL",state="IDENTIFIED",existence_confirmed=True)
+        b.local_tracks[tid]=observed
+        sim.belief.mark_destroyed(observed)
         sim.tick(0.1)
 
     sim.tick(0.1)

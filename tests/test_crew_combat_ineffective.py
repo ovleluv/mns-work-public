@@ -1,6 +1,5 @@
 """Crew loss suspends actions without erasing a surviving physical platform."""
 import copy
-from pathlib import Path
 
 import pytest
 
@@ -199,27 +198,18 @@ def test_legacy_platform_explicit_embedded_crew_loss():
     assert not u.can_observe and u.crew_failure_reason == "NO_CREW"
 
 
-def test_real_template_no_crew_does_not_complete_crossing(tmp_path):
-    """A real crewed-vehicle template with no crew must not move or complete its order.
-
-    (The original TDG20 mission file is not part of this repository; build the same situation
-    from the shipped US_HMMWV_IND template instead.)
-    """
-    import json
-    scenario = {"seed": 3, "world": {"width_m": 2000, "height_m": 1000}, "objectives": {},
-                "units": [{"id": "R-LEAD", "side": "RED", "echelon": "IND", "type": "US_HMMWV_IND",
-                           "pos": [200, 500], "orders": [{"id": "CROSS", "kind": "MOVE",
-                                                          "params": {"destination": [1800, 500]}}]}]}
-    path = tmp_path / "crossing.json"
-    path.write_text(json.dumps(scenario))
-    sim = load_scenario(str(path))
-    lead = sim.units["R-LEAD"]
-    lead.elements["vehicle_crew"].count = 0
+def test_real_tank_template_no_crew_does_not_complete_move():
+    sim = load_scenario("scenarios/demo.json", bml_files={})
+    lead = sim.units["B-TK-1"]
+    lead.current_order = Order("cross", "MOVE", {"destination": (lead.pos[0] + 100, lead.pos[1])})
+    lead.order_queue.clear()
+    lead.elements["tanks_crew"].count = 0
     start = lead.pos
+    equipment = lead.equipment
     for _ in range(40):
         sim.tick(.25)
     assert lead.pos == start and lead.state == UnitState.COMBAT_INEFFECTIVE
-    assert lead.alive and lead.equipment == 1
+    assert lead.alive and lead.equipment == equipment
     assert not any(e["kind"] == "ORDER_COMPLETE" and e["unit"] == lead.uid for e in sim.logs)
 
 

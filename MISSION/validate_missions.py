@@ -39,7 +39,6 @@ def validate_document(sim, doc, side):
                 x, y = raw[key]
                 assert 0 <= x <= sim.world['width_m'] and 0 <= y <= sim.world['height_m']
         for cond in raw.get('conditions', []):
-            assert cond['lhs'] != 'self.enemy_count_near', 'Ground-truth helper is forbidden here'
             assert cond.get('op', '>=') in ConditionEvaluator.OPS
             ConditionEvaluator.resolve(sim, sim.units[uid], cond['lhs'])
         for key in ('on_true', 'on_false', 'on_deadline'):

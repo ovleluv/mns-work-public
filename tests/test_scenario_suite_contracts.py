@@ -64,6 +64,11 @@ BML_PAIRINGS = (
         },
     ),
     (
+        "tdg3",
+        "scenarios/tdg3.json",
+        {"BLUE": "scenarios/tdg3_blue_bml.json", "RED": "scenarios/tdg3_red_bml.json"},
+    ),
+    (
         "test2_targets",
         "scenarios/test2.json",
         {

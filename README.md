@@ -59,6 +59,7 @@ mnsim/perception.py     (mixin) sensing, watch orientation, cues, counter-batter
 mnsim/composition.py    (mixin) aggregation/deaggregation, vehicle detachment, stable item lookup
 mnsim/validation.py     Load-time validation of untrusted scenario/terrain/BML input
 mnsim/stress.py         Suppression and morale/cohesion (combat stress)
+mnsim/batch.py          Independent scenario/seed runs using worker processes
 mnsim/combat.py         Direct-fire compatibility, target choice, ammunition use, fire resolution
 mnsim/indirect_fire.py  Artillery launch/impact model, CEP/dispersion, spatial area effects
 mnsim/fire_control.py    Delayed fire-request/FDC/gun-preparation/reload pipeline
@@ -92,7 +93,7 @@ independently, while the remaining streams stay on the formation's primary targe
 actionable targets); it is kept as a library/experiment API and is not used by the default loop. The allocator preserves FoW Track
 requirements, weapon range and compatibility, per-stream target locks/acquisition delay, and a configurable
 mission-target preference. A saturation penalty distributes otherwise comparable fire streams across
-multiple enemy formations. This changes target allocation, not calibrated weapon rates or damage mechanics.
+multiple enemy formations. This changes target allocation, not configured weapon rates or damage mechanics.
 
 Relevant defaults: `local_target_lock_min_s`, `local_target_switch_score_ratio`,
 `local_fire_mission_target_bonus`, and `local_fire_saturation_penalty`.
@@ -121,6 +122,32 @@ the world (plus a 25% margin), conditions are type-checked, and file references 
 the scenario's folder tree or this project (extra roots: `MNSIM_RESOURCE_ROOTS`).
 
 Controls: `SPACE` pause/resume; top-right buttons select `1x/2x/4x/8x/16x/32x`; `1/2/4/8` remain direct keyboard shortcuts and `[` / `]` step slower/faster; click a unit to inspect it; `L` writes a timestamped `logs/replay-YYYYMMDD-HHMMSS.jsonl` (never overwriting an earlier log). If the engine raises during a run, the view pauses and shows the error instead of exiting.
+
+## Multicore batch runs
+
+Independent scenario runs can use multiple CPU cores. One interactive `Simulation.tick()` remains
+single-process so its RNG, event queue, and mutable formation state retain deterministic ordering.
+Run a seed sweep and write compact JSON summaries with:
+
+```bash
+python -m mnsim.batch scenarios/tdg3.json --runs 8 --seed-start 7 --steps 600 --workers 4 > batch.json
+```
+
+`--workers 1` runs the same workload serially; omitting it uses up to four processes. The output
+contains each side's surviving inventory, event counts, simulated time, and a full-log checksum,
+in input order. To ignore a scenario's embedded BML plans, add `--ignore-embedded-bml`.
+
+The Python API supports different scenarios or per-run BML selections:
+
+```python
+from mnsim.batch import BatchRun, run_batch
+
+if __name__ == "__main__":
+    runs = [BatchRun("scenarios/tdg3.json", steps=600, seed=seed) for seed in range(7, 15)]
+    results = run_batch(runs, workers=4)
+```
+
+Use the `__main__` guard in scripts so worker processes start correctly on macOS and Windows.
 
 ## Architecture
 
@@ -230,7 +257,7 @@ The terrain graphics are deliberately abstract placeholders. Terrain/LOS mechani
 ## v0.6 Fog of War
 - Combat is no longer triggered from omniscient enemy coordinates.
 - Every unit maintains its own local track database: DETECTED -> CLASSIFIED -> IDENTIFIED -> STALE -> LOST.
-- Track position contains uncertainty; target selection and weapon-envelope checks use the estimated position.
+- Track position contains uncertainty; target selection and the decision to attempt a shot use the estimated position. Once a round is expended, actual range, cover, and target components determine whether it can cause damage.
 - Sensor reports are shared to friendly units after a stochastic C2 delay, with reduced confidence.
 - BLUE/RED tactical views hide ground truth. `B`, `R`, `G` switch BLUE, RED, and observer/God view.
 - `1`, `2`, `4`, `8` select those speeds directly; `[` / `]` steps through 1x/2x/4x/8x/16x/32x. The top-right speed buttons allow direct mouse selection of all six speeds.
@@ -389,7 +416,9 @@ Default policy:
 - a 0.28 confidence floor / 0.25 display threshold,
 - absence of observation alone is **not** treated as destruction evidence.
 
-The belief can be removed through an explicit terminal-evidence/BDA path (`mark_destroyed`).
+The belief can be removed through an explicit terminal-evidence/BDA API (`mark_destroyed`).
+The current simulation does not infer terminal evidence automatically from hidden destruction;
+an entity-target BML mission therefore cannot complete merely because its true target was lost.
 Future doctrine can replace these defaults with branch/echelon-specific memory, intelligence
 fusion, false-contact handling, relocation prediction, or battle-damage-assessment thresholds.
 
@@ -908,7 +937,7 @@ features while remaining elevation-free; future terrain editors can emit the sam
 ## Map / scenario editor
 `editor.py` is a separate Pygame authoring tool for unit placement and vector terrain (roads, polyline rivers, polyline bridges, woods/forest/brush/urban polygons). It saves the same scenario/terrain JSON consumed by `mnsim.scenario.load_scenario`; no editor-only runtime format is introduced. `main.py` accepts a scenario path plus optional side-specific BML paths, and Ctrl+O reopens the full run-selection workflow.
 
-Dense FOREST terrain is a polygon area distinct from lighter WOODS. Default dense-forest calibration allows FOOT movement at 0.45x open-ground speed, forbids TRACKED/WHEELED/WHEELED_TOWED off-road traversal (explicit roads remain usable), and limits ordinary visual penetration through tree cover to about 100 m (THERMAL 120 m). These are data-driven area properties and can be changed per map/forest polygon. The map/scenario editor authors FOREST by clicking polygon vertices and right-clicking to close the area.
+Dense FOREST terrain is a polygon area distinct from lighter WOODS. Default dense-forest tuning allows FOOT movement at 0.45x open-ground speed, forbids TRACKED/WHEELED/WHEELED_TOWED off-road traversal (explicit roads remain usable), and limits ordinary visual penetration through tree cover to 75 m (THERMAL 105 m). These are data-driven area properties and can be changed per map/forest polygon. The map/scenario editor authors FOREST by clicking polygon vertices and right-clicking to close the area.
 
 Startup workflow: `editor.py` with no argument now starts a completely empty 4 km x 4 km OPEN plain with no units or terrain. Use N to reset to another blank map, O to open an existing scenario, and S/Shift+S to save. `main.py` no longer silently loads demo.json. Normal GUI launch uses three independent choices: Scenario (required) -> BLUE BML (optional; Cancel means none) -> RED BML (optional; Cancel means none). Ctrl+O repeats the same three-step run selection. Explicit command-line use is `python main.py scenario.json [--blue-bml blue.json] [--red-bml red.json]`.
 
@@ -923,7 +952,7 @@ Scenario and BML are separate artifacts. A scenario contains the battlefield, OO
 
 For backward compatibility, the low-level `load_scenario(path)` API still understands old scenario files containing `bml_files`; however the main GUI/CLI passes an explicit run-time BML selection, so embedded references do not silently override what the user selected. New scenarios should keep BML references out of the scenario JSON.
 
-The BML file supports a `missions` list. Implemented mission tasks are `MOVE_TO`, `ATTACK_POSITION`, `ATTACK_UNIT`, `DESTROY_UNIT`, `DEFEND_POSITION`, `DEFEND_AREA`, `SEIZE`, `HOLD`, and `WITHDRAW`. Existing scenario-local `orders` remain supported. By default, BML replaces existing orders only for units explicitly mentioned in that BML; omitted units are left untouched. `ATTACK_UNIT`/`DESTROY_UNIT` use only the target's FoW Track / last-known Track position, or an explicit BML `target_position`; enemy identity alone never grants Ground Truth position knowledge. For identity-agnostic combat, use coordinate-based `ATTACK_POSITION`, which engages hostile contacts discovered through the normal Track/Belief pipeline. See `BML_GUIDE.md`.
+The BML file supports a `missions` list. The current task list, required fields, generation checklist, and validation steps are in [BML_GENERATION_GUIDE.md](BML_GENERATION_GUIDE.md); [BML_GUIDE.md](BML_GUIDE.md) covers execution details and examples. Existing scenario-local `orders` remain supported. By default, BML replaces existing orders only for units explicitly mentioned in that BML; omitted units are left untouched. `ATTACK_UNIT`/`DESTROY_UNIT` use only the target's FoW Track / last-known Track position, or an explicit BML `target_position`; enemy identity alone never grants Ground Truth position knowledge. For identity-agnostic combat, use coordinate-based `ATTACK_POSITION`, which engages hostile contacts discovered through the normal Track/Belief pipeline.
 
 ## v38 echelon-aware artillery survivability
 - Indirect-fire `max_personnel_loss_per_round` is enforced once per impacted formation per shell, not independently for every FormationElement.
@@ -1030,7 +1059,7 @@ Visual sensing now treats WOODS/FOREST as clutter crossed by the observer-target
 - VISUAL and THERMAL may use different penetration budgets.
 - The interface remains in `TerrainModel.observation_modifier()` / `EnvironmentObservationModel`, so future BUILDING, smoke, and elevation occlusion can use the same sensing pipeline instead of special-casing unit branches.
 
-Current fallback penetration values are 100 m VISUAL / 120 m THERMAL for FOREST and 250 m VISUAL / 300 m THERMAL for WOODS when a terrain object does not explicitly author its own values. Terrain-authored values take precedence.
+Current fallback penetration values are 75 m VISUAL / 105 m THERMAL for FOREST and 180 m VISUAL / 240 m THERMAL for WOODS when a terrain object does not explicitly author its own values. Terrain-authored values take precedence.
 
 ## v47 editable formation composition and mounted infantry templates
 
@@ -1105,11 +1134,11 @@ than the original 1500x900 pixel layout.
 ### v49.3 weapon composition consistency
 The editor now uses weapon inventory semantics rather than showing `systems / operators / ammo` for every weapon. AT4-type disposable weapons are configured as carried rounds only; crew-served weapons expose weapon count + crew; assigned individual weapons expose weapon count; vehicle-mounted weapons rely on vehicle crew and provider-limited mounts. A regression audit rejects impossible default TO&E combinations such as more one-person assigned weapons than personnel or more platform mounts than providers.
 
-### v49.4: bounded area defence and anti-armor calibration
+### v49.4: bounded area defence and anti-armor tuning
 - Added `SECURE_AREA`: center/radius or polygon defence with Track-based bounded pursuit and re-centering.
 - Direct-fire anti-armor hit probability is now explicitly separated from post-hit equipment effect.
-- `ATGM_GENERIC` is calibrated as a modern guided ATGM baseline; `JAVELIN_FGM148` is an explicit higher-end entry used by US mechanized/motorized AT teams.
-- AT4 remains an unguided disposable round with substantially lower MBT kill probability per hit than Javelin-class guided AT.
+- `ATGM_GENERIC` is a synthetic modern-style guided ATGM baseline; `JAVELIN_FGM148` is a separate stronger scenario entry used by US mechanized/motorized AT teams. These probabilities are not validated real-world weapon performance.
+- In these synthetic settings, the unguided disposable AT4-type entry has a lower modeled catastrophic-armor probability than the Javelin entry.
 
 ## v49.5 machine-gun and direct-fire timing audit
 - Machine guns now apply transient burst lethality to personnel even when a burst causes no immediate casualty. Direct-fire lethality decays over time and reduces exposed tactical movement and outgoing direct-fire accuracy.
@@ -1121,7 +1150,7 @@ The editor now uses weapon inventory semantics rather than showing `systems / op
 
 
 ## v49.6 machine-gun lethality correction
-The transient suppression mechanic introduced in v49.5 was removed. Machine guns now differentiate themselves through calibrated burst casualty probability, multi-effect burst size, weapon-system multiplicity, engagement-cycle cadence, and periodic reload pauses. Small arms and machine guns remain in the same direct-fire pipeline; no machine-gun-only movement or accuracy debuff is applied.
+The transient suppression mechanic introduced in v49.5 was removed. Machine guns now differentiate themselves through tuned burst casualty probability, multi-effect burst size, weapon-system multiplicity, engagement-cycle cadence, and periodic reload pauses. Small arms and machine guns remain in the same direct-fire pipeline; no machine-gun-only movement or accuracy debuff is applied.
 
 ### v49.6.1 portable legacy scenario loading
 - Standard engine resources (`config/defaults.json`, `config/toe_templates.json`, artillery/targeting doctrine) are no longer serialized as version-folder-relative paths by the editor.
@@ -1142,3 +1171,26 @@ The transient suppression mechanic introduced in v49.5 was removed. Machine guns
 - Generic formation-level calibration is infantry 45 deg/s, armor 20 deg/s, artillery 30 deg/s, default 30 deg/s. These values intentionally represent formation/crew attention and engagement orientation, not literal human head or turret mechanical slew specifications. TO&E `metadata.visual_sensor.watch_slew_deg_per_s` may override them.
 - Outside the CLOSE all-round awareness zone, a remembered direct-fire Track does not permit immediate fire through the rear of the current observation sector. The target must first enter the current forward watch arc; normal weapon acquisition/lay delay then applies.
 - The scenario editor writes `watch_heading_deg` explicitly for newly placed units. Select a unit and use `Ctrl+Left/Right` to adjust the initial watch bearing by 10 degrees. The NATO symbol itself remains north-up/unrotated; a cyan bearing line from its center shows the assigned watch direction. `Shift+Arrow` continues to move the selected unit, while unmodified arrows pan the map.
+
+## v49.10 building-corner navigation correction
+
+- Continuous passability checks and safer waypoint advancement prevent ordinary movement routes from clipping narrow operational BUILDING corners. See [CHANGELOG_v49_10.md](CHANGELOG_v49_10.md).
+
+## v49.11 BML generation and simulator consistency
+
+- Added a [BML generation guide](BML_GENERATION_GUIDE.md) for authoring side-specific plans from scenario IDs, map bounds, supported tasks, perceived Tracks, conditions, phases, and directives. It includes a loadable example and a headless validation workflow.
+- BML now validates nested branches, condition paths, supported directives, and map coordinates before replacing any orders. Load-time aggregate parents can receive BML missions; inactive source children cannot.
+- Corrected the 15-minute contact-belief half-life and delayed-report observation times. Direct fire now decides whether to attempt a shot from perceived information, then applies actual range, cover, and component compatibility after ammunition is spent.
+- Preserved queued personnel/equipment damage across aggregation and deaggregation, and corrected completion-time BML branches and per-order deadline reporting. Updated terrain fallback values and synthetic weapon-performance wording in the documentation.
+- Independent scenario/seed runs use the multicore batch API; a single live simulation remains sequential. The detailed implementation and verification record is in [CHANGELOG_v49_11.md](CHANGELOG_v49_11.md).
+
+### v49.11 work log
+
+| Date (KST) | Commit or artifact | Work |
+|---|---|---|
+| 2026-09-24 | `de91c6f` | Optimized simulator hot paths and repaired engine consistency cases. |
+| 2026-09-24 | `f817a33` | Added deterministic multicore execution for independent scenario/seed batches. |
+| 2026-09-24 | `23b51aa` | Fixed the audited belief, FoW, aggregation, BML, and bounds defects; added regression tests and refreshed the eight-mission validation status. |
+| 2026-09-24 | This documentation update | Added the BML authoring guide, this version summary, and [CHANGELOG_v49_11.md](CHANGELOG_v49_11.md). Use `git log --oneline -- README.md BML_GENERATION_GUIDE.md CHANGELOG_v49_11.md` for the exact documentation commit. |
+
+The v49.11 engine verification at `23b51aa` was 1,700 passed and 323 opt-in tests skipped in the default suite, 14 passed in the full TDG3 integration run, and eight mission checks passed. These checks validate the implemented behaviors; they do not establish real-world weapon calibration or full support for the partially supported operations listed in [MISSION/MISSION_FEASIBILITY.md](MISSION/MISSION_FEASIBILITY.md).

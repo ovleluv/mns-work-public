@@ -441,7 +441,8 @@ class PerceptionMixin:
                 report_p=1.0-(1.0-float(self.combat_config.get("report_probability_per_observation",0.42)))**max(exposure_dt,1e-6)
                 report_key=(obs.uid,tgt.uid)
                 min_report_interval=float(self.combat_config.get("observer_report_min_interval_s",12.0))
-                can_report=(self.time-self._last_report_sent.get(report_key,-1e9))>=min_report_interval
+                can_report=((self.time-self._last_report_sent.get(report_key,-1e9))>=min_report_interval
+                            and self.communications.transmitter_operational(obs))
                 if can_report and self.rng.random() < report_p:
                     self._last_report_sent[report_key]=self.time
                     delay=self.rng.uniform(
@@ -641,26 +642,37 @@ class PerceptionMixin:
                 return
             if old is not None and old.state=="DESTROYED":
                 return
+            report_source=q.get("report_origin_uid",msg.get("sender_uid"))
             incoming_conf=float(q.get("confidence",.3))*0.92
-            # A better fresh local observation is never overwritten by weaker shared SA, and a
-            # report can never roll a track back to an older observation.
-            obs_t=float(q.get("observation_time",self.time))
-            keep_old=bool(old and ((str(old.source).upper() in ("LOCAL","PROXIMITY") and old.confidence>=incoming_conf)
-                                   or old.last_seen_time>obs_t))
-            if not keep_old:
+            observation_time=min(self.time,float(q.get("observation_time",self.time)))
+            # Radio and C2 delays can deliver reports out of order. An older report must not
+            # replace a newer position or downgrade a locally acquired firing-quality track.
+            if old and observation_time < old.last_seen_time:
+                self.log("TRACK_REPORT_IGNORED",recipient=recv.uid,target=target,reason="OLDER_OBSERVATION")
+                return
+            # A better fresh local observation is never overwritten by weaker shared SA.
+            local_fresh=bool(old and old.source in ("LOCAL","PROXIMITY")
+                             and old.state not in ("STALE","LOST")
+                             and self.time-old.last_seen_time<=float(self.combat_config.get("track_stale_s",18.0)))
+            preserve_local=bool(local_fresh and old.confidence>=incoming_conf)
+            if not preserve_local:
                 tr=Track(track_id=f"{recv.uid}:{target}",target_id=target,
                     estimated_pos=tuple(q["estimated_pos"]),position_error_m=float(q.get("position_error_m",100))*1.12,
                     classification=q.get("classification","UNKNOWN"),confidence=incoming_conf,
-                    last_seen_time=float(q.get("observation_time",self.time)),
+                    last_seen_time=observation_time,
                     observations=max(1,old.observations if old else 1),source=q.get("track_source","SHARED"),
                     observation_zone="SHARED",state=q.get("state","DETECTED"),belief_confidence=max(old.belief_confidence if old else 0.0,incoming_conf,0.45),
-                    existence_confirmed=True,last_confirmed_time=float(q.get("observation_time",self.time)),
+                    existence_confirmed=True,last_confirmed_time=observation_time,
                     perceived_tags=tuple(q.get("perceived_tags") or ()) or None)
                 recv.local_tracks[target]=tr
-                self.belief.on_observation(tr,q.get("classification","UNKNOWN"))
+                self.belief.on_observation(tr,q.get("classification","UNKNOWN"),observed_at=observation_time)
+            elif observation_time>old.last_confirmed_time:
+                # Retain the better local firing solution while accepting the newer report as
+                # evidence that the contact still exists.
+                self.belief.on_observation(old,observed_at=observation_time)
             # Shared situational awareness may reorient sensors even if local Track was already better.
-            self._register_shared_situational_cue(recv,tuple(q["estimated_pos"]),incoming_conf,msg.get("sender_uid"),q.get("cue_kind","CONTACT"))
-            self.log("TRACK_SHARED",source=msg.get("sender_uid"),recipient=recv.uid,target=target,
+            self._register_shared_situational_cue(recv,tuple(q["estimated_pos"]),incoming_conf,report_source,q.get("cue_kind","CONTACT"))
+            self.log("TRACK_SHARED",source=report_source,recipient=recv.uid,target=target,
                      channel=msg.get("channel"),confidence=round(incoming_conf,2))
             return
         self.log("COMM_RX_UNHANDLED",recipient=recv.uid,message_type=mtype,source=msg.get("sender_uid"))

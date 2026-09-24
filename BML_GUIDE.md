@@ -17,15 +17,17 @@ When they become true, `on_true` replaces the active order. Supported paths incl
 - `self.time_in_order`
 - `self.capability.<CAPABILITY>`
 - `self.distance_to_objective`, `self.at_objective`
-- `self.enemy_count_near` — number of current enemy Tracks whose *estimated* position is within
-  `condition_radius_m` (default 800 m); it never counts unobserved enemy units
+- `self.enemy_count_near`: count of current actionable Tracks inside the configured radius, using estimated positions. The legacy name is retained, but it no longer reads live enemy positions or survival.
 
-Conditions are validated when the BML is loaded: `lhs` must be one of the paths above, numeric
-paths need a finite numeric `rhs`, `self.capability.*`/`self.at_objective` need `true`/`false`
-with `==`/`!=`, and `self.state` needs a state-name string. Coordinates must be finite and lie
-inside the world (plus a 25% margin).
+Conditions are validated when the BML is loaded, before any live order changes: `lhs` must be one
+of the paths above, numeric paths need a finite numeric `rhs`, `self.capability.*`/`self.at_objective`
+need `true`/`false` with `==`/`!=`, and `self.state` needs a state-name string. Coordinates must be
+finite and inside the scenario world.
 
 Operators: `<`, `<=`, `>`, `>=`, `==`, `!=`.
+`on_false` is evaluated when an order completes, before that order's objective and elapsed-time
+metadata are cleared. Unknown branch tasks, condition paths, directives, and out-of-world
+coordinates are rejected while loading the BML, before existing orders are replaced.
 
 Example: defend until 50% total formation loss, then withdraw to Rally Point Alpha.
 
@@ -123,6 +125,11 @@ synchrony. A future explicit phase-trigger manager can be added if a research sc
 
 Phase-level `start_at_s`, `deadline_s`, and `directives` are inherited by missions unless a mission
 overrides them.
+
+For a scenario with load-time `aggregations`, the parent formation is created before BML is
+loaded. Address the active parent ID in BML; inactive source children cannot be commanded until
+they are deaggregated. Scenario-embedded commands for a load-time aggregate belong in that
+`aggregations[]` entry's `orders`; embedded orders on children that become inactive are rejected.
 
 ## 5. Doctrine profile versus mission directive
 

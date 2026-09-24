@@ -71,6 +71,22 @@ class CommunicationNetwork:
         jam=max(0.0,min(1.0,jam))
         return max(0.0,1.0-jam*(1.0-max(0.0,min(1.0,profile.jam_resistance))))
 
+    def transmitter_operational(self, sender) -> bool:
+        """Whether ``sender`` can put any message on the net at all (dead radio = False).
+
+        Used for the abstract observer-to-HQ report, which has no explicit HQ recipient but must
+        still respect a formation whose transmitter is inoperative.
+        """
+        if sender is None or not sender.can_communicate:
+            return False
+        p=dict(self.config.get("default_link", {}))
+        p.update(dict(sender.metadata.get("communications", {}).get("tx_profile", {})))
+        if float(p.get("reliability",0.995))<=0.0:
+            return False
+        if p.get("max_range_m") is not None and float(p["max_range_m"])<=0.0:
+            return False
+        return True
+
     def eligible_recipients(self, sender, side=None) -> Iterable:
         side=side or sender.side
         mode=str(self.config.get("routing_mode","SIDE_WIDE")).upper()
