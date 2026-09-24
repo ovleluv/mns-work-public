@@ -430,6 +430,74 @@ class TerrainModel:
             ground=self.elevation_at(tuple(poly[0])) if poly else 0.0
         return float(ground)+float(building.get("height_m",8.0))
 
+    # ---------- terrain (ridge/crest) line of sight ----------
+    def _elevation_signature(self):
+        return tuple((str(a.get("id","")),float(a.get("elevation_m",0.0)),len(a.get("polygon",[])))
+                     for a in self.areas if str(a.get("type","")).upper()=="ELEVATION")
+
+    def _dem(self):
+        """Lazily rasterised height field of the authored contour model (for LOS only).
+
+        ``elevation_at`` is exact but costs one pass over every polygon; a sight line needs tens
+        of height samples, so LOS reads a bilinear DEM built once per contour set.
+        """
+        sig=self._elevation_signature()
+        cached=getattr(self,"_dem_cache",None)
+        if cached is not None and cached[0]==sig:
+            return cached[1]
+        if not sig:
+            self._dem_cache=(sig,None); return None
+        world=getattr(self,"world",None) or {}
+        xs=[float(p[0]) for a in self.areas if str(a.get("type","")).upper()=="ELEVATION" for p in a.get("polygon",[])]
+        ys=[float(p[1]) for a in self.areas if str(a.get("type","")).upper()=="ELEVATION" for p in a.get("polygon",[])]
+        x0=min([0.0]+xs); y0=min([0.0]+ys)
+        x1=max([float(world.get("width_m",0.0))]+xs); y1=max([float(world.get("height_m",0.0))]+ys)
+        cell=float(self.navigation_config.get("los_dem_cell_m",20.0))
+        max_cells=int(self.navigation_config.get("los_dem_max_cells",250_000))
+        cell=max(cell,math.sqrt(max(1.0,(x1-x0)*(y1-y0))/max(1,max_cells)))
+        nx=int(math.ceil((x1-x0)/cell))+1; ny=int(math.ceil((y1-y0)/cell))+1
+        grid=[[self.elevation_at((x0+i*cell,y0+j*cell)) for i in range(nx)] for j in range(ny)]
+        dem=(x0,y0,cell,nx,ny,grid)
+        self._dem_cache=(sig,dem); self._los_cache={}
+        return dem
+
+    def dem_height(self, p:Vec2)->float:
+        dem=self._dem()
+        if dem is None:
+            return 0.0
+        x0,y0,cell,nx,ny,grid=dem
+        fx=min(max((p[0]-x0)/cell,0.0),nx-1.000001); fy=min(max((p[1]-y0)/cell,0.0),ny-1.000001)
+        i=int(fx); j=int(fy); tx=fx-i; ty=fy-j
+        r0=grid[j]; r1=grid[j+1]
+        return ((r0[i]*(1-tx)+r0[i+1]*tx)*(1-ty)+(r1[i]*(1-tx)+r1[i+1]*tx)*ty)
+
+    def terrain_masks(self, a:Vec2, b:Vec2, height_a:float=1.7, height_b:float=1.7)->bool:
+        """True when the ground rises above the straight sight line between two eye points."""
+        dem=self._dem()
+        if dem is None:
+            return False
+        cell=dem[2]
+        key=(round(a[0]/5.0),round(a[1]/5.0),round(b[0]/5.0),round(b[1]/5.0),round(height_a,1),round(height_b,1))
+        cache=getattr(self,"_los_cache",None)
+        if cache is None:
+            cache=self._los_cache={}
+        if key in cache:
+            return cache[key]
+        d=math.dist(a,b)
+        n=max(2,min(400,int(math.ceil(d/(0.75*cell)))))
+        za=self.dem_height(a)+height_a; zb=self.dem_height(b)+height_b
+        clearance=float(self.navigation_config.get("los_clearance_m",0.5))
+        masked=False
+        for k in range(1,n):
+            t=k/n
+            q=(a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t)
+            if self.dem_height(q)>za+(zb-za)*t-clearance:
+                masked=True; break
+        if len(cache)>200_000:
+            cache.clear()
+        cache[key]=masked
+        return masked
+
     def observation_modifier(self, observer_pos:Vec2, target_pos:Vec2, sensor_mode:str="VISUAL") -> Dict[str,float]:
         """Return observation modifiers for the observer-target ray.
 
@@ -439,6 +507,10 @@ class TerrainModel:
         smoke/building/elevation LOS layers.
         """
         out={"range_factor":1.0,"fov_factor":1.0,"awareness_factor":1.0,"detection_factor":1.0}
+        if observer_pos!=target_pos and self.terrain_masks(observer_pos,target_pos,1.7,1.7):
+            # A crest between observer and target: dead ground (reverse slope, defilade).
+            out["range_factor"]=0.0; out["detection_factor"]=0.0
+            return out
         zones=list(self.data.get("observation_zones",[]))
         zones += [a for a in self.areas if a.get("observation_modifier") or a.get("sensor_overrides")
                   or str(a.get("type","")).upper() in ("WOODS","FOREST","BRUSH","URBAN","BUILDING")]
@@ -545,6 +617,16 @@ class TerrainModel:
         rmax=max(0.0,float(max_range_m)); a=math.radians(float(heading_deg))
         end=(observer_pos[0]+math.cos(a)*rmax,observer_pos[1]+math.sin(a)*rmax)
         mode=str(sensor_mode).upper(); limit=rmax
+        dem=self._dem()
+        if dem is not None and rmax>0:
+            eye=self.dem_height(observer_pos)+1.7; best=-1e9; step=max(5.0,0.75*dem[2])
+            r=step
+            while r<rmax:
+                q=(observer_pos[0]+math.cos(a)*r,observer_pos[1]+math.sin(a)*r)
+                g=self.dem_height(q)
+                if (g+1.7-eye)/r < best:
+                    limit=r; break        # a 1.7 m target here would be below an earlier crest
+                best=max(best,(g-eye)/r); r+=step
         penetration_defaults={"FOREST":{"VISUAL":75.0,"THERMAL":105.0},"WOODS":{"VISUAL":180.0,"THERMAL":240.0}}
         for zone in self.areas:
             ztype=str(zone.get("type","")).upper()
@@ -585,6 +667,9 @@ class TerrainModel:
         Values are generic M&S tuning defaults, not weapon-specific real-world specifications.
         """
         out={"allowed":True,"effect_factor":1.0,"vegetation_path_m":0.0}
+        if shooter_pos!=target_pos and self.terrain_masks(shooter_pos,target_pos,1.5,1.5):
+            out["allowed"]=False; out["effect_factor"]=0.0; out["terrain_masked"]=True
+            return out
         zones=[a for a in self.areas if str(a.get("type","")).upper() in ("FOREST","WOODS","BRUSH")]
         penetration_defaults={"FOREST":45.0,"WOODS":120.0,"BRUSH":220.0}
         effect_defaults={"FOREST":0.45,"WOODS":0.65,"BRUSH":0.82}

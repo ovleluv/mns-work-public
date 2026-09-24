@@ -1,7 +1,7 @@
 
 from __future__ import annotations
 import math
-from .model import FormationElement, Unit, UnitState, WeaponModel
+from .model import FormationElement, Unit, WeaponModel
 
 
 # Fallback composition implied by a perceived classification when a Track carries no observed
