@@ -626,19 +626,31 @@ class TerrainModel:
         return out
 
     def speed_factor(self,unit,p:Vec2,dest:Vec2|None=None)->float:
-        md=unit.unit_type.metadata
+        base=self.terrain_speed_factor(unit.unit_type.metadata,p)
+        base*=self.mobile_equipment_fraction(unit)
+        if dest is not None and math.dist(p,dest)>1e-6:
+            base*=self.grade_speed_factor(p,dest)
+        return base
+
+    def terrain_speed_factor(self,md:Dict[str,Any],p:Vec2)->float:
+        """Surface/area/river factor at *p* for a unit-type metadata block (no unit state).
+
+        Piecewise constant between road/bridge/river/area boundaries, which lets the planner
+        test passability exactly per boundary interval instead of sampling every few metres.
+        """
         mobility=str(md.get("mobility_class","FOOT")).upper()
         factors=md.get("terrain_speed_factors",{})
-        if self.on_bridge(p):
+        on_bridge=self.on_bridge(p)
+        on_road=self.on_road(p)
+        if on_bridge:
             base=float(factors.get("BRIDGE",factors.get("ROAD",1.0)))
-        elif self.on_road(p):
+        elif on_road:
             base=float(factors.get("ROAD",1.0))
         else:
             base=float(factors.get("OPEN",1.0))
 
         # Optional polygon terrain areas add a data-driven local mobility modifier.  This does not
         # hard-code branch names: an area may specify a general factor plus mobility-class overrides.
-        mobility=str(md.get("mobility_class","FOOT")).upper()
         for area in self.area_at(p):
             if str(area.get("type","")).upper()=="ELEVATION":
                 continue
@@ -648,7 +660,7 @@ class TerrainModel:
             # retain their existing modifiers.
             if (str(area.get("type","")).upper()=="FOREST"
                     and mobility in {"TRACKED","WHEELED","WHEELED_TOWED"}
-                    and self.on_road(p)):
+                    and on_road):
                 forbidden={str(x).upper() for x in area.get("impassable_mobility_classes",[])}
                 if mobility in forbidden or (mobility in overrides and float(overrides[mobility])<=0.0):
                     continue
@@ -657,27 +669,66 @@ class TerrainModel:
             base*=max(0.0,am)
 
         river=self.river_at(p)
-        if river is not None and not self.on_bridge(p):
+        if river is not None and not on_bridge:
             river_factor=river.get("movement_factor",None)
             ov=dict(river.get("mobility_overrides",{}))
             if mobility in ov:
                 river_factor=ov[mobility]
             if river_factor is not None:
                 base*=max(0.0,float(river_factor))
-
-        equipment=[e for e in unit.elements.values() if e.category.upper()=="EQUIPMENT" and ("ARMOR" in e.tags or "ARTILLERY" in e.tags)]
-        if equipment:
-            total=sum(max(1,e.count) for e in equipment)
-            mobile=sum(e.mobile_item_count for e in equipment)
-            # Formation may continue with surviving mobile vehicles; a fully mobility-killed
-            # detached proxy has max_speed=0 and therefore remains stationary.
-            base*=max(0.0,min(1.0,mobile/max(1,total)))
-        if dest is not None and math.dist(p,dest)>1e-6:
-            # Formation-scale grade penalty. Mild downhill is useful, steep downhill also slows.
-            ang=self.slope_angle_deg(p,dest)
-            if ang>0: base*=max(0.22,1.0-ang/38.0)
-            else: base*=max(0.35,1.0-abs(ang)/55.0)
         return base
+
+    @staticmethod
+    def mobile_equipment_fraction(unit)->float:
+        equipment=[e for e in unit.elements.values() if e.category.upper()=="EQUIPMENT" and ("ARMOR" in e.tags or "ARTILLERY" in e.tags)]
+        if not equipment:
+            return 1.0
+        total=sum(max(1,e.count) for e in equipment)
+        mobile=sum(e.mobile_item_count for e in equipment)
+        # Formation may continue with surviving mobile vehicles; a fully mobility-killed
+        # detached proxy has max_speed=0 and therefore remains stationary.
+        return max(0.0,min(1.0,mobile/max(1,total)))
+
+    def grade_speed_factor(self,p:Vec2,dest:Vec2)->float:
+        # Formation-scale grade penalty. Mild downhill is useful, steep downhill also slows.
+        ang=self.slope_angle_deg(p,dest)
+        if ang>0: return max(0.22,1.0-ang/38.0)
+        return max(0.35,1.0-abs(ang)/55.0)
+
+    def has_elevation(self)->bool:
+        return any(str(a.get("type","")).upper()=="ELEVATION" for a in self.areas)
+
+    def revision(self)->tuple:
+        """Cheap signature of mutable terrain state used to invalidate planner caches."""
+        return (len(self.areas),len(self.roads),len(self.rivers),len(self.barricades),
+                tuple(self.bridge_operational(b) for b in self.bridges),
+                tuple(self.building_operational(a) for a in self.areas
+                      if str(a.get("type","")).upper()=="BUILDING"))
+
+    def speed_boundary_cuts(self,a:Vec2,b:Vec2)->List[float]:
+        """Segment parameters where any speed-relevant membership may change."""
+        from .traversal import polygon_cuts, capsule_cuts
+        cuts={0.0,1.0}
+        for area in self.areas:
+            if str(area.get("type","")).upper()=="ELEVATION":
+                continue
+            poly=area.get("polygon",[])
+            if len(poly)>=3 and self._segment_bbox_overlap(a,b,self._poly_bbox(poly)):
+                cuts.update(polygon_cuts(a,b,[tuple(x) for x in poly]))
+        for river in self.rivers:
+            poly=river.get("polygon",[])
+            if len(poly)>=3 and self._segment_bbox_overlap(a,b,self._poly_bbox(poly)):
+                cuts.update(polygon_cuts(a,b,[tuple(x) for x in poly]))
+        lines=[(r.get("points",[]),float(r.get("width_m",30.0))/2.0) for r in self.roads]
+        lines+=[(r.get("points",[]),float(r.get("width_m",0.0))/2.0) for r in self.rivers]
+        lines+=[(self.bridge_points(r),float(r.get("width_m",80.0))/2.0) for r in self.bridges]
+        for points,radius in lines:
+            if radius<=0:continue
+            for c,d in zip(points,points[1:]):
+                bbox=(min(c[0],d[0])-radius,min(c[1],d[1])-radius,max(c[0],d[0])+radius,max(c[1],d[1])+radius)
+                if self._segment_bbox_overlap(a,b,bbox):
+                    cuts.update(capsule_cuts(a,b,tuple(c),tuple(d),radius))
+        return sorted(t for t in cuts if 0.0<=t<=1.0)
 
     def passable(self,unit,p:Vec2)->bool:
         md=unit.unit_type.metadata

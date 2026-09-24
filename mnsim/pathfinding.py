@@ -143,42 +143,100 @@ class NavigationPlanner:
                 out.append(n)
         return out
 
+    #: Upper bound on samples per segment; very long legs get proportionally coarser sampling
+    #: instead of allocating an unbounded list (e.g. a BML destination at 1e13 m).
+    MAX_SEGMENT_SAMPLES = 2000
+
     def _segment_samples(self, a: Vec2, b: Vec2):
         d = math.dist(a, b)
-        n = max(1, int(math.ceil(d / self.sample_spacing_m)))
+        if not math.isfinite(d):
+            raise ValueError(f"non-finite navigation segment {a!r} -> {b!r}")
+        n = max(1, min(self.MAX_SEGMENT_SAMPLES, int(math.ceil(d / self.sample_spacing_m))))
         for i in range(n + 1):
             t = i / n
             yield (a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t)
 
-    def segment_passable(self, unit, a: Vec2, b: Vec2) -> bool:
-        if not self.terrain.segment_passable(unit,a,b):return False
-        samples=list(self._segment_samples(a,b))
-        if any(movement_speed_mps(unit,self.terrain,p,q,state="MOVING") <= 0
-               for p,q in zip(samples,samples[1:])):return False
-        # With no authored elevation polygons the slope is identically zero.
-        if not any(str(area.get("type","")).upper()=="ELEVATION" for area in self.terrain.areas):return True
+    def _max_grade_deg(self, unit) -> float:
+        mobility=str(unit.unit_type.metadata.get("mobility_class","FOOT")).upper()
+        table={"FOOT":38.0,"TRACKED":28.0,"WHEELED":18.0,"WHEELED_TOWED":12.0}
+        table.update({str(k).upper():float(v) for k,v in dict(self.config.get("max_grade_deg_by_mobility",{})).items()})
+        return float(table.get(mobility,self.config.get("default_max_grade_deg",20.0)))
+
+    @staticmethod
+    def _unit_type_key(unit):
+        # Unit types are shared per template; detached/aggregated units get their own object.
+        return id(unit.unit_type)
+
+    def _cache(self):
+        rev=self.terrain.revision()
+        if getattr(self,"_cache_rev",None)!=rev or len(getattr(self,"_edge_cache",{}))>200_000:
+            self._cache_rev=rev
+            self._edge_cache={}
+        return self._edge_cache
+
+    def _terrain_segment_ok(self, md, a: Vec2, b: Vec2) -> bool:
+        """Exact test that the surface speed factor stays positive along a-b.
+
+        The factor only changes where the segment crosses an area/road/bridge/river boundary,
+        so one probe per boundary interval replaces fixed-spacing sampling.
+        """
+        cuts=self.terrain.speed_boundary_cuts(a,b)
+        for lo,hi in zip(cuts,cuts[1:]):
+            if hi-lo<=1e-12:
+                continue
+            m=(lo+hi)*0.5
+            q=(a[0]+(b[0]-a[0])*m,a[1]+(b[1]-a[1])*m)
+            if self.terrain.terrain_speed_factor(md,q)<=0.0:
+                return False
+        return True
+
+    def _grade_ok(self, unit, a: Vec2, b: Vec2) -> bool:
+        if not self.terrain.has_elevation():
+            return True
+        max_grade=self._max_grade_deg(unit)
         samples=list(self._segment_samples(a,b))
         # Prevent routes across implausibly steep authored contour transitions.  Thresholds are
         # formation-scale planning defaults, not vehicle brochure climb limits.
-        mobility=str(unit.unit_type.metadata.get("mobility_class","FOOT")).upper()
-        max_grade={"FOOT":38.0,"TRACKED":28.0,"WHEELED":18.0,"WHEELED_TOWED":12.0}.get(mobility,20.0)
         return all(abs(self.terrain.slope_angle_deg(x,y))<=max_grade for x,y in zip(samples,samples[1:]))
+
+    def segment_passable(self, unit, a: Vec2, b: Vec2) -> bool:
+        a=(float(a[0]),float(a[1])); b=(float(b[0]),float(b[1]))
+        if not self.terrain.segment_passable(unit,a,b):return False
+        # Unit-level mobility (crew, speed, surviving mobile vehicles) is independent of the leg.
+        if movement_speed_mps(unit,None,state="MOVING")<=0 or self.terrain.mobile_equipment_fraction(unit)<=0:
+            return False
+        cache=self._cache()
+        key=("PASS",self._unit_type_key(unit),a,b)
+        hit=cache.get(key)
+        if hit is None:
+            md=unit.unit_type.metadata
+            hit=self._terrain_segment_ok(md,a,b) and self._grade_ok(unit,a,b)
+            cache[key]=hit
+        return hit
 
     def _segment_time_cost(self, unit, a: Vec2, b: Vec2) -> float:
         d = math.dist(a, b)
         if d <= 1e-9:
             return 0.0
+        cache=self._cache()
+        # Everything that scales the unit's speed must be part of the key (all mutable at runtime).
+        key=("COST",self._unit_type_key(unit),float(unit.unit_type.max_speed_mps),
+             str(unit.echelon).upper(),bool(unit.crew_failure_reason),
+             round(self.terrain.mobile_equipment_fraction(unit),6),
+             (float(a[0]),float(a[1])),(float(b[0]),float(b[1])))
+        if key in cache:
+            return cache[key]
         samples = list(self._segment_samples(a, b))
-        if len(samples) < 2:
-            speed=movement_speed_mps(unit,self.terrain,a,b,state="MOVING")
-            return d / speed if speed > 0 else math.inf
         total = 0.0
-        seg = d / (len(samples) - 1)
+        seg = d / max(1, len(samples) - 1)
         for i,p in enumerate(samples[:-1]):
             nxt=samples[i+1]
             speed=movement_speed_mps(unit,self.terrain,p,nxt,state="MOVING")
-            if speed <= 0:return math.inf
+            if speed <= 0:
+                total=math.inf
+                break
             total += seg / speed
+        cache[key]=total
         return total
 
     def _heuristic(self, unit, a: Vec2, b: Vec2) -> float:
@@ -229,11 +287,15 @@ class NavigationPlanner:
         parent: Dict[int, int] = {}
         heap = [(self._heuristic(unit, start, destination), 0.0, start_i)]
         closed = set()
+        max_expansions = int(self.config.get("max_astar_expansions", 4000))
         while heap:
             _, cur_g, i = heapq.heappop(heap)
             if i in closed:
                 continue
             closed.add(i)
+            if len(closed) > max_expansions:
+                # Bounded planning effort: a pathological terrain file must not freeze the sim.
+                return [start]
             if i == dest_i:
                 break
             for j, edge_cost in neighbors(i):

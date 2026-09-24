@@ -930,22 +930,64 @@ class Simulation:
         brush/forest/urban/fog/rain/smoke/LOS implementations out of the tactical sensor logic.
         Radar is handled separately and remains omnidirectional unless a radar model says otherwise.
         """
-        profiles=dict(self.combat_config.get("visual_sensor_profiles", {}))
-        base=dict(profiles.get("DEFAULT", {}))
-        base.update(dict(profiles.get(unit.branch, {})))
-        base.update(dict(unit.unit_type.metadata.get("visual_sensor", {})))
-        md=base
-        sensor_mode=str(md.get("sensor_mode", "VISUAL")).upper()
-        forward=float(md.get("forward_range_m", unit.unit_type.detection_range_m))
-        fov=float(md.get("forward_fov_deg", self.combat_config.get("visual_forward_fov_deg", 90.0)))
-        close=float(md.get("all_round_awareness_m", self.combat_config.get("visual_all_round_awareness_m", 160.0)))
-        slew=float(md.get("watch_slew_deg_per_s", self.combat_config.get("visual_watch_slew_deg_per_s", 60.0)))
+        sensor_mode,forward,fov,close,slew=self._visual_sensor_base(unit)
         mods=self.environment.modifier(self.terrain, unit, target, sensor_mode=sensor_mode)
         forward*=mods.range_factor
         fov*=mods.fov_factor
         close*=mods.awareness_factor
         forward=min(forward, float(self.combat_config.get("visibility_range_m", 1e9)))
         return max(1.0,forward), max(1.0,min(360.0,fov)), max(0.0,close), max(1.0,slew), max(0.0,mods.detection_factor)
+
+    def _visual_sensor_base(self, unit: Unit):
+        """Baseline (sensor_mode, forward_m, fov_deg, close_m, slew_deg_s) before any degradation."""
+        profiles=dict(self.combat_config.get("visual_sensor_profiles", {}))
+        md=dict(profiles.get("DEFAULT", {}))
+        md.update(dict(profiles.get(unit.branch, {})))
+        md.update(dict(unit.unit_type.metadata.get("visual_sensor", {})))
+        sensor_mode=str(md.get("sensor_mode", "VISUAL")).upper()
+        forward=float(md.get("forward_range_m", unit.unit_type.detection_range_m))
+        fov=float(md.get("forward_fov_deg", self.combat_config.get("visual_forward_fov_deg", 90.0)))
+        close=float(md.get("all_round_awareness_m", self.combat_config.get("visual_all_round_awareness_m", 160.0)))
+        slew=float(md.get("watch_slew_deg_per_s", self.combat_config.get("visual_watch_slew_deg_per_s", 60.0)))
+        return sensor_mode,forward,fov,close,slew
+
+    # Public, UI-facing read-only queries (frontends must not call underscored engine internals).
+    def visual_sensor_profile(self, unit: Unit, target: Unit | None = None):
+        return self._visual_sensor_profile(unit, target)
+
+    def radar_element_operational(self, unit: Unit, element: FormationElement) -> bool:
+        return self._radar_element_operational(unit, element)
+
+    def _sensor_cull_range(self, obs: Unit) -> float:
+        """Upper bound on any distance at which ``obs`` could possibly detect a target.
+
+        Terrain/weather factors are multiplicative degradations; an authored factor above 1.0
+        disables culling so no detection that the full model would allow is ever skipped.
+        """
+        _,forward,_,close,_=self._visual_sensor_base(obs)
+        boost=float(getattr(self,"_sensor_boost_bound",1.0))
+        prox=float(self.combat_config.get("proximity_contact_m",60.0))
+        return max(forward,close,prox)*boost+1.0
+
+    def _refresh_sensor_boost_bound(self):
+        bound=1.0
+        zones=list(self.terrain.data.get("observation_zones",[])) if self.terrain else []
+        zones+=list(self.terrain.areas) if self.terrain else []
+        for z in zones:
+            raw=dict(z.get("observation_modifier",{}))
+            for ov in dict(z.get("sensor_overrides",{})).values():
+                raw.update(dict(ov))
+            for k in ("range_factor","awareness_factor"):
+                bound=max(bound,float(raw.get(k,1.0)))
+        env=dict(self.combat_config.get("environment",{}))
+        for table in ("weather_observation_modifiers","illumination_observation_modifiers"):
+            for raw in dict(env.get(table,{})).values():
+                raw=dict(raw)
+                for ov in dict(raw.get("sensor_overrides",{})).values():
+                    raw.update(dict(ov))
+                for k in ("range_factor","awareness_factor"):
+                    bound=max(bound,float(raw.get(k,1.0)))
+        self._sensor_boost_bound=float("inf") if bound>1.0 else 1.0
 
     def _register_threat_cue(self, unit: Unit, source_uid: str | None, cue_type: str = "DIRECT_FIRE"):
         """Record a short-lived directional cue from incoming fire without creating a Track."""
@@ -1124,10 +1166,18 @@ class Simulation:
                     tr.state="STALE"; tr.confidence*=stale_decay
                 self.belief.age(tr)
 
+        self._refresh_sensor_boost_bound()
+        live_targets=[u for u in self.units.values() if u.alive]
         for obs in [u for u in self.units.values() if u.can_observe]:
             self._update_watch_heading(obs,sensor_dt)
-            for tgt in [u for u in self.units.values() if u.alive and u.side != obs.side]:
+            cull=self._sensor_cull_range(obs)
+            for tgt in live_targets:
+                if tgt.side == obs.side:
+                    continue
                 d=obs.distance_to(tgt)
+                # Cheap range rejection before any terrain ray casting.
+                if d > cull:
+                    continue
                 eligible,r,angular_factor,in_all_round=self._visual_target_geometry(obs,tgt)
                 prev=obs.local_tracks.get(tgt.uid)
                 proximity=float(self.combat_config.get("proximity_contact_m",60.0))
@@ -1391,6 +1441,7 @@ class Simulation:
 
     def _build_engagements(self):
         units=self._direct_units(); link=float(self.combat_config["engagement_link_m"]); adj={u.uid:set() for u in units}
+        has_direct={u.uid:self._has_direct_weapon(u) for u in units}
         # Hostile edges require at least one side to possess an actionable contact; no omniscient proximity trigger.
         for i,a in enumerate(units):
             for b in units[i+1:]:
@@ -1403,7 +1454,7 @@ class Simulation:
                 can_b = tb is not None and self._unit_can_affect(b,a)
                 # Keep a short contact-link fallback for close encounters where classification/capability
                 # prevents fire (e.g. rifle infantry facing armor after its AT specialist is lost).
-                close_contact=(ta is not None or tb is not None) and a.distance_to(b)<=link and (self._has_direct_weapon(a) or self._has_direct_weapon(b))
+                close_contact=(ta is not None or tb is not None) and a.distance_to(b)<=link and (has_direct[a.uid] or has_direct[b.uid])
                 if can_a or can_b or close_contact:
                     adj[a.uid].add(b.uid); adj[b.uid].add(a.uid)
         # Nearby friendlies may join the same local engagement component, but still fire only on their own tracks.
