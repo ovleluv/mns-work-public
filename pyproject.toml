@@ -1,6 +1,6 @@
 [project]
 name = "mnsim"
-version = "0.49.11"
+version = "0.50.0"
 description = "Research tactical M&S / COA wargame prototype (DE + ABM hybrid, TO&E composition combat, fog of war)"
 readme = "README.md"
 requires-python = ">=3.10"

@@ -2,7 +2,30 @@
 
 Newest first. Earlier per-version files (`CHANGELOG_v49_*.md`) were merged here unchanged.
 
-## Unreleased — review fixes (branch `fix/review-findings`)
+## v50.0 — combat realism model
+
+Measured on `scenarios/demo.json`, 1800 s, 5 seeds (mean, before -> after): formations wiped out
+1.8 -> 1.2, artillery crew surviving 47.6 -> 81.4 of 87, personnel lost 141.6 -> 110.4,
+direct-fire rounds 648 -> 311 (suppressed formations fire less).
+
+- **Suppression and morale** (`mnsim/stress.py`, `combat.stress_model`): every incoming round,
+  near miss and casualty suppresses (scaled by formation size and prepared positions); suppression
+  cuts rate of fire, accuracy, movement and detection. Morale falls with losses, leader loss and
+  sustained fire; SHAKEN/PINNED formations stop advancing, BROKEN ones fall back and rally.
+  `hold_at_all_costs` lowers the break point. `enabled: false` restores the pure attrition kernel.
+- **Prepared positions**: protection builds from hasty to dug-in over `dig_in_time_s`; applies to
+  direct fire, artillery effects and the per-round casualty cap.
+- **Observation**: halted formations sweep their sector (all round when none is assigned); large
+  formations observe from their footprint; ridges/crests block observation and fire (DEM LOS).
+- **Detection** is a per-second hazard (independent of `sensor_update_s`), with size and firing
+  signature, range-proportional position error and classification error below IDENTIFIED.
+- **Direct fire**: firing on the move / at moving targets; kill probabilities by weapon
+  penetration class x target protection class (`combat.armor_vulnerability`).
+- **Doctrine**: formations under fire they cannot answer withdraw (`outranged_reaction`); batteries
+  under counter-battery fire displace (shoot and scoot).
+- **Artillery**: time of flight from range; one aim bias per mission plus per-round dispersion.
+
+## v49.11 — review fixes (branch `fix/review-findings`)
 
 ### Correctness
 - Same seed now gives the same run regardless of `PYTHONHASHSEED` (engagement grouping is sorted).

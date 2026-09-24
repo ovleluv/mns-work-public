@@ -40,6 +40,15 @@ A future developer or LLM should preserve these boundaries unless there is a str
 10. **Demo numbers are synthetic tuning values.** Weapon probabilities/ranges in this prototype exist
     to exercise the engine architecture. Replace them with validated scenario data when doing calibrated studies.
 
+## Combat realism layer (v50)
+
+Suppression/morale (`mnsim/stress.py`), prepared positions, sector scanning, terrain LOS, a
+per-second detection hazard, armor protection classes, outranged withdrawal and artillery
+shoot-and-scoot sit on top of the compositional attrition kernel. All coefficients are in
+`config/defaults.json` (`stress_model`, `watch_sweep`, `fire_motion`, `armor_vulnerability`,
+`outranged_reaction`, `classification_error`, `target_signature`, `dig_in_time_s`, ...). Each block has
+an `enabled` switch so calibration studies can isolate the kernel. See CHANGELOG.md (v50.0).
+
 ## Current module responsibilities
 
 ```text
@@ -49,6 +58,7 @@ mnsim/simulation.py     Orchestrator, time loop, order execution, movement, enga
 mnsim/perception.py     (mixin) sensing, watch orientation, cues, counter-battery, tracks, C2 receive, BDA
 mnsim/composition.py    (mixin) aggregation/deaggregation, vehicle detachment, stable item lookup
 mnsim/validation.py     Load-time validation of untrusted scenario/terrain/BML input
+mnsim/stress.py         Suppression and morale/cohesion (combat stress)
 mnsim/combat.py         Direct-fire compatibility, target choice, ammunition use, fire resolution
 mnsim/indirect_fire.py  Artillery launch/impact model, CEP/dispersion, spatial area effects
 mnsim/fire_control.py    Delayed fire-request/FDC/gun-preparation/reload pipeline
