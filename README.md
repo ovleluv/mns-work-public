@@ -72,8 +72,11 @@ respectively. Avoid one-off `if unit_name == ...` logic.
 ### Direct-fire local allocation (v42)
 
 Direct fire is deliberately **not** a formation-wide single-target fire pool. `Unit.target_id` remains
-a primary observation/mission cue, while `CombatResolver.fire_local()` allocates each operational
-FormationElement/weapon stream among its own actionable targets. The allocator preserves FoW Track
+a primary observation/mission cue. The engine's combat step calls `CombatResolver.fire_hybrid()`:
+weapon streams that can reach a CLOSE (all-round awareness) contact pick among those contacts
+independently, while the remaining streams stay on the formation's primary target.
+`CombatResolver.fire_local()` is the fully decentralised variant (every stream chooses among all
+actionable targets); it is kept as a library/experiment API and is not used by the default loop. The allocator preserves FoW Track
 requirements, weapon range and compatibility, per-stream target locks/acquisition delay, and a configurable
 mission-target preference. A saturation penalty distributes otherwise comparable fire streams across
 multiple enemy formations. This changes target allocation, not calibrated weapon rates or damage mechanics.

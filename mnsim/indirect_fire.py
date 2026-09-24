@@ -310,7 +310,7 @@ class IndirectFireResolver:
                             effects+=1; victim_effects+=1
                             geometry_counts[geom]=geometry_counts.get(geom,0)+1
                             self.sim.events.push(
-                                self.sim.time+0.15,"EQUIPMENT_EFFECT",target=victim.uid,source=shooter.uid,
+                                self.sim.time+self.sim.combat._effect_delay_s(),"EQUIPMENT_EFFECT",target=victim.uid,source=shooter.uid,
                                 element=el.eid,item_index=item_i,item_id=el.item_id_at(item_i),
                                 effect=effect,weapon=weapon.name,reason=f"ARTILLERY_{geom}"
                             )
@@ -322,7 +322,7 @@ class IndirectFireResolver:
                     if loss>0:
                         effects+=loss; victim_effects+=loss
                         self.sim.events.push(
-                            self.sim.time+0.15,"ELEMENT_LOSS",target=victim.uid,source=shooter.uid,
+                            self.sim.time+self.sim.combat._effect_delay_s(),"ELEMENT_LOSS",target=victim.uid,source=shooter.uid,
                             element=el.eid,count=loss,weapon=weapon.name,cue_type="INDIRECT_FIRE"
                         )
             if victim_effects or nr<=1.0:

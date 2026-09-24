@@ -329,7 +329,7 @@
     "engagement_range_policy": "STANDOFF",
     "engagement_range_fraction": 1.0,
     "direct_fire_requires_watch_alignment": true,
-    "direct_fire_watch_edge_margin_deg": 5.0
-  },
-  "direct_fire_requires_local_track": true
+    "direct_fire_watch_edge_margin_deg": 5.0,
+    "direct_fire_requires_local_track": true
+  }
 }

@@ -30,6 +30,10 @@ class CombatResolver:
     def __init__(self, sim):
         self.sim = sim
 
+    def _effect_delay_s(self) -> float:
+        """Latency between a resolved hit and its casualty/damage event (configurable)."""
+        return max(0.0, float(self.sim.combat_config.get("hit_effect_delay_s", 0.15)))
+
     @staticmethod
     def weapon_can_affect(weapon, target: Unit) -> bool:
         """Physical (ground-truth) compatibility.  Use only when resolving an actual effect."""
@@ -581,7 +585,7 @@ class CombatResolver:
                 effect=self.sim.damage.direct_weapon_effect(target,tgt_el,weapon)
                 if effect is not None:
                     self.sim.events.push(
-                        self.sim.time+.15,"EQUIPMENT_EFFECT",target=target.uid,source=shooter.uid,
+                        self.sim.time+self._effect_delay_s(),"EQUIPMENT_EFFECT",target=target.uid,source=shooter.uid,
                         element=tgt_el.eid,effect=effect,weapon=weapon.name,reason="DIRECT_WEAPON_HIT"
                     )
                 else:
@@ -592,7 +596,7 @@ class CombatResolver:
             else:
                 loss = 1 if weapon.max_effect_count <= 1 else self.sim.rng.randint(1, weapon.max_effect_count)
                 self.sim.events.push(
-                    self.sim.time + .15, "ELEMENT_LOSS", target=target.uid, source=shooter.uid,
+                    self.sim.time + self._effect_delay_s(), "ELEMENT_LOSS", target=target.uid, source=shooter.uid,
                     element=tgt_el.eid, count=loss, weapon=weapon.name
                 )
         return True

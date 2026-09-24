@@ -6,6 +6,12 @@ from typing import Any, Dict, List, Tuple
 
 Vec2 = Tuple[float,float]
 
+#: Length of one MIL1-class field barrier segment built by BUILD_BARRICADE (metres).
+BARRICADE_LENGTH_M = 10.0
+#: Branches whose dismounted (FOOT) formations may swim across lakes by default.  A unit type can
+#: opt in explicitly with ``mobility_capabilities: ["SWIM"]`` regardless of branch.
+FOOT_SWIMMER_BRANCHES = frozenset({"INFANTRY", "RECON", "SPECIAL_OPERATIONS"})
+
 def _point_segment_distance(p:Vec2,a:Vec2,b:Vec2)->float:
     px,py=p; ax,ay=a; bx,by=b
     dx,dy=bx-ax,by-ay
@@ -91,7 +97,7 @@ class TerrainModel:
             while f"HESCO{n}" in used:n+=1
             barrier_id=f"HESCO{n}"
         b={"id":str(barrier_id),"type":"HESCO_MIL1","center":[round(float(center[0]),2),round(float(center[1]),2)],
-           "heading_deg":float(heading_deg)%360.0,"length_m":10.0,"width_m":1.06,"builder_uid":builder_uid,
+           "heading_deg":float(heading_deg)%360.0,"length_m":BARRICADE_LENGTH_M,"width_m":1.06,"builder_uid":builder_uid,
            "small_arms_cover_factor":0.40,"heavy_direct_cover_factor":0.70}
         self.barricades.append(b); return b
 
@@ -415,6 +421,15 @@ class TerrainModel:
                 if line_z<=top+0.5:return False
         return True
 
+    def _building_roof_m(self, building:Dict[str,Any], poly:List[Vec2]|None=None)->float:
+        """Absolute roof elevation; shared by observation, direct fire and the UI envelope so a
+        building can never block sight but not fire (or the reverse)."""
+        poly=poly if poly is not None else [tuple(x) for x in building.get("polygon",[])]
+        ground=building.get("ground_elevation_m")
+        if ground is None:
+            ground=self.elevation_at(tuple(poly[0])) if poly else 0.0
+        return float(ground)+float(building.get("height_m",8.0))
+
     def observation_modifier(self, observer_pos:Vec2, target_pos:Vec2, sensor_mode:str="VISUAL") -> Dict[str,float]:
         """Return observation modifiers for the observer-target ray.
 
@@ -505,7 +520,7 @@ class TerrainModel:
             # Test representative points of the exact footprint intersection interval instead
             # of marching every ~6 m along the whole sightline.
             blocked=False
-            roof=float(bld.get("ground_elevation_m",self.elevation_at(tuple(poly[0]))))+float(bld.get("height_m",8.0))
+            roof=self._building_roof_m(bld,poly)
             intervals=self._line_intervals_inside_polygon(observer_pos,target_pos,poly)
             for lo,hi in intervals:
                 for t in (lo+(hi-lo)*0.25,(lo+hi)*0.5,lo+(hi-lo)*0.75):
@@ -545,7 +560,7 @@ class TerrainModel:
                 lo,hi=intervals[0]; tm=(lo+hi)*0.5
                 q=(observer_pos[0]+(end[0]-observer_pos[0])*tm,observer_pos[1]+(end[1]-observer_pos[1])*tm)
                 line_z=self.elevation_at(observer_pos)+1.7
-                roof=self.elevation_at(tuple(poly[0]))+float(zone.get("height_m",8.0))
+                roof=self._building_roof_m(zone,poly)
                 # UI approximation assumes roughly level endpoint eye height; elevated observers
                 # still benefit because terrain elevation is included at the observer and roof.
                 if line_z<=roof+0.5:limit=min(limit,max(0.0,lo*rmax))
@@ -607,7 +622,7 @@ class TerrainModel:
             if crossed<=0:continue
             in_s=_point_in_poly(shooter_pos,poly); in_t=_point_in_poly(target_pos,poly)
             if in_s and in_t:continue
-            blocked=False; roof=self.elevation_at(tuple(poly[0]))+float(bld.get("height_m",8.0))
+            blocked=False; roof=self._building_roof_m(bld,poly)
             intervals=self._line_intervals_inside_polygon(shooter_pos,target_pos,poly)
             for lo,hi in intervals:
                 for t in (lo+(hi-lo)*0.25,(lo+hi)*0.5,lo+(hi-lo)*0.75):
@@ -749,7 +764,7 @@ class TerrainModel:
         if lake is not None:
             caps={str(x).upper() for x in md.get("mobility_capabilities",[])}
             branch=str(getattr(unit.unit_type,"branch","")).upper()
-            foot_swimmer=(mobility=="FOOT" and branch in {"INFANTRY","RECON","SPECIAL_OPERATIONS"})
+            foot_swimmer=(mobility=="FOOT" and (branch in FOOT_SWIMMER_BRANCHES or "SWIM" in caps))
             water_override=bool(caps & {"AMPHIBIOUS","WATER_CROSSING"})
             if not foot_swimmer and not water_override:return False
         bld=next((a for a in areas if str(a.get("type","")).upper()=="BUILDING" and self.building_operational(a)),None)

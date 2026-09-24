@@ -246,11 +246,7 @@ class Simulation:
         # Active conditions are reactive triggers, not preconditions.  Evaluate every simulation
         # step so time-, position-, capability-, and loss-based branches do not depend on taking
         # a damage event.  This also makes the already-present conditional BML semantics complete.
-        if o.conditions and o.on_true and ConditionEvaluator.eval_all(self,u,o.conditions):
-            branched=compile_order_fragment(self,u,o.on_true)
-            self.log("CONDITION_BRANCH",unit=u.uid,from_order=o.order_id,to_order=branched.kind,phase=o.phase_id)
-            u.current_order=branched
-            u.metadata.pop("order_started_t",None)
+        if self._try_condition_branch(u):
             return
 
         # A deadline is a command constraint, not a physics override. Missing it is logged; an
@@ -296,12 +292,8 @@ class Simulation:
             # Execution is handled by the artillery fire-control pass so it uses the same FDC,
             # preparation, reload, CEP and time-of-flight pipeline as other indirect fires.
             u.state=UnitState.DEFENDING
-            targets=list(o.params.get("targets",[])); idx=int(u.metadata.get("infrastructure_strike_index",0))
-            while idx<len(targets):
-                tid=str(targets[idx]);br=self.terrain.bridge_by_id(tid) if self.terrain else None
-                bld=self.terrain.building_by_id(tid) if self.terrain and hasattr(self.terrain,"building_by_id") else None
-                if (br is not None and self.terrain.bridge_operational(br)) or (bld is not None and self.terrain.building_operational(bld)):break
-                idx+=1; u.metadata["infrastructure_strike_index"]=idx
+            targets=list(o.params.get("targets",[]))
+            idx=self._advance_infrastructure_index(u,targets,log_completed=False)
             if idx>=len(targets):
                 u.metadata.pop("infrastructure_strike_index",None); self._complete_order(u)
         elif o.kind=="WAIT":
@@ -423,16 +415,9 @@ class Simulation:
 
     @staticmethod
     def _point_in_polygon(point, polygon):
-        x,y=point; inside=False
+        from .terrain import _point_in_poly
         pts=[tuple(p) for p in polygon]
-        if len(pts)<3:return False
-        j=len(pts)-1
-        for i in range(len(pts)):
-            xi,yi=pts[i]; xj,yj=pts[j]
-            if ((yi>y)!=(yj>y)) and x < (xj-xi)*(y-yi)/(yj-yi+1e-12)+xi:
-                inside=not inside
-            j=i
-        return inside
+        return len(pts)>=3 and _point_in_poly(tuple(point),pts)
 
     def _inside_defend_area(self,u:Unit,o:Order):
         p=o.params
@@ -467,7 +452,9 @@ class Simulation:
         barrier material/material-handling support; no permanent engineer sub-element is invented.
         """
         branch=str(u.branch).upper(); mobility=str(u.unit_type.metadata.get("mobility_class","FOOT")).upper()
-        if branch not in {"INFANTRY","RECON","SPECIAL_OPERATIONS"} or mobility!="FOOT":
+        builders={str(x).upper() for x in self.combat_config.get("barricade_builder_branches",["INFANTRY","RECON","SPECIAL_OPERATIONS"])}
+        caps={str(x).upper() for x in u.unit_type.metadata.get("engineering_capabilities",[])}
+        if ("BARRICADE" not in caps and branch not in builders) or mobility!="FOOT":
             u.metadata["tactical_reason"]="BUILD BARRICADE / INFANTRY ONLY";self.log("BARRICADE_BUILD_REJECTED",unit=u.uid,reason="INFANTRY_ONLY");self._complete_order(u);return
         limit=max(0,int(u.metadata.get("barricade_limit",0))); built=max(0,int(u.metadata.get("barricades_built",0)))
         if built>=limit:
@@ -482,7 +469,7 @@ class Simulation:
         if self.time-started<duration:return
         wall=self.terrain.add_barricade(pos,float(o.params.get("heading_deg",0.0)),builder_uid=u.uid)
         u.metadata["barricades_built"]=built+1;u.metadata.pop("barricade_build_started_t",None)
-        self.log("BARRICADE_BUILT",unit=u.uid,barricade=wall.get("id"),center=wall.get("center"),heading_deg=wall.get("heading_deg"),length_m=10.0)
+        self.log("BARRICADE_BUILT",unit=u.uid,barricade=wall.get("id"),center=wall.get("center"),heading_deg=wall.get("heading_deg"),length_m=wall.get("length_m"))
         self._complete_order(u)
 
     def _step_defend_area_order(self,u:Unit,o:Order,dt:float):
@@ -758,9 +745,10 @@ class Simulation:
         # Terrain may redirect a non-amphibious formation to a bridge before the final destination.
         move_dest=self.terrain.movement_target(u,tuple(dest)) if self.terrain else tuple(dest)
         dx,dy=move_dest[0]-u.pos[0],move_dest[1]-u.pos[1]; d=math.hypot(dx,dy)
+        arrival=float(self.combat_config.get("order_arrival_m",3.0))
         if d<1e-9:
             # Reaching a bridge waypoint is not the same as reaching the actual order destination.
-            return math.dist(u.pos,tuple(dest))<3
+            return math.dist(u.pos,tuple(dest))<=arrival
         # Tactical movement speed is data-driven by mobility class/terrain and current tactical state.
         # Unit max_speed_mps is a formation planning speed, not a vehicle brochure top speed.
         speed=movement_speed_mps(u,self.terrain,u.pos,move_dest)
@@ -777,7 +765,7 @@ class Simulation:
             self._handle_terrain_transition(u,old_pos,candidate)
             u.pos=candidate
             u.heading_deg=math.degrees(math.atan2(dy,dx))
-        return math.dist(u.pos,tuple(dest))<=3
+        return math.dist(u.pos,tuple(dest))<=arrival
 
     def _handle_destroyed_building(self,building,source="",weapon=""):
         if not building or not bool(building.get("destroyed",False)):return
@@ -827,7 +815,11 @@ class Simulation:
         typ=UnitType(name=f"AGG_{branch}",branch=branch,max_speed_mps=speed,detection_range_m=detect,elements=[],metadata=shared_md)
         parent=Unit(uid=new_uid,name=name,side=side,echelon=echelon,unit_type=typ,pos=pos,
                     heading_deg=children[0].heading_deg,watch_heading_deg=children[0].watch_heading_deg,
-                    elements=elems,children=list(child_ids),metadata={"aggregated_from":list(child_ids)})
+                    elements=elems,children=list(child_ids),metadata={"aggregated_from":list(child_ids)},
+                    # The aggregate knows what its subordinates knew (best track per contact).
+                    local_tracks=self._merge_tracks([c.local_tracks for c in children]))
+        # Remember each subordinate's place in the formation so deaggregation restores the layout.
+        parent.metadata["child_offsets"]={c.uid:(c.pos[0]-pos[0],c.pos[1]-pos[1]) for c in children}
         for c in children: c.active=False; c.state=UnitState.AGGREGATED; c.parent_id=new_uid
         self.add_unit(parent); self.log("AGGREGATE",parent=new_uid,children=child_ids)
         return parent
@@ -900,13 +892,46 @@ class Simulation:
             c.active = True
             c.state = UnitState.IDLE if c.current_strength > 0 else UnitState.DESTROYED
             c.parent_id = None
-            c.pos = p.pos
+            c.pos = self._deaggregated_position(p, c)
+            # Orders and perception from before aggregation are stale: children continue the
+            # aggregate's mission with the aggregate's (newer) picture of the enemy.
+            c.current_order = copy.deepcopy(p.current_order)
+            c.order_queue = copy.deepcopy(p.order_queue)
+            c.local_tracks = self._merge_tracks([c.local_tracks, p.local_tracks])
+            c.target_id = None
+            self._clear_navigation_state(c)
+            for key in ("order_started_t","search_arrived_t","target_acquired_t","_direct_fire_state",
+                        "_local_direct_target_locks","_direct_fire_cycle_state"):
+                c.metadata.pop(key, None)
             restored.append(cid)
         p.active = False
         p.state = UnitState.AGGREGATED
         p.metadata["deaggregated"] = True
         self.log("DEAGGREGATE", parent=parent_uid, children=restored)
         return restored
+
+    @staticmethod
+    def _merge_tracks(track_maps):
+        """Best track per target across several track databases (current > lost, then confidence)."""
+        merged={}
+        for tracks in track_maps:
+            for tid,tr in tracks.items():
+                old=merged.get(tid)
+                rank=(tr.state=="DESTROYED",tr.state!="LOST",tr.last_seen_time,tr.confidence)
+                if old is None or rank>(old.state=="DESTROYED",old.state!="LOST",old.last_seen_time,old.confidence):
+                    merged[tid]=copy.deepcopy(tr)
+        return merged
+
+    def _deaggregated_position(self, parent: Unit, child: Unit):
+        off=dict(parent.metadata.get("child_offsets",{})).get(child.uid)
+        if off is None:
+            return parent.pos
+        cand=(parent.pos[0]+float(off[0]),parent.pos[1]+float(off[1]))
+        w=float(self.world.get("width_m",cand[0])); h=float(self.world.get("height_m",cand[1]))
+        cand=(max(0.0,min(w,cand[0])),max(0.0,min(h,cand[1])))
+        if self.terrain and not self.terrain.passable(child,cand):
+            return parent.pos
+        return cand
 
     # ---------- fog of war / local perception ----------
     def _target_signature(self, target: Unit) -> float:
@@ -1427,6 +1452,10 @@ class Simulation:
     def _has_direct_weapon(unit):
         return any(w.capability.upper() != "INDIRECT_FIRE" for _,w in unit.operational_weapons())
 
+    @staticmethod
+    def _has_indirect_weapon(unit):
+        return any(w.capability.upper() == "INDIRECT_FIRE" for e in unit.elements.values() for w in e.weapons)
+
     def _indirect_candidates(self, shooter, mode):
         candidates=[]
         for uid in shooter.local_tracks:
@@ -1477,37 +1506,34 @@ class Simulation:
             if len({m.side for m in members})>=2: groups.append(members)
         return groups
 
-    def _weapon_can_affect(self,w,target:Unit):
-        return self.combat.weapon_can_affect(w,target)
-
     def _unit_can_affect(self,shooter:Unit,target:Unit,mode="DIRECT"):
         return self.combat.unit_can_affect(shooter,target,mode)
-
-    def _target_score(self,shooter,target,mode="DIRECT"):
-        return self.combat.target_score(shooter,target,mode)
 
     def _select_target(self,shooter,enemies,mode="DIRECT"):
         return self.combat.select_target(shooter,enemies,mode)
 
-    def _select_target_element(self,target:Unit,w):
-        return self.combat.select_target_element(target,w)
+    def _infrastructure_target_alive(self, target_id: str) -> bool:
+        if not self.terrain:
+            return False
+        br=self.terrain.bridge_by_id(target_id)
+        bld=self.terrain.building_by_id(target_id)
+        return ((br is not None and self.terrain.bridge_operational(br))
+                or (bld is not None and self.terrain.building_operational(bld)))
 
-    def _fire_weapon(self,shooter,target,source_element,w,mode="DIRECT"):
-        return self.combat.fire_weapon(shooter,target,source_element,w,mode)
-
-    def _fire_all(self,shooter,target,mode="DIRECT"):
-        return self.combat.fire_all(shooter,target,mode)
+    def _advance_infrastructure_index(self, u: Unit, targets, log_completed: bool) -> int:
+        """Skip already-destroyed targets; return the index of the next live target."""
+        idx=int(u.metadata.get("infrastructure_strike_index",0))
+        while idx<len(targets) and not self._infrastructure_target_alive(str(targets[idx])):
+            if log_completed:
+                self.log("INFRASTRUCTURE_TARGET_COMPLETE",unit=u.uid,target=str(targets[idx]))
+            idx+=1; u.metadata["infrastructure_strike_index"]=idx
+        return idx
 
     def _execute_infrastructure_strike(self, arty:Unit) -> bool:
         o=arty.current_order
         if not o or o.kind!="STRIKE_INFRASTRUCTURE": return False
-        targets=list(o.params.get("targets",[])); idx=int(arty.metadata.get("infrastructure_strike_index",0))
-        while idx<len(targets):
-            bid=str(targets[idx]);br=self.terrain.bridge_by_id(bid) if self.terrain else None
-            bld=self.terrain.building_by_id(bid) if self.terrain and hasattr(self.terrain,"building_by_id") else None
-            if (br is not None and self.terrain.bridge_operational(br)) or (bld is not None and self.terrain.building_operational(bld)):break
-            self.log("INFRASTRUCTURE_TARGET_COMPLETE",unit=arty.uid,target=bid)
-            idx+=1;arty.metadata["infrastructure_strike_index"]=idx
+        targets=list(o.params.get("targets",[]))
+        idx=self._advance_infrastructure_index(arty,targets,log_completed=True)
         if idx>=len(targets):return True
         bid=str(targets[idx]);br=self.terrain.bridge_by_id(bid);bld=self.terrain.building_by_id(bid) if hasattr(self.terrain,"building_by_id") else None
         aim=tuple(self.terrain.bridge_center(br)) if br is not None else tuple(self.terrain.building_center(bld));requested=False
@@ -1520,6 +1546,9 @@ class Simulation:
         return True
 
     def _combat_step(self):
+        for u in self.units.values():
+            if u.alive:
+                u.mark_unavailable_fire_cycles()
         groups=self._build_engagements(); self.engagements=[]; engaged_ids=set()
         for idx,members in enumerate(groups,1):
             blue=[u for u in members if u.side.value=="BLUE" and u.alive]; red=[u for u in members if u.side.value=="RED" and u.alive]
@@ -1548,7 +1577,9 @@ class Simulation:
         # high-payoff counterfire target whenever a credible ARTILLERY track exists, regardless
         # of whether it came from radar, a local observer, or C2 sharing. A radar point-of-origin
         # solution is retained long enough to support follow-on salvos after FDC/reload delays.
-        for arty in [u for u in self.units.values() if u.alive and u.branch=="ARTILLERY"]:
+        # Any formation with an operational INDIRECT_FIRE weapon participates (mortar sections in
+        # infantry units included); the branch label does not decide capability.
+        for arty in [u for u in self.units.values() if u.alive and self._has_indirect_weapon(u)]:
             # Explicit infrastructure strike orders supersede autonomous counterfire/fire support.
             if self._execute_infrastructure_strike(arty):
                 continue
@@ -1922,12 +1953,20 @@ class Simulation:
         if self._update_crew_readiness(u):
             return
         # Damage events may trigger a branch immediately rather than waiting for the next unit step.
+        self._try_condition_branch(u)
+
+    def _try_condition_branch(self, u: Unit) -> bool:
+        """Replace the active order with its on_true branch when all conditions hold."""
         o=u.current_order
-        if not o or not o.conditions or not o.on_true:return
-        if ConditionEvaluator.eval_all(self,u,o.conditions):
-            branched=compile_order_fragment(self,u,o.on_true)
-            self.log("CONDITION_BRANCH",unit=u.uid,from_order=o.order_id,to_order=branched.kind,phase=o.phase_id)
-            u.current_order=branched; u.metadata.pop("order_started_t",None)
+        if not o or not o.conditions or not o.on_true:
+            return False
+        if not ConditionEvaluator.eval_all(self,u,o.conditions):
+            return False
+        branched=compile_order_fragment(self,u,o.on_true)
+        self.log("CONDITION_BRANCH",unit=u.uid,from_order=o.order_id,to_order=branched.kind,phase=o.phase_id)
+        u.current_order=branched
+        u.metadata.pop("order_started_t",None)
+        return True
 
     def save_log(self,path):
         with open(path,"w",encoding="utf-8") as f:

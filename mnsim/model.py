@@ -356,13 +356,25 @@ class Unit:
         return provider is None or provider.count <= 0
 
     def operational_weapons(self) -> List[tuple[FormationElement, WeaponModel]]:
+        """Weapons with at least one current participant.  Read-only (no bookkeeping)."""
         out = []
         for e in self.elements.values():
             for w in e.weapons:
                 if self.firepower(e, w).participants > 0:
                     out.append((e, w))
-                else:
-                    state = self.metadata.get('_direct_fire_cycle_state', {}).get(f'{e.eid}:{w.name}')
-                    if state is not None:
-                        state['unavailable'] = True
         return out
+
+    def mark_unavailable_fire_cycles(self) -> None:
+        """Flag direct-fire cycles whose weapon currently has no participants.
+
+        When the weapon becomes usable again its cycle restarts from 'now' instead of banking a
+        backlog of shots accumulated while it was unmanned.  Called once per combat step.
+        """
+        states = self.metadata.get('_direct_fire_cycle_state')
+        if not states:
+            return
+        for e in self.elements.values():
+            for w in e.weapons:
+                state = states.get(f'{e.eid}:{w.name}')
+                if state is not None and self.firepower(e, w).participants <= 0:
+                    state['unavailable'] = True

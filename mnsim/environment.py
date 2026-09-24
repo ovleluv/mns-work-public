@@ -81,7 +81,9 @@ class EnvironmentObservationModel:
 
             # Vegetation concealment is strongest for small, stationary infantry targets.
             # This changes detectability only; it does not grant artificial damage resistance.
-            if target is not None and str(getattr(target, "branch", "")).upper() in ("INFANTRY", "MECH_INFANTRY", "MOTORIZED_INFANTRY"):
+            branches = {str(x).upper() for x in self.config.get(
+                "vegetation_concealment_branches", ("INFANTRY", "MECH_INFANTRY", "MOTORIZED_INFANTRY"))}
+            if target is not None and str(getattr(target, "branch", "")).upper() in branches:
                 areas = terrain.area_at(target.pos) if hasattr(terrain, "area_at") else []
                 vegetation = {str(a.get("type", "")).upper() for a in areas}
                 state = str(getattr(getattr(target, "state", None), "name", getattr(target, "state", ""))).upper()

@@ -163,7 +163,8 @@ def compile_mission(sim, mission: Dict[str, Any]) -> tuple[str, Order]:
         if pos is None:raise ValueError(f"BML BUILD_BARRICADE for {uid} requires position/destination")
         params["position"]=list(pos)
         params["heading_deg"]=float(mission.get("heading_deg",params.get("heading_deg",0.0)))%360.0
-        params["length_m"]=10.0
+        from .terrain import BARRICADE_LENGTH_M
+        params["length_m"]=BARRICADE_LENGTH_M
         params.setdefault("construction_time_s",float(mission.get("construction_time_s",1200.0)))
     elif task == "ENTER_BUILDING":
         sid=str(mission.get("target_structure",mission.get("building",mission.get("target",params.get("target_structure","")))))
