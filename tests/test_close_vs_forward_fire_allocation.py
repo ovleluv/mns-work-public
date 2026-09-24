@@ -59,6 +59,7 @@ def test_forward_sector_contacts_preserve_single_formation_primary_target():
 
 def test_close_contact_does_not_reorient_principal_watch_sector():
     sim,shooter,enemies=_setup(['CLOSE'],[(2000,2120)])
+    sim.combat_config['watch_sweep']={'enabled':False}   # isolate the target-cue rule
     shooter.target_id=enemies[0].uid
     assert sim._desired_watch_heading(shooter) == 0.0
 

@@ -277,6 +277,9 @@ class Unit:
     active: bool = True
     weapon_last_fire: Dict[str, float] = field(default_factory=dict)
     local_tracks: Dict[str, Track] = field(default_factory=dict)
+    # Combat stress (mnsim/stress.py): 0..1 suppression from incoming fire, 0..1 morale/cohesion.
+    suppression: float = 0.0
+    morale: float = 1.0
 
     @property
     def alive(self) -> bool:

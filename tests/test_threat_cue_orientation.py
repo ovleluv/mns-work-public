@@ -18,4 +18,26 @@ def test_threat_cue_expires():
     sim=Simulation(seed=4); a=_unit("A",Side.BLUE,(0,0)); b=_unit("B",Side.RED,(100,0)); a.watch_heading_deg=90.0
     sim.add_unit(a); sim.add_unit(b); sim._register_threat_cue(a,b.uid,"DIRECT_FIRE")
     sim.time=float(a.metadata["threat_cue_until_t"])+0.1
+    sim.combat_config['watch_sweep']={'enabled':False}   # isolate cue expiry from sector scanning
     assert sim._desired_watch_heading(a)==a.watch_heading_deg
+
+
+def test_halted_unit_without_sector_scans_all_round():
+    sim=Simulation(seed=5); a=_unit("A",Side.BLUE,(0,0)); a.watch_heading_deg=0.0
+    sim.add_unit(a)
+    seen=set()
+    for _ in range(12):
+        sim._update_watch_heading(a,1.0); seen.add(int(a.watch_heading_deg//45))
+    assert len(seen)>=6   # the watch sector sweeps round instead of staring at 0 deg
+
+
+def test_defender_sweeps_its_assigned_sector():
+    from mnsim.model import Order
+    sim=Simulation(seed=6); a=_unit("A",Side.BLUE,(0,0)); a.watch_heading_deg=90.0
+    a.current_order=Order(order_id="D",kind="HOLD",params={"facing_deg":90.0,"watch_sweep_half_deg":40.0})
+    sim.add_unit(a)
+    lo=hi=0.0
+    for _ in range(20):
+        sim._update_watch_heading(a,1.0); d=sim._angle_delta_deg(a.watch_heading_deg,90.0)
+        lo=min(lo,d); hi=max(hi,d)
+    assert lo<=-35 and 35<=hi<=40.5

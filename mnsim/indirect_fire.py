@@ -74,8 +74,8 @@ class IndirectFireResolver:
         if radius<=0 or element.count<=0:return 0,0
         base=self._base_effect_probability(element,weapon)
         protection=1.0
-        if target.state==UnitState.DEFENDING:
-            protection*=float(weapon.metadata.get("defending_protection_factor",0.68))
+        full=float(weapon.metadata.get("defending_protection_factor",0.68))
+        protection*=1.0-(1.0-full)*self.sim.dig_in_fraction(target)
         posture=str(target.metadata.get("dispersion_posture","NORMAL")).upper()
         posture_protect=self.sim.combat_config.get("formation_posture_modifiers",{}).get(posture,{})
         protection*=float(posture_protect.get("indirect_casualty_factor",1.0))
@@ -293,6 +293,7 @@ class IndirectFireResolver:
             awareness_r=float(weapon.metadata.get("incoming_fire_awareness_radius_m",110.0))
             if nr<=1.0 or vd<=awareness_r+fp.semi_major:
                 self.sim._register_threat_cue(victim,shooter.uid,"INDIRECT_FIRE")
+            self.sim.stress.on_indirect_impact(victim,nr)
             victim_effects=0
             # IMPORTANT: max_personnel_loss_per_round is a shell-level casualty cap for this
             # formation, not a separate allowance for every squad/HQ/support element.  Applying

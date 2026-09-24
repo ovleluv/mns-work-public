@@ -197,6 +197,51 @@ class DoctrineEngine:
             unit.metadata["tactical_reason"] = "COMBAT INEFFECTIVE / HOLD FOR RECOVERY"
         return True
 
+    ADVANCING_ORDERS = ("ATTACK", "ATTACK_UNIT", "DESTROY_UNIT", "ATTACK_STRUCTURE")
+
+    def _threat_bearing_away(self, unit: Unit, contacts) -> float | None:
+        if contacts:
+            _, tr = min(contacts, key=lambda x: math.dist(unit.pos, x[1].estimated_pos))
+            dx = unit.pos[0] - tr.estimated_pos[0]; dy = unit.pos[1] - tr.estimated_pos[1]
+            if abs(dx) + abs(dy) > 1e-9:
+                return math.degrees(math.atan2(dy, dx))
+        if self.sim.time <= float(unit.metadata.get("threat_cue_until_t", -1e9)):
+            return float(unit.metadata.get("threat_cue_heading_deg", unit.heading_deg)) + 180.0
+        return None
+
+    def _stress_behavior(self, unit: Unit, contacts, dt: float) -> bool:
+        stress = getattr(self.sim, "stress", None)
+        if stress is None or not stress.enabled:
+            return False
+        state = stress.morale_state(unit)
+        order = unit.current_order
+        kind = str(order.kind).upper() if order else ""
+        if state == "BROKEN":
+            if self._has_tactical_mobility(unit) and kind != "RETREAT":
+                dest = unit.metadata.get("_broken_withdraw_dest")
+                if dest is None:
+                    away = self._threat_bearing_away(unit, contacts)
+                    if away is not None:
+                        dist = float(stress.cfg().get("broken_withdraw_m", 400.0))
+                        dest = self._reachable_retreat_destination(unit, away, dist)
+                    if dest is not None:
+                        unit.metadata["_broken_withdraw_dest"] = tuple(dest)
+                if dest is not None and math.dist(unit.pos, tuple(dest)) > float(self.sim.combat_config.get("order_arrival_m", 3.0)):
+                    unit.state = UnitState.RETREATING
+                    unit.metadata["tactical_reason"] = "MORALE BROKEN / FALLING BACK"
+                    self.sim._move_toward(unit, tuple(dest), dt)
+                    return True
+            unit.state = UnitState.DEFENDING
+            unit.metadata["tactical_reason"] = "MORALE BROKEN / REORGANISING"
+            return True
+        unit.metadata.pop("_broken_withdraw_dest", None)
+        if kind in self.ADVANCING_ORDERS and (stress.pinned(unit) or state == "SHAKEN"):
+            unit.state = UnitState.DEFENDING
+            unit.metadata["tactical_reason"] = ("PINNED BY FIRE / GO TO GROUND" if stress.pinned(unit)
+                                                else "SHAKEN / ATTACK STALLED")
+            return True
+        return False
+
     def _indirect_fire_dispersion_reaction(self, unit: Unit) -> None:
         if not bool(self.setting(unit,"indirect_fire_auto_disperse",default=True)):
             return
@@ -282,6 +327,11 @@ class DoctrineEngine:
         # A mobile formation with every weapon firepower-killed must not continue closing on
         # contacts merely because its higher-level ATTACK order remains active.
         if self._combat_ineffective_behavior(unit, contacts, dt):
+            return True
+
+        # Morale and suppression override the COA order: broken formations withdraw and
+        # reorganise, pinned/shaken ones stop advancing and go to ground (they keep firing).
+        if self._stress_behavior(unit, contacts, dt):
             return True
 
         if not contacts:

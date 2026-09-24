@@ -518,6 +518,8 @@ class CombatResolver:
             interval=max(0.01,self.sim.rng.uniform(lo,max(lo,hi)))/active_systems
         else:
             interval=60.0/max(weapon.shots_per_min*active_systems,.01)
+        # A suppressed/broken formation fires less often.
+        interval*=self.sim.stress.fire_interval_factor(shooter)
 
         if not weapon.expend_round():
             return
@@ -554,7 +556,10 @@ class CombatResolver:
         range_min=float(weapon.metadata.get("range_hit_factor_min",0.20))
         range_falloff=float(weapon.metadata.get("range_hit_falloff",0.55))
         range_factor=max(range_min,1.0-range_falloff*(perceived_d/max(weapon.range_m,1)))
-        defense_factor=float(weapon.metadata.get("defending_hit_factor",0.72 if target.state==UnitState.DEFENDING else 1.0)) if target.state==UnitState.DEFENDING else 1.0
+        # Prepared positions protect progressively: a hasty position gives part of the authored
+        # defending factor, a fully dug-in one all of it.
+        full_def=float(weapon.metadata.get("defending_hit_factor",0.72))
+        defense_factor=1.0-(1.0-full_def)*self.sim.dig_in_fraction(target)
         targeting_mode=str(weapon.metadata.get("targeting_mode","")).upper()
         if targeting_mode in ("LOCK_ON_BEFORE_LAUNCH","GUIDED","FIRE_AND_FORGET"):
             # Once a seeker-quality lock exists, residual Track uncertainty should degrade the shot
@@ -575,8 +580,11 @@ class CombatResolver:
             heavy=(cap in {"ANTI_ARMOR","DIRECT_FIRE_HEAVY"} or "STRUCTURE" in tags
                    or float(weapon.metadata.get("caliber_mm",0.0))>=20.0)
             barricade_factor=float(fire_lane.get("barricade_heavy_factor" if heavy else "barricade_small_arms_factor",0.70 if heavy else 0.40))
+        motion_factor=self.motion_hit_factor(shooter,target,weapon)
+        stress_factor=self.sim.stress.accuracy_factor(shooter)
         hit_p=min(float(weapon.metadata.get("max_hit_probability",0.95)),
-                  max(0.0,base_hit*range_factor*defense_factor*track_factor*terrain_fire_factor*barricade_factor))
+                  max(0.0,base_hit*range_factor*defense_factor*track_factor*terrain_fire_factor*barricade_factor
+                      *motion_factor*stress_factor))
         hit = self.sim.rng.random() < hit_p
         if str(mode).upper() != "DIRECT":
             shooter.target_id = target.uid
@@ -594,6 +602,7 @@ class CombatResolver:
         )
         self.sim.publish_engagement_contact(shooter,tr)
         self.sim._register_threat_cue(target,shooter.uid,"DIRECT_FIRE")
+        self.sim.stress.on_direct_fire(target,shooter,weapon,math.dist(shooter.pos,target.pos),hit)
         if hit:
             # If the target occupies a building, structure-capable weapons may attack the cover
             # itself. This keeps occupants hard to hit without making buildings invulnerable.
@@ -628,6 +637,36 @@ class CombatResolver:
                     element=tgt_el.eid, count=loss, weapon=weapon.name
                 )
         return True
+
+    def motion_hit_factor(self, shooter: Unit, target: Unit, weapon) -> float:
+        """Accuracy loss when firing on the move and against a moving target.
+
+        Defaults are generic: stabilised vehicle weapons keep most accuracy on the move, individual
+        and crew-served weapons much less, lock-on weapons need a halt.  Weapons may override with
+        ``fire_on_move_factor`` / ``moving_target_factor``.
+        """
+        cfg=dict(self.sim.combat_config.get("fire_motion",{}) or {})
+        if not bool(cfg.get("enabled",True)):
+            return 1.0
+        md=weapon.metadata
+        factor=1.0
+        window=float(cfg.get("moving_window_s",1.0))
+        if self.sim.time-float(shooter.metadata.get("_moved_at",-1e9))<=window:
+            if "fire_on_move_factor" in md:
+                f=float(md["fire_on_move_factor"])
+            elif str(md.get("targeting_mode","")).upper() in ("LOCK_ON_BEFORE_LAUNCH","GUIDED"):
+                f=float(cfg.get("guided_on_move_factor",0.35))
+            elif str(md.get("inventory_model","")).upper()=="PLATFORM_MOUNT" or float(md.get("caliber_mm",0.0))>=20.0:
+                f=float(cfg.get("stabilized_on_move_factor",0.75))
+            else:
+                f=float(cfg.get("dismounted_on_move_factor",0.45))
+            factor*=max(0.0,min(1.0,f))
+        if self.sim.time-float(target.metadata.get("_moved_at",-1e9))<=window:
+            guided=str(md.get("targeting_mode","")).upper() in ("LOCK_ON_BEFORE_LAUNCH","GUIDED","FIRE_AND_FORGET")
+            f=float(md.get("moving_target_factor",cfg.get("guided_moving_target_factor",0.95) if guided
+                           else cfg.get("moving_target_factor",0.85)))
+            factor*=max(0.0,min(1.0,f))
+        return factor
 
     def fire_structure_weapon(self, shooter:Unit, building, source_element:FormationElement, weapon:WeaponModel):
         key=f"{source_element.eid}:{weapon.name}:STRUCT:{building.get('id')}"

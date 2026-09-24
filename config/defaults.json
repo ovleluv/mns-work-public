@@ -330,6 +330,57 @@
     "engagement_range_fraction": 1.0,
     "direct_fire_requires_watch_alignment": true,
     "direct_fire_watch_edge_margin_deg": 5.0,
-    "direct_fire_requires_local_track": true
+    "direct_fire_requires_local_track": true,
+    "stress_model": {
+      "enabled": true,
+      "direct_suppression_per_round": 0.035,
+      "direct_hit_multiplier": 1.5,
+      "heavy_round_multiplier": 1.5,
+      "indirect_suppression_per_impact": 0.3,
+      "indirect_effect_radius_factor": 1.6,
+      "loss_suppression_per_strength": 0.8,
+      "buttoned_up_factor": 0.3,
+      "reference_formation_size": 10.0,
+      "suppression_half_life_s": 15.0,
+      "rate_of_fire_penalty": 1.2,
+      "accuracy_penalty": 0.55,
+      "movement_penalty": 0.75,
+      "retreat_movement_penalty": 0.35,
+      "detection_penalty": 0.5,
+      "suppressed_threshold": 0.5,
+      "pinned_threshold": 0.8,
+      "morale_loss_per_strength": 1.5,
+      "leader_loss_morale": 0.1,
+      "sustained_suppression_morale_per_s": 0.004,
+      "morale_recovery_per_s": 0.003,
+      "morale_recovery_max_suppression": 0.2,
+      "morale_ceiling_loss_factor": 1.0,
+      "shaken_threshold": 0.5,
+      "broken_threshold": 0.3,
+      "hold_at_all_costs_broken_threshold": 0.08,
+      "rally_threshold": 0.55,
+      "shaken_accuracy_factor": 0.85,
+      "broken_rate_of_fire_factor": 0.33,
+      "broken_withdraw_m": 400.0
+    },
+    "watch_sweep": {
+      "enabled": true,
+      "sector_half_width_deg": 60.0,
+      "all_round_step_deg": 90.0,
+      "moving_window_s": 2.0
+    },
+    "observation_scales_with_footprint": true,
+    "fire_motion": {
+      "enabled": true,
+      "moving_window_s": 1.0,
+      "stabilized_on_move_factor": 0.75,
+      "dismounted_on_move_factor": 0.45,
+      "guided_on_move_factor": 0.35,
+      "moving_target_factor": 0.85,
+      "guided_moving_target_factor": 0.95
+    },
+    "dig_in_time_s": 900.0,
+    "hasty_position_fraction": 0.5,
+    "initial_defenders_prepared": true
   }
 }

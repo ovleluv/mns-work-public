@@ -108,6 +108,8 @@ class Simulation(PerceptionMixin, CompositionMixin):
         self.damage = DamageResolver(self)
         self.environment = EnvironmentObservationModel(self.combat_config)
         self.communications = CommunicationNetwork(self)
+        from .stress import CombatStressModel
+        self.stress = CombatStressModel(self)
 
     def set_formation_posture(self, unit_or_uid, posture: str) -> bool:
         """Set spatial dispersion/shape posture without changing the unit's operational order.
@@ -155,9 +157,11 @@ class Simulation(PerceptionMixin, CompositionMixin):
             self._handle_event(ev.kind, ev.payload)
         self.time=end
         self._resolve_collapsed_bridges()
+        self.stress.update(sim_dt)
         for u in list(self.units.values()):
             if u.alive:
                 self._step_unit(u,sim_dt)
+        self._update_dig_in(start)
         # Scans stay on a fixed k*interval grid, so the scan count over a run does not depend
         # on the integration step or the UI speed multiplier.
         interval=max(1e-3,float(self.combat_config.get("sensor_update_s",1.0)))
@@ -167,6 +171,34 @@ class Simulation(PerceptionMixin, CompositionMixin):
             if self._next_sensor_update <= self.time:
                 self._next_sensor_update = self.time + interval
         self._combat_step()
+
+    # ---------- prepared positions ----------
+    def _update_dig_in(self, step_start: float):
+        """Track how long each formation has held a stationary defensive posture."""
+        prepared_at_start=bool(self.combat_config.get("initial_defenders_prepared",True))
+        dig=float(self.combat_config.get("dig_in_time_s",900.0))
+        for u in self.units.values():
+            if not u.alive:
+                continue
+            moved=float(u.metadata.get("_moved_at",-1e9))>=step_start
+            if u.state==UnitState.DEFENDING and not moved:
+                if "_defending_since" not in u.metadata:
+                    # Positions occupied at scenario start are treated as already prepared.
+                    first=step_start<=1e-9 and prepared_at_start
+                    u.metadata["_defending_since"]=(step_start-dig) if first else step_start
+            else:
+                u.metadata.pop("_defending_since",None)
+
+    def dig_in_fraction(self, unit: Unit) -> float:
+        """0 when not defending; hasty position -> fully prepared over ``dig_in_time_s``."""
+        if unit.state!=UnitState.DEFENDING:
+            return 0.0
+        since=unit.metadata.get("_defending_since")
+        hasty=float(self.combat_config.get("hasty_position_fraction",0.5))
+        if since is None:
+            return hasty
+        dig=max(1.0,float(self.combat_config.get("dig_in_time_s",900.0)))
+        return hasty+(1.0-hasty)*min(1.0,max(0.0,self.time-float(since))/dig)
 
     def realtime_alpha(self, max_sim_step_s: float = 0.25) -> float:
         """Fraction of the next fixed step already accumulated (0..1), for render interpolation."""
@@ -796,7 +828,7 @@ class Simulation(PerceptionMixin, CompositionMixin):
             return math.dist(u.pos,tuple(dest))<=arrival
         # Tactical movement speed is data-driven by mobility class/terrain and current tactical state.
         # Unit max_speed_mps is a formation planning speed, not a vehicle brochure top speed.
-        speed=movement_speed_mps(u,self.terrain,u.pos,move_dest)
+        speed=movement_speed_mps(u,self.terrain,u.pos,move_dest)*self.stress.movement_factor(u)
         step=min(d,speed*dt)
         if d>0:
             candidate=(u.pos[0]+dx/d*step,u.pos[1]+dy/d*step)
@@ -809,6 +841,7 @@ class Simulation(PerceptionMixin, CompositionMixin):
             old_pos=u.pos
             self._handle_terrain_transition(u,old_pos,candidate)
             u.pos=candidate
+            u.metadata["_moved_at"]=self.time
             u.heading_deg=math.degrees(math.atan2(dy,dx))
         return math.dist(u.pos,tuple(dest))<=arrival
 
@@ -1137,9 +1170,12 @@ class Simulation(PerceptionMixin, CompositionMixin):
             reason=str(p.get("reason",""))
             cue_type="INDIRECT_FIRE" if reason.startswith("ARTILLERY_") else "DIRECT_FIRE"
             self._register_threat_cue(t,p.get("source"),cue_type)
+            strength_before=t.current_strength
             self.damage.apply_equipment_effect(t,el,p.get("effect","DISABLED"),
                                                source=p.get("source",""),weapon=p.get("weapon",""),
                                                reason=reason,item_index=item_index)
+            if t.initial_strength>0 and not t.metadata.get("depleted_by_detachment"):
+                self.stress.on_losses(t,max(0.0,strength_before-t.current_strength)/t.initial_strength,el)
             if not t.alive:
                 if t.metadata.get("depleted_by_detachment"):
                     return  # every vehicle moved to a detached child; nothing was killed
@@ -1154,7 +1190,10 @@ class Simulation(PerceptionMixin, CompositionMixin):
             if not t or not t.alive:return
             el=t.elements.get(p["element"])
             if not el or el.count<=0:return
-            requested=int(p.get("count",1)); actual=min(el.count,requested); el.count-=actual
+            requested=int(p.get("count",1)); actual=min(el.count,requested)
+            strength_before=t.current_strength; el.count-=actual
+            if t.initial_strength>0:
+                self.stress.on_losses(t,max(0.0,strength_before-t.current_strength)/t.initial_strength,el)
             self._register_threat_cue(t,p.get("source"),str(p.get("cue_type","DIRECT_FIRE")))
             self.log("ELEMENT_LOSS",target=t.uid,source=p.get("source"),element=el.eid,role=el.role,count=actual,remaining=el.count,personnel=t.personnel,equipment=t.equipment,strength=round(t.strength_ratio,3),weapon=p.get("weapon"))
             if el.count==0:self.log("ELEMENT_DISABLED",unit=t.uid,element=el.eid,role=el.role)

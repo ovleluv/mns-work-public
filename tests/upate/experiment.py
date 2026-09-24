@@ -199,6 +199,8 @@ def perfect_track(observer, target, now):
 def controlled_sim(blue_count, red_count, law, blue_rate=1, red_rate=1, explicit_cycle=False):
     sim = Simulation(seed=7)
     sim._next_sensor_update = math.inf  # Known-target laboratory condition, documented above.
+    # Pure attrition kernel: Lanchester controls exclude suppression/morale by construction.
+    sim.combat_config['stress_model'] = {'enabled': False}
     for side, n, rate, x in ((Side.BLUE,blue_count,blue_rate,1000),(Side.RED,red_count,red_rate,1100)):
         md = dict(acquisition_delay_min_s=0,
                   acquisition_delay_max_s=0, base_hit_probability=1, max_hit_probability=1,

@@ -53,7 +53,28 @@ class PerceptionMixin:
         fov=float(md.get("forward_fov_deg", self.combat_config.get("visual_forward_fov_deg", 90.0)))
         close=float(md.get("all_round_awareness_m", self.combat_config.get("visual_all_round_awareness_m", 160.0)))
         slew=float(md.get("watch_slew_deg_per_s", self.combat_config.get("visual_watch_slew_deg_per_s", 60.0)))
+        # A large formation observes from its whole footprint, not from its centroid: extend the
+        # all-round and forward envelopes by the footprint half-extent (a squad adds ~nothing,
+        # a battalion several hundred metres).
+        if bool(self.combat_config.get("observation_scales_with_footprint",True)):
+            ext=self._footprint_half_extent(unit)
+            close+=ext; forward+=ext
         return sensor_mode,forward,fov,close,slew
+
+    def _footprint_half_extent(self, unit: Unit) -> float:
+        cached=unit.metadata.get("_obs_extent")
+        key=(round(self.time,3),unit.echelon,str(unit.metadata.get("dispersion_posture","")),round(unit.strength_ratio,2))
+        if cached and cached[0]==key:
+            return cached[1]
+        from .formation_geometry import footprint_for
+        fp=footprint_for(self,unit)
+        # Only growth beyond the echelon-1 (platoon/vehicle) footprint counts, so platoon and
+        # single-vehicle behaviour is unchanged.
+        scale_cfg=self.combat_config.get("formation_echelon_footprint_scale",{})
+        scale=max(1.0,float(unit.metadata.get("formation_echelon_scale",scale_cfg.get(str(unit.echelon).upper(),1.0))))
+        ext=0.5*max(fp.length_m,fp.width_m)*(1.0-1.0/scale)
+        unit.metadata["_obs_extent"]=(key,ext)
+        return ext
 
     def visual_sensor_profile(self, unit: Unit, target: Unit | None = None):
         return self._visual_sensor_profile(unit, target)
@@ -205,22 +226,41 @@ class PerceptionMixin:
         if self.time <= float(unit.metadata.get("shared_cue_until_t",-1e9)):
             return float(unit.metadata.get("shared_cue_heading_deg",unit.watch_heading_deg))
         # During movement the formation's principal observation naturally follows the axis of advance.
-        if unit.state in (UnitState.MOVING,UnitState.ATTACKING,UnitState.RETREATING,UnitState.SEARCHING):
+        sweep_cfg=dict(self.combat_config.get("watch_sweep",{}) or {})
+        sweep_on=bool(sweep_cfg.get("enabled",True))
+        moving=self.time-float(unit.metadata.get("_moved_at",-1e9))<=float(sweep_cfg.get("moving_window_s",2.0))
+        if unit.state in (UnitState.MOVING,UnitState.ATTACKING,UnitState.RETREATING,UnitState.SEARCHING) and (moving or not sweep_on):
             return float(unit.heading_deg)
         # A halt/defend order may explicitly assign a principal observation direction.
+        base=None; half=float(sweep_cfg.get("sector_half_width_deg",60.0))
         if unit.current_order:
             params=unit.current_order.params
             if "watch_heading_deg" in params:
-                return float(params["watch_heading_deg"])
-            if "facing_deg" in params:
-                return float(params["facing_deg"])
+                base=float(params["watch_heading_deg"])
+            elif "facing_deg" in params:
+                base=float(params["facing_deg"])
+            if "watch_sweep_half_deg" in params:
+                half=float(params["watch_sweep_half_deg"])
         # Halted/defending formations orient toward their assigned objective/sector if available.
-        objective=unit.metadata.get("objective")
-        if objective:
-            dx=float(objective[0])-unit.pos[0]; dy=float(objective[1])-unit.pos[1]
-            if abs(dx)+abs(dy)>1e-9:
-                return math.degrees(math.atan2(dy,dx))
-        return float(unit.watch_heading_deg)
+        if base is None:
+            objective=unit.metadata.get("objective")
+            if objective:
+                dx=float(objective[0])-unit.pos[0]; dy=float(objective[1])-unit.pos[1]
+                if abs(dx)+abs(dy)>1e-9:
+                    base=math.degrees(math.atan2(dy,dx))
+        if not sweep_on:
+            return float(base) if base is not None else float(unit.watch_heading_deg)
+        # Halted observers scan: across their assigned sector, or all round when none is
+        # assigned (a halted/searching formation does not stare at one bearing forever).
+        if base is None or unit.state==UnitState.SEARCHING:
+            return float(unit.watch_heading_deg)+float(sweep_cfg.get("all_round_step_deg",90.0))
+        if half<=0.0:
+            return float(base)
+        sign=1.0 if float(unit.metadata.get("_sweep_sign",1.0))>=0 else -1.0
+        target=base+sign*half
+        if abs(self._angle_delta_deg(target,unit.watch_heading_deg))<=2.0:
+            sign=-sign; unit.metadata["_sweep_sign"]=sign; target=base+sign*half
+        return target
 
     def _update_watch_heading(self, unit: Unit, dt: float):
         _,_,_,slew,_=self._visual_sensor_profile(unit)
@@ -328,7 +368,8 @@ class PerceptionMixin:
                 range_factor=max(0.0,1.0-(d/r)**exp)
                 edge_p=float(self.combat_config.get("visual_detection_edge_p_per_scan",0.01))
                 max_p=float(self.combat_config.get("visual_detection_max_p_per_scan",0.55))
-                p=max(0.001,min(0.98,(edge_p+max_p*range_factor*self._target_signature(tgt))*angular_factor))
+                p=max(0.001,min(0.98,(edge_p+max_p*range_factor*self._target_signature(tgt))*angular_factor
+                                 *self.stress.detection_factor(obs)))
                 if self.rng.random() > p: continue
                 n=(prev.observations+1) if prev else 1
                 conf=min(0.98,(prev.confidence if prev else 0.18)+0.16+0.16*range_factor)
