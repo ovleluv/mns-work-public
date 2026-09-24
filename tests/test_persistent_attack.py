@@ -14,7 +14,8 @@ assert not any(x['kind']=='ORDER_COMPLETE' and x.get('unit') in {'B-INF-2','B-IN
 # evacuated its survivors into separate foot units instead of retaining immobile crews.
 assert all(u.state.value in {'ATTACKING','SEARCHING','ENGAGING','DEFENDING','RETREATING'}
            for u in attackers if u.alive)
-assert all(u.state.value == 'DESTROYED' and u.current_strength == 0
+# A formation whose vehicles were all detached (immobilised/crew escaped) is depleted, not killed.
+assert all(u.current_strength == 0 and (u.state.value == 'DESTROYED' or u.metadata.get('depleted_by_detachment'))
            for u in attackers if not u.alive)
 # Verify that combat still occurs well into the run rather than dying after the initial contact.
 direct=[x for x in sim.logs if x['kind']=='FIRE' and x.get('mode')=='DIRECT']

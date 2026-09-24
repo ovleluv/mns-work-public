@@ -242,6 +242,38 @@ class DoctrineEngine:
             return True
         return False
 
+    def _counterfire_displacement(self, unit: Unit, dt: float) -> bool:
+        if not bool(self.setting(unit, "artillery_displace_on_counterfire", default=True)):
+            return False
+        if not any(str(w.capability).upper()=="INDIRECT_FIRE" for e in unit.elements.values() for w in e.weapons):
+            return False
+        dest = unit.metadata.get("_scoot_dest")
+        if dest is None:
+            cue = str(unit.metadata.get("threat_cue_type", "")).upper()
+            if cue != "INDIRECT_FIRE" or self.sim.time > float(unit.metadata.get("threat_cue_until_t", -1e9)):
+                return False
+            if (not bool(self.directive(unit, "allow_artillery_displacement", True))
+                    or not self.withdrawal_allowed(unit, autonomous=True) or not self._has_tactical_mobility(unit)):
+                return False
+            cooldown = float(self.setting(unit, "artillery_displace_cooldown_s", default=240.0))
+            if self.sim.time - float(unit.metadata.get("_last_scoot_t", -1e9)) < cooldown:
+                return False
+            away = float(unit.metadata.get("threat_cue_heading_deg", unit.heading_deg)) + 180.0
+            dist = float(self.setting(unit, "artillery_counterfire_displace_m", default=500.0))
+            dest = self._reachable_retreat_destination(unit, away, dist)
+            if dest is None:
+                return False
+            unit.metadata["_scoot_dest"] = tuple(dest)
+            unit.metadata["_last_scoot_t"] = self.sim.time
+            self.sim.log("ARTILLERY_DISPLACE_COUNTERFIRE", unit=unit.uid, to=[round(dest[0], 1), round(dest[1], 1)])
+        if math.dist(unit.pos, tuple(dest)) <= float(self.sim.combat_config.get("order_arrival_m", 3.0)):
+            unit.metadata.pop("_scoot_dest", None)
+            return False
+        unit.state = UnitState.MOVING
+        unit.metadata["tactical_reason"] = "COUNTERFIRE / DISPLACING"
+        self.sim._move_toward(unit, tuple(dest), dt)
+        return True
+
     STATIC_ORDERS = ("HOLD", "DEFEND", "WAIT")
 
     def _max_reply_range(self, unit: Unit, track) -> float:
@@ -399,6 +431,10 @@ class DoctrineEngine:
         # Under sustained fire it cannot answer (outranged, or the shooter is unseen), a
         # non-attacking formation pulls back out of the beaten zone instead of dying in place.
         if self._outranged_reaction(unit, dt):
+            return True
+
+        # Shoot and scoot: a firing battery that starts receiving (counter-)battery fire moves.
+        if self._counterfire_displacement(unit, dt):
             return True
 
         if not contacts:

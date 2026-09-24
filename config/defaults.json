@@ -404,6 +404,29 @@
       "enabled": true,
       "tolerate_s": 20.0,
       "withdraw_m": 350.0
-    }
+    },
+    "artillery_mean_projectile_speed_mps": 300.0,
+    "artillery_mission_bias": true,
+    "prepared_position_indirect_factor": 0.35,
+    "armor_vulnerability": {
+      "HEAVY_AT": {
+        "HEAVY_ARMOR": 1.0,
+        "MEDIUM_ARMOR": 1.2,
+        "LIGHT_ARMOR": 1.3
+      },
+      "LIGHT_AT": {
+        "HEAVY_ARMOR": 0.35,
+        "MEDIUM_ARMOR": 1.0,
+        "LIGHT_ARMOR": 1.3
+      },
+      "AUTOCANNON": {
+        "HEAVY_ARMOR": 0.15,
+        "MEDIUM_ARMOR": 0.9,
+        "LIGHT_ARMOR": 1.4
+      }
+    },
+    "artillery_displace_on_counterfire": true,
+    "artillery_counterfire_displace_m": 500.0,
+    "artillery_displace_cooldown_s": 240.0
   }
 }

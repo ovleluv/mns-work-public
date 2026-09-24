@@ -1058,7 +1058,8 @@ class Simulation(PerceptionMixin, CompositionMixin):
         # solution is retained long enough to support follow-on salvos after FDC/reload delays.
         # Any formation with an operational INDIRECT_FIRE weapon participates (mortar sections in
         # infantry units included); the branch label does not decide capability.
-        for arty in [u for u in self.units.values() if u.alive and self._has_indirect_weapon(u)]:
+        for arty in [u for u in self.units.values() if u.alive and self._has_indirect_weapon(u)
+                     and "_scoot_dest" not in u.metadata]:
             # Explicit infrastructure strike orders supersede autonomous counterfire/fire support.
             if self._execute_infrastructure_strike(arty):
                 continue

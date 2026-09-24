@@ -75,12 +75,20 @@ class IndirectFireResolver:
         base=self._base_effect_probability(element,weapon)
         protection=1.0
         full=float(weapon.metadata.get("defending_protection_factor",0.68))
-        protection*=1.0-(1.0-full)*self.sim.dig_in_fraction(target)
+        dig=self.sim.dig_in_fraction(target)
+        protection*=1.0-(1.0-full)*dig
+        # Fighting positions / overhead cover: only a fully prepared position gets all of it.
+        prepared=float(self.sim.combat_config.get("prepared_position_indirect_factor",0.35))
+        hasty=float(self.sim.combat_config.get("hasty_position_fraction",0.5))
+        prep_level=max(0.0,(dig-hasty)/max(1e-9,1.0-hasty)) if dig>0 else 0.0
+        protection*=1.0-(1.0-prepared)*prep_level
         posture=str(target.metadata.get("dispersion_posture","NORMAL")).upper()
         posture_protect=self.sim.combat_config.get("formation_posture_modifiers",{}).get(posture,{})
         protection*=float(posture_protect.get("indirect_casualty_factor",1.0))
         casualties=0; exposed=0
-        max_loss=int(weapon.metadata.get("max_personnel_loss_per_round",6))
+        # The per-round cap describes exposed troops; protection reduces it too, otherwise the
+        # cap (not the protection) decides losses against dug-in infantry.
+        max_loss=int(round(int(weapon.metadata.get("max_personnel_loss_per_round",6))*min(1.0,protection)))
         if max_loss_override is not None:
             max_loss=max(0,min(max_loss,int(max_loss_override)))
         if max_loss<=0:return 0,0
@@ -162,10 +170,21 @@ class IndirectFireResolver:
             self.sim.log("AMMO_DEPLETED",unit=shooter.uid,source_element=source_element.eid,weapon=weapon.name)
 
         cep=float(weapon.metadata.get("dispersion_cep_m",55.0))
-        tof=self.sim.rng.uniform(
-            float(self.sim.combat_config.get("artillery_time_of_flight_min_s",8.0)),
-            float(self.sim.combat_config.get("artillery_time_of_flight_max_s",15.0))
-        )
+        cfg=self.sim.combat_config
+        if "artillery_mean_projectile_speed_mps" in cfg or "projectile_speed_mps" in weapon.metadata:
+            # Time of flight grows with range (average speed over the trajectory).
+            v=float(weapon.metadata.get("projectile_speed_mps",cfg.get("artillery_mean_projectile_speed_mps",300.0)))
+            tof=max(float(cfg.get("artillery_time_of_flight_min_s",8.0))*0.5,perceived_d/max(1.0,v))
+            tof*=self.sim.rng.uniform(0.95,1.05)
+        else:
+            tof=self.sim.rng.uniform(float(cfg.get("artillery_time_of_flight_min_s",8.0)),
+                                     float(cfg.get("artillery_time_of_flight_max_s",15.0)))
+        # Target-location error is one bias for the whole mission (every tube aims at the same
+        # wrong point); only the weapon's ballistic dispersion varies round to round.
+        mission_bias=(0.0,0.0)
+        if bool(cfg.get("artillery_mission_bias",True)):
+            sb=max(0.0,float(track_error_m))*0.55
+            mission_bias=(self.sim.rng.gauss(0.0,sb),self.sim.rng.gauss(0.0,sb))
         track_age_at_fire=max(0.0,self.sim.time-observation_time)
 
         self.sim.log(
@@ -181,7 +200,11 @@ class IndirectFireResolver:
         for round_idx in range(rounds):
             ox,oy=self._pattern_offset(profile,round_idx,rounds)
             deliberate_aim=(aim[0]+ox,aim[1]+oy)
-            ix,iy,sigma=self._impact_point(deliberate_aim,cep,track_error_m)
+            if bool(cfg.get("artillery_mission_bias",True)):
+                biased=(deliberate_aim[0]+mission_bias[0],deliberate_aim[1]+mission_bias[1])
+                ix,iy,sigma=self._impact_point(biased,cep,0.0)
+            else:
+                ix,iy,sigma=self._impact_point(deliberate_aim,cep,track_error_m)
             self.sim.events.push(
                 self.sim.time+tof,"ARTY_IMPACT_RESOLVE",
                 shooter=shooter.uid,target=target_id,weapon=weapon.name,round=round_idx+1,
